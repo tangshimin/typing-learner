@@ -82,10 +82,10 @@ object Dictionary {
         val dir = System.getProperty(property)
         return if (dir != null) {
             // 打包之后的环境
-            "jdbc:h2:./app/resources/dictionary/ecdict"
+            "jdbc:h2:./app/resources/dictionary/ecdict;ACCESS_MODE_DATA=r"
         } else {
             // 开发环境
-            "jdbc:h2:./resources/common/dictionary/ecdict"
+            "jdbc:h2:./resources/common/dictionary/ecdict;ACCESS_MODE_DATA=r"
         }
     }
 
