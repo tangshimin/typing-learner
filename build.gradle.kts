@@ -63,6 +63,7 @@ compose.desktop {
             packageVersion = "1.0.0"
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            licenseFile.set(project.file("LICENSE"))
             windows{
                 dirChooser = true
                 perUserInstall = true

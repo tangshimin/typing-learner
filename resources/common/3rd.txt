@@ -1,0 +1,20 @@
+第三方软件：
+vlcj 4.7.1
+flatlaf 2.1
+h2database 2.1.210
+apache opennlp 1.9.4
+apache pdfbox 2.0.24
+apache commons commons-text 1.9
+compose desktop 1.1.1
+ebml reader 0.1.0  下载地址：https://github.com/matthewn4444/EBMLReader
+subtitleConvert 1.0.2  下载地址：https://github.com/JDaren/subtitleConverter
+
+视频播放器：
+VLC 播放器 下载地址：https://www.videolan.org/
+
+词典：
+ECDICT  下载地址：https://github.com/skywind3000/ECDICT
+
+音效
+本程序使用的音效：
+Success!!.wav  下载地址：https://freesound.org/people/jobro/sounds/60445/
