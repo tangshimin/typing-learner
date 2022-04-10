@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -22,7 +21,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
@@ -60,6 +58,7 @@ fun WordComponents(
     correctTime: Int,
     wrongTime: Int,
     toNext: () -> Unit,
+    dictationSkip: () -> Unit,
     textFieldValue: String,
     typingResult: List<Pair<Char, Boolean>>,
     checkTyping: (String) -> Unit,
@@ -85,6 +84,9 @@ fun WordComponents(
             ((it.key == Key.Enter || it.key == Key.NumPadEnter)
                     && it.type == KeyEventType.KeyUp) -> {
                 toNext()
+                if (state.isDictation) {
+                    dictationSkip()
+                }
                 true
             }
             (it.type == KeyEventType.KeyDown
@@ -404,9 +406,11 @@ fun WordComponents(
     // 复习错误单词
     val reviewWrongWords: () -> Unit = {
         val reviewList = dictationWrongWords.keys.toList()
-        state.enterReviewMode(reviewList)
-        resetChapterTime()
-        changeShowChapterFinishedDialog(false)
+        if (reviewList.isNotEmpty()) {
+            state.enterReviewMode(reviewList)
+            resetChapterTime()
+            changeShowChapterFinishedDialog(false)
+        }
     }
     // 下一章
     val nextChapter: () -> Unit = {

@@ -132,7 +132,16 @@ fun Typing(
                             playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
                         }
                     }
-
+                    // 在默写模式跳过单词也算一次错误
+                    val dictationSkipCurrentWord:()->Unit = {
+                        if(correctTime == 0){
+                            chapterWrongTime++
+                            val dictationWrongTime = dictationWrongWords[word]
+                            if (dictationWrongTime == null) {
+                                dictationWrongWords[word] = 1
+                            }
+                        }
+                    }
                     // TODO 切换词库的时候 当前单词的正确数和错误数没有清零
                     val toNext: () -> Unit = {
                         wordTypingResult.clear()
@@ -292,6 +301,7 @@ fun Typing(
                         correctTime = correctTime,
                         wrongTime = wrongTime,
                         toNext = { toNext() },
+                        dictationSkip = {dictationSkipCurrentWord()},
                         textFieldValue = wordTextFieldValue,
                         typingResult = wordTypingResult,
                         checkTyping = { checkWordInput(it) },

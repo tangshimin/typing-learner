@@ -15,7 +15,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -24,7 +23,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.Word
-import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @ExperimentalComposeUiApi
@@ -103,20 +101,11 @@ fun ChapterFinishedDialog(
                         "您已完成最后一个章节"
                     } else if (isDictation){
                         if(isReviewWrongList){
-                            "您已复习完本章节"
+                            "您已复习完错误单词"
                         }else "您已默写完本章节"
 
                     } else "您已学习完本章节"
                     Text(text = "$text", color = MaterialTheme.colors.onBackground)
-                }
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (isDictation && !isReviewWrongList){
-                        Text(text = "正确率 ",color = MaterialTheme.colors.onBackground)
-                        Text(text = "$correctRate%",color = MaterialTheme.colors.primary)
-                    }
                 }
 
                 if (isDictation && !isReviewWrongList) {
@@ -124,31 +113,40 @@ fun ChapterFinishedDialog(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                     ) {
-                        Column(Modifier.width(IntrinsicSize.Max)) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "正确率 ",color = MaterialTheme.colors.onBackground)
+                            Text(text = "$correctRate%",color = MaterialTheme.colors.primary)
+                        }
+
+                        Column(Modifier.width(IntrinsicSize.Max).padding(top = 10.dp)) {
                             if(correctRate < 100F){
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.width(141.dp)
-                                ) {
-                                    Text(text = "单词", color = MaterialTheme.colors.onBackground)
-                                    Text(text = "错误数", color = MaterialTheme.colors.onBackground,modifier = Modifier.width(50.dp))
-                                }
-                            }
-
-                            if(dictationWrongWords.isNotEmpty()) Divider(Modifier.fillMaxWidth())
-                            val treeMap = TreeMap<Int,Word>()
-                            dictationWrongWords.forEach{it ->
-                                treeMap.put(it.value,it.key)
-                            }
-
-                            treeMap.forEach {
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(text = it.value.value, color = MaterialTheme.colors.onBackground)
+                                    Text(text = "单词", color = MaterialTheme.colors.onBackground)
+                                    Text(text = "错误数", textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colors.onBackground,
+                                        modifier = Modifier.width(50.dp))
+                                }
+                            }
+
+                            if(dictationWrongWords.isNotEmpty()) Divider(Modifier.fillMaxWidth())
+                            var list = dictationWrongWords.toList()
+                            list = list.sortedBy { pair->
+                                pair.second
+                            }
+                            list.forEach {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(text = it.first.value, color = MaterialTheme.colors.onBackground)
                                     Spacer(Modifier.width(30.dp))
-                                    Text(text = "${it.key}",textAlign = TextAlign.Center, color = Color.Red,modifier = Modifier.width(50.dp))
+                                    Text(text = "${it.second}",textAlign = TextAlign.Center, color = Color.Red,modifier = Modifier.width(50.dp))
                                 }
                             }
                         }
