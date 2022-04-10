@@ -131,7 +131,10 @@ fun WordComponents(
             Box(Modifier
                 .width(intrinsicSize = IntrinsicSize.Max)
                 .padding(start = 50.dp)
-                .onPointerEvent(PointerEventType.Enter) { activeMenu = true }) {
+                .onPointerEvent(PointerEventType.Enter) {
+                    if(!state.isDictation || (state.isDictation && state.isReviewWrongList)){
+                        activeMenu = true
+                    } }) {
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { input ->
