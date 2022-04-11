@@ -77,406 +77,399 @@ fun Typing(
     modifier: Modifier
 ) {
     if (state.vocabulary.wordList.isNotEmpty()) {
-        val defaultSelectionColor = Color(0xFF4286F4)
-        val handleColor = defaultSelectionColor
-        val backgroundColor = defaultSelectionColor.copy(alpha = 0.4f)
-        val textSelectionColors =
-            TextSelectionColors(handleColor = handleColor, backgroundColor = backgroundColor)
-        CompositionLocalProvider(LocalTextSelectionColors provides textSelectionColors) {
-            Box(modifier = modifier) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .width(intrinsicSize = IntrinsicSize.Max)
-                        .background(MaterialTheme.colors.background)
-                        .focusable(true)
-                ) {
-                    /**
-                     * 当前正在学习的单词
-                     */
-                    val word = state.getCurrentWord()
+        Box(modifier = modifier) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .width(intrinsicSize = IntrinsicSize.Max)
+                    .background(MaterialTheme.colors.background)
+                    .focusable(true)
+            ) {
+                /**
+                 * 当前正在学习的单词
+                 */
+                val word = state.getCurrentWord()
 
-                    /**
-                     * 当前单词的正确次数
-                     */
-                    var correctTime by remember { mutableStateOf(0) }
+                /**
+                 * 当前单词的正确次数
+                 */
+                var correctTime by remember { mutableStateOf(0) }
 
-                    /**
-                     * 当前单词的错误次数
-                     */
-                    var wrongTime by remember { mutableStateOf(0) }
+                /**
+                 * 当前单词的错误次数
+                 */
+                var wrongTime by remember { mutableStateOf(0) }
 
-                    /**
-                     * 单词输入框里的字符串
-                     */
-                    var wordTextFieldValue by remember { mutableStateOf("") }
+                /**
+                 * 单词输入框里的字符串
+                 */
+                var wordTextFieldValue by remember { mutableStateOf("") }
 
-                    /**
-                     * 英语定义输入框里的字符串
-                     */
-                    var definitionTextFieldValue by remember { mutableStateOf("") }
+                /**
+                 * 英语定义输入框里的字符串
+                 */
+                var definitionTextFieldValue by remember { mutableStateOf("") }
 
-                    /**
-                     * 字幕输入框里的字符串列表
-                     */
-                    var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
+                /**
+                 * 字幕输入框里的字符串列表
+                 */
+                var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
 
-                    /**
-                     * 单词输入框输入的结果
-                     */
-                    val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
+                /**
+                 * 单词输入框输入的结果
+                 */
+                val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
-                    /**
-                     * 英语定义输入框的结果
-                     */
-                    val definitionTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
+                /**
+                 * 英语定义输入框的结果
+                 */
+                val definitionTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
-                    /**
-                     * 字幕输入框的结果
-                     */
-                    val captionsTypingResultMap =
-                        remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
+                /**
+                 * 字幕输入框的结果
+                 */
+                val captionsTypingResultMap =
+                    remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
 
-                    /**
-                     * 当前章节的正确数，主要用于默写模式
-                     */
-                    var chapterCorrectTime by remember { mutableStateOf(0F) }
+                /**
+                 * 当前章节的正确数，主要用于默写模式
+                 */
+                var chapterCorrectTime by remember { mutableStateOf(0F) }
 
-                    /**
-                     * 当前章节的错误数，主要用于默写模式
-                     */
-                    var chapterWrongTime by remember { mutableStateOf(0F) }
+                /**
+                 * 当前章节的错误数，主要用于默写模式
+                 */
+                var chapterWrongTime by remember { mutableStateOf(0F) }
 
-                    /**
-                     * 默写模式的错误单词
-                     */
-                    val dictationWrongWords = remember { mutableMapOf<Word, Int>() }
+                /**
+                 * 默写模式的错误单词
+                 */
+                val dictationWrongWords = remember { mutableMapOf<Word, Int>() }
 
-                    /**
-                     * 显示本章节已经完成对话框
-                     */
-                    var showChapterFinishedDialog by remember { mutableStateOf(false) }
-                    /**
-                     * 显示整个词库已经学习完成对话框
-                     */
-                    var isVocabularyFinished by remember { mutableStateOf(false) }
-                    /**
-                     * 显示编辑单词对话框
-                     */
-                    var showEditWordDialog by remember { mutableStateOf(false) }
+                /**
+                 * 显示本章节已经完成对话框
+                 */
+                var showChapterFinishedDialog by remember { mutableStateOf(false) }
+                /**
+                 * 显示整个词库已经学习完成对话框
+                 */
+                var isVocabularyFinished by remember { mutableStateOf(false) }
+                /**
+                 * 显示编辑单词对话框
+                 */
+                var showEditWordDialog by remember { mutableStateOf(false) }
 
 
-                    /**
-                     * 播放错误音效
-                     */
-                    val playBeepSound = {
-                        if (state.typing.soundTips) {
-                            playSound("audio/beep.wav", state.typing.soundTipsVolume)
-                        }
+                /**
+                 * 播放错误音效
+                 */
+                val playBeepSound = {
+                    if (state.typing.soundTips) {
+                        playSound("audio/beep.wav", state.typing.soundTipsVolume)
                     }
-
-                    /**
-                     * 播放成功音效
-                     */
-                    val playSuccessSound = {
-                        if (state.typing.soundTips) {
-                            playSound("audio/hint.wav", state.typing.soundTipsVolume)
-                        }
-                    }
-
-                    /**
-                     * 播放整个章节完成时音效
-                     */
-                    val playChapterFinished = {
-                        if (state.typing.soundTips) {
-                            playSound("audio/Success!!.wav", state.typing.soundTipsVolume)
-                        }
-                    }
-
-                    /**
-                     * 播放按键音效
-                     */
-                    val playKeySound = {
-                        if (state.typing.keystrokeSound) {
-                            playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
-                        }
-                    }
-
-                    /**
-                     * 当用户在默写模式按 enter 调用的回调，
-                     * 在默写模式跳过单词也算一次错误
-                     */
-                    val dictationSkipCurrentWord:()->Unit = {
-                        if(correctTime == 0){
-                            chapterWrongTime++
-                            val dictationWrongTime = dictationWrongWords[word]
-                            if (dictationWrongTime == null) {
-                                dictationWrongWords[word] = 1
-                            }
-                        }
-                    }
-
-                    /**
-                     * 切换下一个单词
-                     */
-                    // TODO 切换词库的时候 当前单词的正确数和错误数没有清零
-                    val toNext: () -> Unit = {
-                        wordTypingResult.clear()
-                        wordTextFieldValue = ""
-                        definitionTextFieldValue = ""
-                        definitionTypingResult.clear()
-                        captionsTypingResultMap.clear()
-                        captionsTextFieldValueList = mutableStateListOf("", "", "")
-                        correctTime = 0
-                        wrongTime = 0
-                        if (state.isDictation) {
-                            if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
-                                /**
-                                 * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
-                                 * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
-                                 * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
-                                 */
-                                Timer("playChapterFinishedSound", false).schedule(1000) {
-                                    playChapterFinished()
-                                }
-                                showChapterFinishedDialog = true
-
-                            } else state.dictationIndex++
-                        } else {
-                            when {
-                                (state.typing.index == state.vocabulary.size - 1) -> {
-                                    isVocabularyFinished = true
-                                    playChapterFinished()
-                                    showChapterFinishedDialog = true
-                                }
-                                ((state.typing.index + 1) % 20 == 0) -> {
-                                    playChapterFinished()
-                                    showChapterFinishedDialog = true
-                                }
-                                else -> state.typing.index += 1
-                            }
-                            state.saveTypingState()
-                        }
-                    }
-
-                    /**
-                     * 重置章节计数器,清空默写模式存储的错误单词
-                     */
-                    val resetChapterTime: () -> Unit = {
-                        chapterCorrectTime = 0F
-                        chapterWrongTime = 0F
-                        dictationWrongWords.clear()
-                    }
-
-                    /**
-                     * 检查输入的单词
-                     */
-                    val checkWordInput: (String) -> Unit = { input ->
-                        wordTextFieldValue = input
-                        wordTypingResult.clear()
-                        var done = true
-                        /**
-                         *  防止用户粘贴内容过长，如果粘贴的内容超过 word.value 的长度，
-                         * 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
-                         */
-                        if (wordTextFieldValue.length > word.value.length) {
-                            wordTypingResult.clear()
-                            wordTextFieldValue = ""
-                        } else if (input.length <= word.value.length) {
-                            val chars = input.toList()
-                            for (i in chars.indices) {
-                                val char = chars[i]
-                                if (char == word.value[i]) {
-                                    wordTypingResult.add(Pair(char, true))
-                                } else {
-                                    // 字母输入错误
-                                    // TODO 这里可以添加一个判断，如果不是英语，就不清除输入的字符
-                                    done = false
-                                    wordTypingResult.add(Pair(char, false))
-                                    state.wrongCount = state.wrongCount + 1
-                                    playBeepSound()
-                                    wrongTime++
-                                    if (state.isDictation) {
-                                        chapterWrongTime++
-                                        val dictationWrongTime = dictationWrongWords[word]
-                                        if (dictationWrongTime != null) {
-                                            dictationWrongWords[word] = dictationWrongTime + 1
-                                        } else {
-                                            dictationWrongWords[word] = 1
-                                        }
-                                    }
-                                    Timer("cleanInputChar", false).schedule(50) {
-                                        wordTextFieldValue = ""
-                                        wordTypingResult.clear()
-                                    }
-                                }
-                            }
-                            // 用户输入的单词完全正确
-                            if (wordTypingResult.size == word.value.length && done) {
-                                // 输入完全正确
-                                state.correctCount = state.correctCount + 1
-                                playSuccessSound()
-                                if (state.isDictation) chapterCorrectTime++
-                                if (state.typing.isAuto) {
-                                    Timer("cleanInputChar", false).schedule(50) {
-                                        toNext()
-                                        wordTextFieldValue = ""
-                                        wordTypingResult.clear()
-                                    }
-                                } else {
-                                    correctTime++
-                                    Timer("cleanInputChar", false).schedule(50) {
-                                        wordTypingResult.clear()
-                                        wordTextFieldValue = ""
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    /**
-                     * 检查输入的英语定义
-                     */
-                    val checkDefinitionInput: (String) -> Unit = { input ->
-                        definitionTextFieldValue = input
-                        definitionTypingResult.clear()
-                        // TODO 如果定义超过10行？
-                        if (input.length <= word.definition.length) {
-                            val chars = input.toList()
-                            for (i in chars.indices) {
-                                val char = chars[i]
-                                if (char == word.definition[i]) {
-                                    definitionTypingResult.add(Pair(char, true))
-                                } else {
-                                    definitionTypingResult.add(Pair(char, false))
-                                }
-                            }
-
-                            if (input.length == word.definition.length) {
-                                Timer("cleanInputChar", false).schedule(50) {
-                                    definitionTextFieldValue = ""
-                                    definitionTypingResult.clear()
-                                }
-                            }
-
-                        }
-                    }
-
-                    /**
-                     * 检查输入的字幕
-                     */
-                    val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
-                        captionsTextFieldValueList[index] = input
-                        val typingResult = captionsTypingResultMap[index]
-                        typingResult!!.clear()
-                        if (input.length <= captionContent.length) {
-                            val chars = input.toList()
-                            for (i in chars.indices) {
-                                val char = chars[i]
-                                if (char == captionContent[i]) {
-                                    typingResult.add(Pair(char, true))
-                                } else {
-                                    typingResult.add(Pair(char, false))
-                                }
-                            }
-                            if (input.length == captionContent.length) {
-                                Timer("cleanInputChar", false).schedule(50) {
-                                    captionsTextFieldValueList[index] = ""
-                                    typingResult.clear()
-                                }
-
-                            }
-
-                        }
-
-                    }
-                    WordComponents(
-                        state = state,
-                        word = word,
-                        correctTime = correctTime,
-                        wrongTime = wrongTime,
-                        toNext = { toNext() },
-                        dictationSkip = {dictationSkipCurrentWord()},
-                        textFieldValue = wordTextFieldValue,
-                        typingResult = wordTypingResult,
-                        checkTyping = { checkWordInput(it) },
-                        showChapterFinishedDialog = showChapterFinishedDialog,
-                        changeShowChapterFinishedDialog = { showChapterFinishedDialog = it },
-                        showEditWordDialog = showEditWordDialog,
-                        setShowEditWordDialog = { showEditWordDialog = it },
-                        isVocabularyFinished = isVocabularyFinished,
-                        setIsVocabularyFinished = { isVocabularyFinished = it },
-                        chapterCorrectTime = chapterCorrectTime,
-                        chapterWrongTime = chapterWrongTime,
-                        dictationWrongWords = dictationWrongWords,
-                        resetChapterTime = resetChapterTime,
-                        playKeySound = { playKeySound() },
-                    )
-                    Phonetic(
-                        word = word,
-                        phoneticVisible = state.typing.phoneticVisible
-                    )
-                    Morphology(
-                        word = word,
-                        isPlaying = state.isPlaying,
-                        morphologyVisible = state.typing.morphologyVisible
-                    )
-                    Definition(
-                        word = word,
-                        definitionVisible = state.typing.definitionVisible,
-                        isPlaying = state.isPlaying,
-                        textFieldValue = definitionTextFieldValue,
-                        typingResult = definitionTypingResult,
-                        checkTyping = { checkDefinitionInput(it) },
-                        playKeySound = { playKeySound() },
-                    )
-                    Translation(
-                        word = word,
-                        translationVisible = state.typing.translationVisible,
-                        isPlaying = state.isPlaying
-                    )
-
-                    val videoSize = videoBounds.size
-                    val startPadding = if (state.isPlaying) 0.dp else 50.dp
-                    val captionsModifier = Modifier
-                        .fillMaxWidth()
-                        .height(intrinsicSize = IntrinsicSize.Max)
-                        .padding(bottom = 0.dp, start = startPadding)
-                        .onPreviewKeyEvent {
-                            if ((it.key == Key.Enter || it.key == Key.NumPadEnter)
-                                && it.type == KeyEventType.KeyUp
-                            ) {
-                                toNext()
-                                true
-                            } else false
-                        }
-                    Captions(
-                        captionsVisible = state.typing.subtitlesVisible,
-                        playTripleMap = getPlayTripleMap(state, word),
-                        vocabularyType = state.vocabulary.type,
-                        videoPlayerWindow = state.videoPlayerWindow,
-                        isPlaying = state.isPlaying,
-                        volume = state.typing.audioVolume,
-                        setIsPlaying = { state.isPlaying = it },
-                        word = word,
-                        isEditing = false,
-                        bounds = videoBounds,
-                        textFieldValueList = captionsTextFieldValueList,
-                        typingResultMap = captionsTypingResultMap,
-                        putTypingResultMap = { index, list ->
-                            captionsTypingResultMap[index] = list
-                        },
-                        checkTyping = { index, input, captionContent ->
-                            checkCaptionsInput(index, input, captionContent)
-                        },
-                        playKeySound = { playKeySound() },
-                        modifier = captionsModifier,
-                    )
-                    if (state.isPlaying) Spacer(Modifier.height((videoSize.height).dp).width(videoSize.width.dp))
                 }
 
+                /**
+                 * 播放成功音效
+                 */
+                val playSuccessSound = {
+                    if (state.typing.soundTips) {
+                        playSound("audio/hint.wav", state.typing.soundTipsVolume)
+                    }
+                }
+
+                /**
+                 * 播放整个章节完成时音效
+                 */
+                val playChapterFinished = {
+                    if (state.typing.soundTips) {
+                        playSound("audio/Success!!.wav", state.typing.soundTipsVolume)
+                    }
+                }
+
+                /**
+                 * 播放按键音效
+                 */
+                val playKeySound = {
+                    if (state.typing.keystrokeSound) {
+                        playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
+                    }
+                }
+
+                /**
+                 * 当用户在默写模式按 enter 调用的回调，
+                 * 在默写模式跳过单词也算一次错误
+                 */
+                val dictationSkipCurrentWord:()->Unit = {
+                    if(correctTime == 0){
+                        chapterWrongTime++
+                        val dictationWrongTime = dictationWrongWords[word]
+                        if (dictationWrongTime == null) {
+                            dictationWrongWords[word] = 1
+                        }
+                    }
+                }
+
+                /**
+                 * 切换下一个单词
+                 */
+                // TODO 切换词库的时候 当前单词的正确数和错误数没有清零
+                val toNext: () -> Unit = {
+                    wordTypingResult.clear()
+                    wordTextFieldValue = ""
+                    definitionTextFieldValue = ""
+                    definitionTypingResult.clear()
+                    captionsTypingResultMap.clear()
+                    captionsTextFieldValueList = mutableStateListOf("", "", "")
+                    correctTime = 0
+                    wrongTime = 0
+                    if (state.isDictation) {
+                        if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
+                            /**
+                             * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
+                             * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
+                             * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
+                             */
+                            Timer("playChapterFinishedSound", false).schedule(1000) {
+                                playChapterFinished()
+                            }
+                            showChapterFinishedDialog = true
+
+                        } else state.dictationIndex++
+                    } else {
+                        when {
+                            (state.typing.index == state.vocabulary.size - 1) -> {
+                                isVocabularyFinished = true
+                                playChapterFinished()
+                                showChapterFinishedDialog = true
+                            }
+                            ((state.typing.index + 1) % 20 == 0) -> {
+                                playChapterFinished()
+                                showChapterFinishedDialog = true
+                            }
+                            else -> state.typing.index += 1
+                        }
+                        state.saveTypingState()
+                    }
+                }
+
+                /**
+                 * 重置章节计数器,清空默写模式存储的错误单词
+                 */
+                val resetChapterTime: () -> Unit = {
+                    chapterCorrectTime = 0F
+                    chapterWrongTime = 0F
+                    dictationWrongWords.clear()
+                }
+
+                /**
+                 * 检查输入的单词
+                 */
+                val checkWordInput: (String) -> Unit = { input ->
+                    wordTextFieldValue = input
+                    wordTypingResult.clear()
+                    var done = true
+                    /**
+                     *  防止用户粘贴内容过长，如果粘贴的内容超过 word.value 的长度，
+                     * 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
+                     */
+                    if (wordTextFieldValue.length > word.value.length) {
+                        wordTypingResult.clear()
+                        wordTextFieldValue = ""
+                    } else if (input.length <= word.value.length) {
+                        val chars = input.toList()
+                        for (i in chars.indices) {
+                            val char = chars[i]
+                            if (char == word.value[i]) {
+                                wordTypingResult.add(Pair(char, true))
+                            } else {
+                                // 字母输入错误
+                                // TODO 这里可以添加一个判断，如果不是英语，就不清除输入的字符
+                                done = false
+                                wordTypingResult.add(Pair(char, false))
+                                state.wrongCount = state.wrongCount + 1
+                                playBeepSound()
+                                wrongTime++
+                                if (state.isDictation) {
+                                    chapterWrongTime++
+                                    val dictationWrongTime = dictationWrongWords[word]
+                                    if (dictationWrongTime != null) {
+                                        dictationWrongWords[word] = dictationWrongTime + 1
+                                    } else {
+                                        dictationWrongWords[word] = 1
+                                    }
+                                }
+                                Timer("cleanInputChar", false).schedule(50) {
+                                    wordTextFieldValue = ""
+                                    wordTypingResult.clear()
+                                }
+                            }
+                        }
+                        // 用户输入的单词完全正确
+                        if (wordTypingResult.size == word.value.length && done) {
+                            // 输入完全正确
+                            state.correctCount = state.correctCount + 1
+                            playSuccessSound()
+                            if (state.isDictation) chapterCorrectTime++
+                            if (state.typing.isAuto) {
+                                Timer("cleanInputChar", false).schedule(50) {
+                                    toNext()
+                                    wordTextFieldValue = ""
+                                    wordTypingResult.clear()
+                                }
+                            } else {
+                                correctTime++
+                                Timer("cleanInputChar", false).schedule(50) {
+                                    wordTypingResult.clear()
+                                    wordTextFieldValue = ""
+                                }
+                            }
+                        }
+                    }
+                }
+
+                /**
+                 * 检查输入的英语定义
+                 */
+                val checkDefinitionInput: (String) -> Unit = { input ->
+                    definitionTextFieldValue = input
+                    definitionTypingResult.clear()
+                    // TODO 如果定义超过10行？
+                    if (input.length <= word.definition.length) {
+                        val chars = input.toList()
+                        for (i in chars.indices) {
+                            val char = chars[i]
+                            if (char == word.definition[i]) {
+                                definitionTypingResult.add(Pair(char, true))
+                            } else {
+                                definitionTypingResult.add(Pair(char, false))
+                            }
+                        }
+
+                        if (input.length == word.definition.length) {
+                            Timer("cleanInputChar", false).schedule(50) {
+                                definitionTextFieldValue = ""
+                                definitionTypingResult.clear()
+                            }
+                        }
+
+                    }
+                }
+
+                /**
+                 * 检查输入的字幕
+                 */
+                val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
+                    captionsTextFieldValueList[index] = input
+                    val typingResult = captionsTypingResultMap[index]
+                    typingResult!!.clear()
+                    if (input.length <= captionContent.length) {
+                        val chars = input.toList()
+                        for (i in chars.indices) {
+                            val char = chars[i]
+                            if (char == captionContent[i]) {
+                                typingResult.add(Pair(char, true))
+                            } else {
+                                typingResult.add(Pair(char, false))
+                            }
+                        }
+                        if (input.length == captionContent.length) {
+                            Timer("cleanInputChar", false).schedule(50) {
+                                captionsTextFieldValueList[index] = ""
+                                typingResult.clear()
+                            }
+
+                        }
+
+                    }
+
+                }
+                WordComponents(
+                    state = state,
+                    word = word,
+                    correctTime = correctTime,
+                    wrongTime = wrongTime,
+                    toNext = { toNext() },
+                    dictationSkip = {dictationSkipCurrentWord()},
+                    textFieldValue = wordTextFieldValue,
+                    typingResult = wordTypingResult,
+                    checkTyping = { checkWordInput(it) },
+                    showChapterFinishedDialog = showChapterFinishedDialog,
+                    changeShowChapterFinishedDialog = { showChapterFinishedDialog = it },
+                    showEditWordDialog = showEditWordDialog,
+                    setShowEditWordDialog = { showEditWordDialog = it },
+                    isVocabularyFinished = isVocabularyFinished,
+                    setIsVocabularyFinished = { isVocabularyFinished = it },
+                    chapterCorrectTime = chapterCorrectTime,
+                    chapterWrongTime = chapterWrongTime,
+                    dictationWrongWords = dictationWrongWords,
+                    resetChapterTime = resetChapterTime,
+                    playKeySound = { playKeySound() },
+                )
+                Phonetic(
+                    word = word,
+                    phoneticVisible = state.typing.phoneticVisible
+                )
+                Morphology(
+                    word = word,
+                    isPlaying = state.isPlaying,
+                    morphologyVisible = state.typing.morphologyVisible
+                )
+                Definition(
+                    word = word,
+                    definitionVisible = state.typing.definitionVisible,
+                    isPlaying = state.isPlaying,
+                    textFieldValue = definitionTextFieldValue,
+                    typingResult = definitionTypingResult,
+                    checkTyping = { checkDefinitionInput(it) },
+                    playKeySound = { playKeySound() },
+                )
+                Translation(
+                    word = word,
+                    translationVisible = state.typing.translationVisible,
+                    isPlaying = state.isPlaying
+                )
+
+                val videoSize = videoBounds.size
+                val startPadding = if (state.isPlaying) 0.dp else 50.dp
+                val captionsModifier = Modifier
+                    .fillMaxWidth()
+                    .height(intrinsicSize = IntrinsicSize.Max)
+                    .padding(bottom = 0.dp, start = startPadding)
+                    .onPreviewKeyEvent {
+                        if ((it.key == Key.Enter || it.key == Key.NumPadEnter)
+                            && it.type == KeyEventType.KeyUp
+                        ) {
+                            toNext()
+                            true
+                        } else false
+                    }
+                Captions(
+                    captionsVisible = state.typing.subtitlesVisible,
+                    playTripleMap = getPlayTripleMap(state, word),
+                    vocabularyType = state.vocabulary.type,
+                    videoPlayerWindow = state.videoPlayerWindow,
+                    isPlaying = state.isPlaying,
+                    volume = state.typing.audioVolume,
+                    setIsPlaying = { state.isPlaying = it },
+                    word = word,
+                    isEditing = false,
+                    bounds = videoBounds,
+                    textFieldValueList = captionsTextFieldValueList,
+                    typingResultMap = captionsTypingResultMap,
+                    putTypingResultMap = { index, list ->
+                        captionsTypingResultMap[index] = list
+                    },
+                    checkTyping = { index, input, captionContent ->
+                        checkCaptionsInput(index, input, captionContent)
+                    },
+                    playKeySound = { playKeySound() },
+                    modifier = captionsModifier,
+                )
+                if (state.isPlaying) Spacer(Modifier.height((videoSize.height).dp).width(videoSize.width.dp))
             }
+
         }
     } else {
         Surface(Modifier.fillMaxSize()) {

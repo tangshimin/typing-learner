@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -66,9 +68,15 @@ fun main() = application {
     val state = rememberAppState()
     UpdateFlatLaf(state.typing.darkTheme, state)
 
+
+    val defaultSelectionColor = Color(0xFF4286F4)
+    val backgroundColor = defaultSelectionColor.copy(alpha = 0.4f)
+    val textSelectionColors =
+        TextSelectionColors(handleColor = defaultSelectionColor, backgroundColor = backgroundColor)
     CompositionLocalProvider(
         LocalMediaPlayerComponent provides rememberMediaPlayerComponent(),
-        LocalCtrl provides rememberCtrl()
+        LocalCtrl provides rememberCtrl(),
+        LocalTextSelectionColors provides textSelectionColors
     ) {
         val mediaPlayerComponent = LocalMediaPlayerComponent.current
         val windowState = rememberWindowState(
