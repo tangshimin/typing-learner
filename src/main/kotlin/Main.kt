@@ -53,7 +53,7 @@ import javax.swing.filechooser.FileSystemView
 fun main() = application {
     var isOpen by remember { mutableStateOf(true) }
     val state = rememberAppState()
-    UpdateFlatLaf(state.typing.darkTheme, state)
+    UpdateFlatLaf(state.typing.isDarkTheme, state)
 
 
     val defaultSelectionColor = Color(0xFF4286F4)
@@ -89,7 +89,7 @@ fun main() = application {
                     mediaPlayerComponent.mediaPlayer().release()
                 },
             ) {
-                MaterialTheme(colors = if (state.typing.darkTheme) DarkColorScheme else LightColorScheme) {
+                MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                     WindowMenuBar(state)
                     MenuDialogs(state)
                     // 视频播放器的位置，大小
@@ -318,7 +318,7 @@ fun globalShortcuts(
             true
         }
         (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
-            state.typing.darkTheme = !state.typing.darkTheme
+            state.typing.isDarkTheme = !state.typing.isDarkTheme
             true
         }
         (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
@@ -392,11 +392,11 @@ fun globalShortcuts(
         }
 
         (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
-            state.typing.keystrokeSound = !state.typing.keystrokeSound
+            state.typing.isPlayKeystrokeSound = !state.typing.isPlayKeystrokeSound
             true
         }
         (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
-            state.typing.soundTips = !state.typing.soundTips
+            state.typing.isPlaySoundTips = !state.typing.isPlaySoundTips
             true
         }
         (it.isCtrlPressed && it.key == Key.One && it.type == KeyEventType.KeyUp) -> {

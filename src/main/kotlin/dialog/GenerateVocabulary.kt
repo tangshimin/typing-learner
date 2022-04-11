@@ -180,7 +180,7 @@ fun GenerateVocabulary(
 
                 val left = ComposePanel()
                 left.setContent {
-                    MaterialTheme(colors = if (state.typing.darkTheme) DarkColorScheme else LightColorScheme) {
+                    MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                         Column {
                             FilterVocabulary(
                                 notBncFilter = notBncFilter,
@@ -215,7 +215,7 @@ fun GenerateVocabulary(
                     CompositionLocalProvider(
                         LocalMediaPlayerComponent provides rememberMediaPlayerComponent(),
                     ) {
-                        MaterialTheme(colors = if (state.typing.darkTheme) DarkColorScheme else LightColorScheme) {
+                        MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                             Column(
                                 Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
                             ) {
@@ -327,7 +327,7 @@ fun GenerateVocabulary(
                 val bottomPanel = ComposePanel()
                 bottomPanel.setSize(Int.MAX_VALUE, 54)
                 bottomPanel.setContent {
-                    MaterialTheme(colors = if (state.typing.darkTheme) DarkColorScheme else LightColorScheme) {
+                    MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                         Column(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.Center,

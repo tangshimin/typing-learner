@@ -3,7 +3,6 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
-import androidx.compose.ui.res.useResource
 import components.flatlaf.InitializeFileChooser
 import data.Caption
 import data.Word
@@ -27,19 +26,19 @@ import javax.swing.JFrame
 @ExperimentalSerializationApi
 @Serializable
 data class TypingState(
-    val darkTheme: Boolean = true,
-    val speedVisible: Boolean = false,
+    val isDarkTheme: Boolean = true,
     val wordVisible: Boolean = true,
-    val morphologyVisible: Boolean = true,
-    val subtitlesVisible: Boolean = false,
-    val translationVisible: Boolean = true,
-    val definitionVisible: Boolean = true,
-    val keystrokeSound: Boolean = true,
-    val keystrokeVolume: Float = 0.75F,
-    val soundTips: Boolean = true,
-    val soundTipsVolume: Float = 0.7F,
-    val audioVolume: Float = 0.8F,
     val phoneticVisible: Boolean = true,
+    val morphologyVisible: Boolean = true,
+    val definitionVisible: Boolean = true,
+    val translationVisible: Boolean = true,
+    val subtitlesVisible: Boolean = false,
+    val speedVisible: Boolean = false,
+    val isPlayKeystrokeSound: Boolean = true,
+    val keystrokeVolume: Float = 0.75F,
+    val isPlaySoundTips: Boolean = true,
+    val soundTipsVolume: Float = 0.6F,
+    val audioVolume: Float = 0.8F,
     val pronunciation: String = "us",
     val isAuto: Boolean = false,
     val index: Int = 0,
@@ -49,19 +48,14 @@ data class TypingState(
 )
 
 /**
- * 可观察的状态
+ * 把持久化的状态变成可观察的状态
  */
 @OptIn(ExperimentalSerializationApi::class)
 class MutableTypingState(typingState: TypingState) {
     /**
      * 是否是深色模式
      */
-    var darkTheme by mutableStateOf(typingState.darkTheme)
-
-    /**
-     * 速度组件的可见性
-     */
-    var speedVisible by mutableStateOf(typingState.speedVisible)
+    var isDarkTheme by mutableStateOf(typingState.isDarkTheme)
 
     /**
      * 单词组件的可见性
@@ -69,14 +63,13 @@ class MutableTypingState(typingState: TypingState) {
     var wordVisible by mutableStateOf(typingState.wordVisible)
 
     /**
+     * 音标组件的可见性
+     */
+    var phoneticVisible by mutableStateOf(typingState.phoneticVisible)
+    /**
      * 词型组件的可见性
      */
     var morphologyVisible by mutableStateOf(typingState.morphologyVisible)
-
-    /**
-     * 翻译组件的可见性
-     */
-    var translationVisible by mutableStateOf(typingState.translationVisible)
 
     /**
      * 定义组件的可见性
@@ -84,14 +77,24 @@ class MutableTypingState(typingState: TypingState) {
     var definitionVisible by mutableStateOf(typingState.definitionVisible)
 
     /**
+     * 翻译组件的可见性
+     */
+    var translationVisible by mutableStateOf(typingState.translationVisible)
+
+    /**
      * 字幕组件的可见性
      */
     var subtitlesVisible by mutableStateOf(typingState.subtitlesVisible)
 
     /**
+     * 速度组件的可见性
+     */
+    var speedVisible by mutableStateOf(typingState.speedVisible)
+
+    /**
      * 是否播放按键音效
      */
-    var keystrokeSound by mutableStateOf(typingState.keystrokeSound)
+    var isPlayKeystrokeSound by mutableStateOf(typingState.isPlayKeystrokeSound)
 
     /**
      * 按键音效音量
@@ -101,7 +104,7 @@ class MutableTypingState(typingState: TypingState) {
     /**
      * 是否播放提示音
      */
-    var soundTips by mutableStateOf(typingState.soundTips)
+    var isPlaySoundTips by mutableStateOf(typingState.isPlaySoundTips)
 
     /**
      * 提示音音量
@@ -112,11 +115,6 @@ class MutableTypingState(typingState: TypingState) {
      * 音视频音量
      */
     var audioVolume by mutableStateOf(typingState.audioVolume)
-
-    /**
-     * 音标组件的可见性
-     */
-    var phoneticVisible by mutableStateOf(typingState.phoneticVisible)
 
     /**
      * 选择发音，有英音、美音、日语
@@ -156,11 +154,13 @@ class MutableTypingState(typingState: TypingState) {
 
 @ExperimentalSerializationApi
 class AppState {
-
+    /**
+     * 应用程序的配置文件
+     */
     private val settings = composeAppResource("settings.json")
 
     /**
-     * 需要持久化的状态
+     * 配置文件保存的状态
      */
     var typing: MutableTypingState = loadTypingState()
 
@@ -249,7 +249,7 @@ class AppState {
     /**
      * 文件选择器，如果不提前加载反应会很慢
      */
-    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.darkTheme)
+    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.isDarkTheme)
 
     /**
      * 载入应用程序设置信息
@@ -289,21 +289,20 @@ class AppState {
             prettyPrint = true
             encodeDefaults = true
         }
-//        Thread(Runnable {
         val typingState = TypingState(
-            typing.darkTheme,
-            typing.speedVisible,
+            typing.isDarkTheme,
             typing.wordVisible,
+            typing.phoneticVisible,
             typing.morphologyVisible,
-            typing.subtitlesVisible,
-            typing.translationVisible,
             typing.definitionVisible,
-            typing.keystrokeSound,
+            typing.translationVisible,
+            typing.subtitlesVisible,
+            typing.speedVisible,
+            typing.isPlayKeystrokeSound,
             typing.keystrokeVolume,
-            typing.soundTips,
+            typing.isPlaySoundTips,
             typing.soundTipsVolume,
             typing.audioVolume,
-            typing.phoneticVisible,
             typing.pronunciation,
             typing.isAuto,
             typing.index,
@@ -313,8 +312,6 @@ class AppState {
         )
         val json = format.encodeToString(typingState)
         settings.writeText(json)
-//        }).start()
-
     }
 
     /**
