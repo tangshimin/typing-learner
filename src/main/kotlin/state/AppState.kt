@@ -48,26 +48,104 @@ data class TypingState(
     var vocabularyPath: String = "vocabulary/大学英语/四级.json"
 )
 
+/**
+ * 可观察的状态
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class MutableTypingState(typingState: TypingState) {
+    /**
+     * 是否是深色模式
+     */
     var darkTheme by mutableStateOf(typingState.darkTheme)
+
+    /**
+     * 速度组件的可见性
+     */
     var speedVisible by mutableStateOf(typingState.speedVisible)
+
+    /**
+     * 单词组件的可见性
+     */
     var wordVisible by mutableStateOf(typingState.wordVisible)
+
+    /**
+     * 词型组件的可见性
+     */
     var morphologyVisible by mutableStateOf(typingState.morphologyVisible)
+
+    /**
+     * 翻译组件的可见性
+     */
     var translationVisible by mutableStateOf(typingState.translationVisible)
+
+    /**
+     * 定义组件的可见性
+     */
     var definitionVisible by mutableStateOf(typingState.definitionVisible)
+
+    /**
+     * 字幕组件的可见性
+     */
     var subtitlesVisible by mutableStateOf(typingState.subtitlesVisible)
+
+    /**
+     * 是否播放按键音效
+     */
     var keystrokeSound by mutableStateOf(typingState.keystrokeSound)
+
+    /**
+     * 按键音效音量
+     */
     var keystrokeVolume by mutableStateOf(typingState.keystrokeVolume)
+
+    /**
+     * 是否播放提示音
+     */
     var soundTips by mutableStateOf(typingState.soundTips)
+
+    /**
+     * 提示音音量
+     */
     var soundTipsVolume by mutableStateOf(typingState.soundTipsVolume)
+
+    /**
+     * 音视频音量
+     */
     var audioVolume by mutableStateOf(typingState.audioVolume)
+
+    /**
+     * 音标组件的可见性
+     */
     var phoneticVisible by mutableStateOf(typingState.phoneticVisible)
+
+    /**
+     * 选择发音，有英音、美音、日语
+     */
     var pronunciation by mutableStateOf(typingState.pronunciation)
+
+    /**
+     * 是否是自动切换
+     */
     var isAuto by mutableStateOf(typingState.isAuto)
+
+    /**
+     * 当前单词的索引，从0开始，在标题栏显示的时候 +1
+     */
     var index by mutableStateOf(typingState.index)
+
+    /**
+     * 当前单词的章节，从1开始
+     */
     var chapter by mutableStateOf(typingState.chapter)
+
+    /**
+     * 词库的名称
+     */
     var vocabularyName by mutableStateOf(typingState.vocabularyName)
+
+    /**
+     * 词库的路径
+     */
     var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
 }
 
