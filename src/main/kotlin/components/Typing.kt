@@ -1,9 +1,6 @@
 package components
 
-import ConfirmationDelete
 import LocalCtrl
-import Phonetic
-import WordComponents
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -25,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -42,9 +38,8 @@ import androidx.compose.ui.window.rememberDialogState
 import data.Caption
 import data.Word
 import data.loadCaptionsMap
-import dialog.VocabularyType
+import data.VocabularyType
 import kotlinx.serialization.ExperimentalSerializationApi
-import playSound
 import player.LocalMediaPlayerComponent
 import player.isMacOS
 import player.mediaPlayer
@@ -64,6 +59,12 @@ import javax.swing.JFrame
 import javax.swing.SwingUtilities
 import kotlin.concurrent.schedule
 
+/**
+ * 应用程序的核心组件
+ * @param state 应用程序的状态
+ * @param videoBounds 视频播放窗口的位置和大小
+ * @param modifier Typing 的修改器
+ */
 @OptIn(
     ExperimentalComposeUiApi::class,
     ExperimentalFoundationApi::class,
@@ -76,7 +77,6 @@ fun Typing(
     modifier: Modifier
 ) {
     if (state.vocabulary.wordList.isNotEmpty()) {
-        val word = state.getCurrentWord()
         val defaultSelectionColor = Color(0xFF4286F4)
         val handleColor = defaultSelectionColor
         val backgroundColor = defaultSelectionColor.copy(alpha = 0.4f)
@@ -92,47 +92,121 @@ fun Typing(
                         .background(MaterialTheme.colors.background)
                         .focusable(true)
                 ) {
+                    /**
+                     * 当前正在学习的单词
+                     */
+                    val word = state.getCurrentWord()
+
+                    /**
+                     * 当前单词的正确次数
+                     */
                     var correctTime by remember { mutableStateOf(0) }
+
+                    /**
+                     * 当前单词的错误次数
+                     */
                     var wrongTime by remember { mutableStateOf(0) }
+
+                    /**
+                     * 单词输入框里的字符串
+                     */
                     var wordTextFieldValue by remember { mutableStateOf("") }
+
+                    /**
+                     * 英语定义输入框里的字符串
+                     */
                     var definitionTextFieldValue by remember { mutableStateOf("") }
+
+                    /**
+                     * 字幕输入框里的字符串列表
+                     */
                     var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
+
+                    /**
+                     * 单词输入框输入的结果
+                     */
                     val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
+
+                    /**
+                     * 英语定义输入框的结果
+                     */
                     val definitionTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
+
+                    /**
+                     * 字幕输入框的结果
+                     */
                     val captionsTypingResultMap =
                         remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
-                    // 当前章节的正确数
+
+                    /**
+                     * 当前章节的正确数，主要用于默写模式
+                     */
                     var chapterCorrectTime by remember { mutableStateOf(0F) }
-                    //  当前章节的错误数
+
+                    /**
+                     * 当前章节的错误数，主要用于默写模式
+                     */
                     var chapterWrongTime by remember { mutableStateOf(0F) }
-                    // 默写模式的错误单词
+
+                    /**
+                     * 默写模式的错误单词
+                     */
                     val dictationWrongWords = remember { mutableMapOf<Word, Int>() }
 
+                    /**
+                     * 显示本章节已经完成对话框
+                     */
                     var showChapterFinishedDialog by remember { mutableStateOf(false) }
-                    var showEditWordDialog by remember { mutableStateOf(false) }
+                    /**
+                     * 显示整个词库已经学习完成对话框
+                     */
                     var isVocabularyFinished by remember { mutableStateOf(false) }
+                    /**
+                     * 显示编辑单词对话框
+                     */
+                    var showEditWordDialog by remember { mutableStateOf(false) }
 
+
+                    /**
+                     * 播放错误音效
+                     */
                     val playBeepSound = {
                         if (state.typing.soundTips) {
                             playSound("audio/beep.wav", state.typing.soundTipsVolume)
                         }
                     }
+
+                    /**
+                     * 播放成功音效
+                     */
                     val playSuccessSound = {
                         if (state.typing.soundTips) {
                             playSound("audio/hint.wav", state.typing.soundTipsVolume)
                         }
                     }
+
+                    /**
+                     * 播放整个章节完成时音效
+                     */
                     val playChapterFinished = {
                         if (state.typing.soundTips) {
                             playSound("audio/Success!!.wav", state.typing.soundTipsVolume)
                         }
                     }
+
+                    /**
+                     * 播放按键音效
+                     */
                     val playKeySound = {
                         if (state.typing.keystrokeSound) {
                             playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
                         }
                     }
-                    // 在默写模式跳过单词也算一次错误
+
+                    /**
+                     * 当用户在默写模式按 enter 调用的回调，
+                     * 在默写模式跳过单词也算一次错误
+                     */
                     val dictationSkipCurrentWord:()->Unit = {
                         if(correctTime == 0){
                             chapterWrongTime++
@@ -142,6 +216,10 @@ fun Typing(
                             }
                         }
                     }
+
+                    /**
+                     * 切换下一个单词
+                     */
                     // TODO 切换词库的时候 当前单词的正确数和错误数没有清零
                     val toNext: () -> Unit = {
                         wordTypingResult.clear()
@@ -154,9 +232,11 @@ fun Typing(
                         wrongTime = 0
                         if (state.isDictation) {
                             if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
-                                // 在默写模式，用户刚拼写完单词，就播放这个声音感觉不好，
-                                // 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
-                                // 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
+                                /**
+                                 * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
+                                 * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
+                                 * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
+                                 */
                                 Timer("playChapterFinishedSound", false).schedule(1000) {
                                     playChapterFinished()
                                 }
@@ -179,19 +259,27 @@ fun Typing(
                             state.saveTypingState()
                         }
                     }
-                    // 重置章节计数器,清空默写模式存储的错误单词
+
+                    /**
+                     * 重置章节计数器,清空默写模式存储的错误单词
+                     */
                     val resetChapterTime: () -> Unit = {
                         chapterCorrectTime = 0F
                         chapterWrongTime = 0F
                         dictationWrongWords.clear()
                     }
 
+                    /**
+                     * 检查输入的单词
+                     */
                     val checkWordInput: (String) -> Unit = { input ->
                         wordTextFieldValue = input
                         wordTypingResult.clear()
                         var done = true
-                        // 防止用户粘贴内容，如果粘贴的内容超过 word.value 的长度，
-                        // 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
+                        /**
+                         *  防止用户粘贴内容过长，如果粘贴的内容超过 word.value 的长度，
+                         * 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
+                         */
                         if (wordTextFieldValue.length > word.value.length) {
                             wordTypingResult.clear()
                             wordTextFieldValue = ""
@@ -246,6 +334,10 @@ fun Typing(
                             }
                         }
                     }
+
+                    /**
+                     * 检查输入的英语定义
+                     */
                     val checkDefinitionInput: (String) -> Unit = { input ->
                         definitionTextFieldValue = input
                         definitionTypingResult.clear()
@@ -270,6 +362,10 @@ fun Typing(
 
                         }
                     }
+
+                    /**
+                     * 检查输入的字幕
+                     */
                     val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
                         captionsTextFieldValueList[index] = input
                         val typingResult = captionsTypingResultMap[index]
@@ -308,7 +404,7 @@ fun Typing(
                         showChapterFinishedDialog = showChapterFinishedDialog,
                         changeShowChapterFinishedDialog = { showChapterFinishedDialog = it },
                         showEditWordDialog = showEditWordDialog,
-                        changeShowEditWordDialog = { showEditWordDialog = it },
+                        setShowEditWordDialog = { showEditWordDialog = it },
                         isVocabularyFinished = isVocabularyFinished,
                         setIsVocabularyFinished = { isVocabularyFinished = it },
                         chapterCorrectTime = chapterCorrectTime,
@@ -401,7 +497,9 @@ fun Typing(
 
 }
 
-
+/**
+ * 词型组件
+ */
 @Composable
 fun Morphology(
     word: Word,
@@ -572,6 +670,9 @@ fun Morphology(
 
 }
 
+/**
+ * 英语定义组件
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Definition(
@@ -689,6 +790,9 @@ fun Definition(
     }
 }
 
+/**
+ * 中文释义组件
+ */
 @Composable
 fun Translation(
     translationVisible: Boolean,
@@ -721,7 +825,28 @@ fun Translation(
 // TODO 字幕库，是指存放在字幕文件夹里的所有词库组成的一个 Map,
 //  用户可以从这个字幕库搜索字幕，然后链接到 word 的 captions
 
-
+/** 字幕列表组件
+ * @param captionsVisible 字幕的可见性
+ * @param playTripleMap 要显示的字幕。Map 的类型参数说明：
+ * - Map 的 Int      -> index,主要用于删除字幕，和更新时间轴
+ * - Triple 的 Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
+ * - Triple 的 String   -> 字幕对应的视频地址
+ * - Triple 的 Int      -> 字幕的轨道
+ * @param vocabularyType 词库的类型
+ * @param videoPlayerWindow 视频播放窗口
+ * @param isPlaying 是否正在播放视频
+ * @param volume 音量
+ * @param setIsPlaying 设置是否正在播放视频播放的回调
+ * @param word 单词
+ * @param isEditing 是否在修改单词
+ * @param bounds 视频播放窗口的位置
+ * @param textFieldValueList 用户输入的字幕列表
+ * @param typingResultMap 用户输入字幕的结果 Map
+ * @param putTypingResultMap 添加当前的字幕到结果Map
+ * @param checkTyping 检查用户输入的回调
+ * @param playKeySound 当用户输入字幕时播放敲击键盘音效的回调
+ * @param modifier 修改器
+ */
 @ExperimentalComposeUiApi
 @Composable
 fun Captions(
@@ -806,11 +931,12 @@ fun Captions(
 }
 
 /**
- * Map 的类型参数说明：
+ * 获取字幕
+ * @return Map 的类型参数说明：
  * Int      -> index,主要用于删除字幕，和更新时间轴
- * Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
- * String   -> 字幕对应的视频地址
- * Int      -> 字幕的轨道
+ * - Triple 的 Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
+ * - Triple 的 String   -> 字幕对应的视频地址
+ * - Triple 的 Int      -> 字幕的轨道
  */
 @OptIn(ExperimentalSerializationApi::class)
 fun getPlayTripleMap(state: AppState, word: Word): Map<Int, Triple<Caption, String, Int>> {
@@ -846,6 +972,26 @@ fun secondsToString(seconds: Double): String {
     )
 }
 
+/**
+ * 字幕组件
+ * @param videoPlayerWindow 视频播放窗口
+ * @param setIsPlaying 设置是否正在播放视频的回调
+ * @param isEditing 是否正在编辑单词
+ * @param deleteCaption 删除当前字幕的回调
+ * @param onChangeTime 设置当前字幕的时间轴的回调
+ * @param volume 音量
+ * @param captionContent 字幕的内容
+ * @param textFieldValue 输入的字幕
+ * @param typingResult 输入字幕的结果
+ * @param checkTyping 输入字幕后被调用的回调
+ * @param playKeySound 当用户输入字幕时播放敲击键盘音效的回调
+ * @param index 当前字幕的索引
+ * @param playTriple 用于播放当前字幕的相关信息：
+ * - Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
+ * - String   -> 字幕对应的视频地址
+ * - Int      -> 字幕的轨道
+ * @param bounds 视频播放器的位置和大小
+ */
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
     ExperimentalComposeUiApi::class
@@ -1109,7 +1255,14 @@ fun Caption(
 
 }
 
-
+/**
+ * 调整字幕时间轴
+ * @param index 字幕的索引
+ * @param volume 音量
+ * @param close 点击取消后调用的回调
+ * @param confirm 点击确定后调用的回调
+ * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @ExperimentalComposeUiApi
 @Composable
@@ -1136,25 +1289,48 @@ fun SettingTimeLine(
             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
         ) {
             Column(Modifier.fillMaxSize()) {
+                /**
+                 * 视频播放组件
+                 */
                 val mediaPlayerComponent = LocalMediaPlayerComponent.current
+
+                /**
+                 * 字幕内容
+                 */
                 val caption = playTriple.first
+
+                /**
+                 * 视频地址
+                 */
                 val relativeVideoPath = playTriple.second
+
+                /**
+                 * 字幕轨道 ID
+                 */
                 val trackId = playTriple.third
-                // 单位是秒
+
+                /**
+                 * 当前字幕的开始时间，单位是秒
+                 */
                 var start by remember {
                     mutableStateOf(
                         LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
                             .toNanoOfDay().toDouble().div(1000_000_000)
                     )
                 }
-                // 单位是秒
+                /**
+                 * 当前字幕的结束时间，单位是秒
+                 */
                 var end by remember {
                     mutableStateOf(
                         LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
                             .toNanoOfDay().toDouble().div(1000_000_000)
                     )
                 }
-                // 精度
+
+                /**
+                 * 调整时间轴的精度
+                 */
                 var precise by remember { mutableStateOf("1S") }
 
                 mediaPlayerComponent.mediaPlayer().events()
@@ -1302,6 +1478,13 @@ fun SettingTimeLine(
     }
 }
 
+/**
+ * 调整时间轴的开始或结束时间
+ * @param time 时间
+ * @param addTime 点击增加按钮后调用的回调
+ * @param minusTime 点击减少按钮后调用的回调
+ * @param precise 调整精度
+ */
 @Composable
 fun TimeControl(
     time: Double,
@@ -1309,7 +1492,6 @@ fun TimeControl(
     minusTime: (Float) -> Unit,
     precise: String,
 ) {
-//    val duration = Duration.ofMillis((time * 1000).toLong())
     Text(text = secondsToString(time))
     Column {
         Icon(Icons.Filled.Add,
@@ -1365,68 +1547,15 @@ fun TimeControl(
     }
 }
 
-@Composable
-fun VideoPlayer(
-    visible: Boolean,
-    close: () -> Unit,
-    setIsPlaying: (Boolean) -> Unit,
-    volume: Float,
-    playTriple: Triple<Caption, String, Int>,
-    mediaPlayerComponent: Component,
-    bounds: Rectangle
-) {
-    Dialog(
-        visible = visible,
-        title = "播放视频",
-        icon = painterResource("logo/logo.svg"),
-        onCloseRequest = {close()},
-        undecorated = true,
-        resizable = false,
-        state = rememberDialogState(
-            position = WindowPosition((bounds.x).dp, (bounds.y).dp),
-            size = DpSize((bounds.width).dp, (bounds.height).dp)
-        ),
-    ) {
-
-            val caption = playTriple.first
-            val relativeVideoPath = playTriple.second
-            val trackId = playTriple.third
-
-            var start =
-                LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
-            start = start.div(1000_000_000)
-            var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
-            end = end.div(1000_000_000)
-            mediaPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
-
-            mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-                override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                    mediaPlayer.audio().setVolume((volume * 100).toInt())
-                }
-
-                override fun finished(mediaPlayer: MediaPlayer) {
-                    setIsPlaying(false)
-//                    window.isVisible = false
-                    close()
-                    mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-                }
-            })
-
-            SwingPanel(
-                modifier = Modifier.fillMaxSize(),
-                factory = {
-                    mediaPlayerComponent
-
-                }
-            )
-            SideEffect {
-                mediaPlayerComponent.mediaPlayer().media()
-                    .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
-            }
-    }
-}
-
-// 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
+/**
+ * @param window 视频播放窗口
+ * @param setIsPlaying 设置是否正在播放视频
+ * @param volume 音量
+ * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+ * @param mediaPlayerComponent 视频播放组件
+ * @param bounds 视频播放窗口的位置和大小
+ * 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
+ */
 fun play(
     window:JFrame,
     setIsPlaying: (Boolean) -> Unit,
@@ -1517,6 +1646,9 @@ fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
     return Rectangle(point, size)
 }
 
+/**
+ * 计算视频播放窗口的位置和大小
+ */
 fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectangle {
     val mainX = windowState.position.x.value.toInt()
     val mainY = windowState.position.y.value.toInt()
@@ -1539,9 +1671,15 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
     return Rectangle(point, size)
 }
 
+/**
+ * 根据 index 返回字幕信息
+ */
 @OptIn(ExperimentalSerializationApi::class)
 fun getCaption(state: AppState, index: Int): Triple<Caption, String, Int>? {
-    // (subtitlePath)[videoPath][subtitleTrackId][index]
+    /**
+     * 字幕链接的模式
+     * (subtitlePath)[videoPath][subtitleTrackId][index]
+     */
     val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
     val word = state.getCurrentWord().value
     val item = state.getCurrentWord().links[index]

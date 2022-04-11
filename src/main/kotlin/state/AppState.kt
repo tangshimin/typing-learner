@@ -81,38 +81,83 @@ class AppState {
 
     private val settings = composeAppResource("settings.json")
 
-    //Serializable State
+    /**
+     * 需要持久化的状态
+     */
     var typing: MutableTypingState = loadTypingState()
 
+    /**
+     * 视频播放窗口
+     */
     var videoPlayerWindow = createVideoPlayerWindow()
-
+    /**
+     * 词库
+     */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
-
-    // subtitleName to captionsMap (word.value to word.captions)
+    /**
+     * 链接的视频或字幕词库 Map
+     * subtitleName to captionsMap (word.value to word.captions)
+     */
     var captionsMap = mutableMapOf<String, HashMap<String, List<Caption>>>()
 
-    // 默写模式
+    /**
+     * 是否是默写模式
+     */
     var isDictation by mutableStateOf(false)
+    /**
+     * 默写模式 -> 复习错误单词模式
+     */
     var isReviewWrongList by mutableStateOf(false)
+    /**
+     * 默写的单词
+     */
     var dictationWords = listOf<Word>()
-    var dictationIndex by mutableStateOf(0)
 
-    // 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复
+    /**
+     * 默写模式的索引
+     */
+    var dictationIndex by mutableStateOf(0)
+    /**
+     * 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复
+     */
     private var typingStateMap: MutableMap<String, Boolean> = mutableMapOf()
 
-
+     /**
+      * 是否正在播放视频
+      */
     var isPlaying by mutableStateOf(false)
+    /**
+     * 是否打开选择章节窗口
+     */
     var openSelectChapter by mutableStateOf(false)
+
+    /**
+     * 打开设置
+     */
     var openSettings by mutableStateOf(false)
 
-    //  page
-    var selectVocabulary by mutableStateOf(false)
+    /**
+     * 是否显示等待窗口
+     */
     var loadingFileChooserVisible by mutableStateOf(false)
+
+    /**
+     * 是否显示【从文档生成词库】窗口
+     */
     var generateVocabularyFromDocument by mutableStateOf(false)
+
+    /**
+     * 是否显示【从字幕文件生成词库】窗口
+     */
     var generateVocabularyFromSubtitles by mutableStateOf(false)
+
+    /**
+     * 是否显示【从 MKV 生成词库】 窗口
+     */
     var generateVocabularyFromMKV by mutableStateOf(false)
 
 
+    // TODO 这些状态可以封装起来
     // Speed
     var isStart by mutableStateOf(false)
     var inputCount by mutableStateOf(0)
@@ -123,10 +168,14 @@ class AppState {
     var autoPauseTimer by mutableStateOf(Timer())
 
 
-    // FileChooser
+    /**
+     * 文件选择器，如果不提前加载反应会很慢
+     */
     var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.darkTheme)
 
-
+    /**
+     * 载入应用程序设置信息
+     */
     private fun loadTypingState(): MutableTypingState {
         if (settings.exists()) {
             val typingState = Json.decodeFromString<TypingState>(settings.readText())
@@ -136,7 +185,9 @@ class AppState {
     }
 
 
-
+    /**
+     * 初始化视频播放窗口
+     */
     @OptIn(ExperimentalComposeUiApi::class)
     private fun createVideoPlayerWindow(): JFrame {
         val window = JFrame()
@@ -151,6 +202,9 @@ class AppState {
     }
 
 
+    /**
+     * 保存应用程序设置信息
+     */
     @OptIn(ExperimentalComposeUiApi::class)
     fun saveTypingState() {
         val format = Json {
@@ -185,6 +239,9 @@ class AppState {
 
     }
 
+    /**
+     * 获得当前单词
+     */
     fun getCurrentWord(): Word {
         if (isDictation) {
             return dictationWords[dictationIndex]
@@ -192,6 +249,9 @@ class AppState {
         return getWord(typing.index)
     }
 
+    /**
+     * 根据索引返回单词
+     */
     private fun getWord(index: Int): Word {
         val size = vocabulary.wordList.size
         return if (index in 0..size) {
@@ -204,14 +264,17 @@ class AppState {
 
     }
 
-    /*
-    1 -> 0,19
-    2 -> 20,39
-    3 -> 40,59
-    if chapter == 2
-    start = 2 * 20 -20, end = 2 * 20  -1
-    if chapter == 3
-    start = 3 * 20 -20, end = 3 * 20 - 1
+
+    /**
+     * 为默写模式创建一个随机词汇表
+     - 伪代码
+     - 1 -> 0,19
+     - 2 -> 20,39
+     - 3 -> 40,59
+     - if chapter == 2
+     - start = 2 * 20 -20, end = 2 * 20  -1
+     - if chapter == 3
+     - start = 3 * 20 -20, end = 3 * 20 - 1
      */
     fun generateDictationWords(currentWord: String): List<Word> {
         val start = typing.chapter * 20 - 20
@@ -226,6 +289,9 @@ class AppState {
     }
 
 
+    /**
+     * 进入默写模式，进入默写模式要保存好当前的状态，退出默写模式后再恢复
+     */
     fun enterDictationMode() {
         val currentWord = getCurrentWord().value
         dictationWords = generateDictationWords(currentWord)
@@ -250,6 +316,9 @@ class AppState {
         isDictation = true
     }
 
+    /**
+     * 退出默写模式，恢复应用状态
+     */
     fun exitDictationMode() {
         // 恢复状态
         typing.isAuto = typingStateMap["isAuto"]!!
@@ -264,8 +333,9 @@ class AppState {
         isReviewWrongList = false
     }
 
-    
-    // 复习错误单词，还是在默写模式，并且利用了默写模式的单词列表。
+    /**
+     * 进入复习错误单词模式，复习错误单词模式属于默写模式的子模式，并且利用了默写模式的单词列表。
+     */
     fun enterReviewMode(reviewList: List<Word>) {
         // 先把 typing 的状态恢复
         exitDictationMode()
@@ -285,10 +355,11 @@ fun rememberAppState() = remember {
 }
 
 /**
-相关链接：#938 https://github.com/JetBrains/compose-jb/issues/938
-#938 的测试代码的地址
-https://github.com/JetBrains/compose-jb/blob/3070856954d4c653ea13a73aa77adb86a2788c66/gradle-plugins/compose/src/test/test-projects/application/resources/src/main/kotlin/main.kt
- 如果 System.getProperty("compose.application.resources.dir") 为 null,说明还没有打包
+ * 载入资源，资源在打包之前和打包之后的路径是不一样的
+- 相关链接：#938 https://github.com/JetBrains/compose-jb/issues/938
+- #938 的测试代码的地址
+- https://github.com/JetBrains/compose-jb/blob/3070856954d4c653ea13a73aa77adb86a2788c66/gradle-plugins/compose/src/test/test-projects/application/resources/src/main/kotlin/main.kt
+- 如果 System.getProperty("compose.application.resources.dir") 为 null,说明还没有打包
  */
 fun composeAppResource(path: String): File {
     val property = "compose.application.resources.dir"
@@ -296,13 +367,14 @@ fun composeAppResource(path: String): File {
     return if (dir != null) {
         //打包之后的环境
         File(dir).resolve(path)
-    } else {
-        // 开发环境
+    } else {// 开发环境
         // 通用资源
         var file = File("resources/common/$path")
+        // window 操作系统专用资源
         if (!file.exists()) {
             file = File("resources/windows/$path")
         }
+        // macOS 操作系统专用资源
         if (!file.exists() && isMacOS()) {
             file = File("resources/macOS/$path")
         }
@@ -310,6 +382,10 @@ fun composeAppResource(path: String): File {
     }
 }
 
+/**
+ * 获得资源文件
+ * @param path 文件路径
+ */
 // TODO 调用这个方法的地方都有加错误处理
 fun getResourcesFile(path: String): File? {
     var file: File? = null

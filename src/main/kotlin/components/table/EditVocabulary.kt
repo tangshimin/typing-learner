@@ -37,7 +37,7 @@
 //import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon
 //import components.play
 //import data.*
-//import dialog.VocabularyType
+//import data.VocabularyType
 //import kotlinx.serialization.ExperimentalSerializationApi
 //import player.LocalMediaPlayerComponent
 //import player.rememberMediaPlayerComponent

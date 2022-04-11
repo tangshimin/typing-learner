@@ -1,3 +1,5 @@
+package components
+
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -29,8 +31,6 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import components.Captions
-import components.getPlayTripleMap
 import data.Dictionary
 import data.Word
 import data.saveVocabulary
@@ -47,7 +47,26 @@ import javax.sound.sampled.DataLine
 import javax.sound.sampled.FloatControl
 import kotlin.concurrent.fixedRateTimer
 
-
+/** 单词组件
+ * @param state 应用程序的状态
+ * @param word 单词
+ * @param correctTime 单词的正确数
+ * @param wrongTime 单词的错误数
+ * @param toNext 当切换到下一个单词时被调用的回调
+ * @param dictationSkip 当用户在默写模式按 Enter 键被调用的回调
+ * @param textFieldValue 用户输入的字符串
+ * @param typingResult 用户输入字符的结果
+ * @param checkTyping 检查用户的输入是否正确的回调
+ * @param showChapterFinishedDialog 是否显示当前单元已经完成对话框
+ * @param setShowEditWordDialog 设置是否显示当前单元已经完成对话框
+ * @param isVocabularyFinished 是否整个词库都已经学习完
+ * @param setIsVocabularyFinished 设置是否整个词库都已经学习完
+ * @param chapterCorrectTime 整个章节的正确数，在默写模式时使用
+ * @param chapterWrongTime 整个章节的错误数，在默写模式时使用
+ * @param dictationWrongWords 默写模式的错误单词
+ * @param resetChapterTime 默写结束时被调用的回调，用于清理  [chapterWrongTime] 和 [resetChapterTime] 和 [dictationWrongWords]
+ * @param playKeySound 播放敲击键盘的音效
+ */
 @OptIn(ExperimentalFoundationApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
@@ -65,7 +84,7 @@ fun WordComponents(
     showChapterFinishedDialog: Boolean,
     changeShowChapterFinishedDialog: (Boolean) -> Unit,
     showEditWordDialog: Boolean,
-    changeShowEditWordDialog: (Boolean) -> Unit,
+    setShowEditWordDialog: (Boolean) -> Unit,
     isVocabularyFinished: Boolean,
     setIsVocabularyFinished: (Boolean) -> Unit,
     chapterCorrectTime: Float,
@@ -74,7 +93,7 @@ fun WordComponents(
     resetChapterTime: () -> Unit,
     playKeySound: () -> Unit,
 
-) {
+    ) {
     val wordValue = word.value
     val focusRequester = remember { FocusRequester() }
     var lastInputTime by remember { mutableStateOf(0L) }
@@ -317,7 +336,7 @@ fun WordComponents(
                     )
                 ) {
                     IconButton(onClick = {
-                        changeShowEditWordDialog(true)
+                        setShowEditWordDialog(true)
                     }) {
                         Icon(
                             Icons.Filled.Edit,
@@ -340,9 +359,9 @@ fun WordComponents(
                                     state.vocabulary.vocabulary,
                                     state.typing.vocabularyPath
                                 )
-                                changeShowEditWordDialog(false)
+                                setShowEditWordDialog(false)
                             },
-                            close = { changeShowEditWordDialog(false) }
+                            close = { setShowEditWordDialog(false) }
                         )
                     }
                 }
@@ -380,12 +399,17 @@ fun WordComponents(
     }
 
 
+    /**
+     * 索引递减
+     */
     val decreaseIndex = {
         if (state.vocabulary.size > 19) state.typing.index -= 19
         else state.typing.index = 0
     }
 
-    //正确率
+    /**
+     * 计算正确率
+     */
     val correctRate: () -> Float = {
         if (chapterCorrectTime == 0F) {
             0F
@@ -400,13 +424,18 @@ fun WordComponents(
 
     }
 
-    // 重复学习本章
+    /**
+     * 重复学习本章
+     */
     val learnAgain: () -> Unit = {
         decreaseIndex()
         resetChapterTime()
         changeShowChapterFinishedDialog(false)
     }
-    // 复习错误单词
+
+    /**
+     * 复习错误单词
+     */
     val reviewWrongWords: () -> Unit = {
         val reviewList = dictationWrongWords.keys.toList()
         if (reviewList.isNotEmpty()) {
@@ -415,7 +444,10 @@ fun WordComponents(
             changeShowChapterFinishedDialog(false)
         }
     }
-    // 下一章
+
+    /**
+     * 下一章
+     */
     val nextChapter: () -> Unit = {
         if (state.isDictation) state.exitDictationMode()
         state.typing.index += 1
@@ -424,7 +456,10 @@ fun WordComponents(
         state.saveTypingState()
         changeShowChapterFinishedDialog(false)
     }
-    // 默写模式
+
+    /**
+     * 进入默写模式
+     */
     val enterDictation: () -> Unit = {
         // 正常地进入默写模式，或从复习错误单词进入默写模式
         if (!state.isDictation || state.isReviewWrongList) {
@@ -439,7 +474,11 @@ fun WordComponents(
         resetChapterTime()
         changeShowChapterFinishedDialog(false)
     }
-    // 重置索引
+
+    /**
+     * 重置索引
+     * @param isShuffle 是否打乱词库
+     */
     val resetIndex: (isShuffle: Boolean) -> Unit = { isShuffle ->
 
         state.typing.index = 0
@@ -475,6 +514,9 @@ fun WordComponents(
 
 }
 
+/**
+ * 音标组件
+ */
 @Composable
 fun Phonetic(
     word: Word,
@@ -508,6 +550,13 @@ fun Phonetic(
     }
 }
 
+/**
+ * 编辑当前单词
+ * @param word 当前单词
+ * @param state 应用程序的状态
+ * @param save 点击保存之后调用的回调
+ * @param close 点击取消之后调用的回调
+ */
 @OptIn(ExperimentalComposeUiApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
 @Composable
 fun EditWord(
@@ -723,6 +772,12 @@ fun EditWord(
     }
 }
 
+/**
+ * 确认删除对话框
+ * @param message 要显示的消息
+ * @param confirm 点击确认之后调用的回调
+ * @param close 点击取消之后调用的回调
+ */
 @ExperimentalComposeUiApi
 @Composable
 fun ConfirmationDelete(message: String, confirm: () -> Unit, close: () -> Unit) {
@@ -769,6 +824,11 @@ fun ConfirmationDelete(message: String, confirm: () -> Unit, close: () -> Unit) 
     }
 }
 
+/**
+ * 播放音效
+ * @param path 路径
+ * @param volume 音量
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 fun playSound(path: String, volume: Float) {
     try {
@@ -784,8 +844,6 @@ fun playSound(path: String, volume: Float) {
             gainControl.value = value
             clip.start()
         }
-
-
     } catch (e: Exception) {
         e.printStackTrace()
     }

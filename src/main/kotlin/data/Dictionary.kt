@@ -9,7 +9,6 @@ import java.sql.SQLException
  *
  * 从 stardict.csv 文件 导入数据库
  */
-//
 const val CREATE_STARDICT = "CREATE TABLE IF NOT EXISTS stardict" +
         "(word VARCHAR(255) NOT NULL UNIQUE , " +
         " phonetic VARCHAR(255), " +
@@ -32,7 +31,6 @@ const val CREATE_STARDICT = "CREATE TABLE IF NOT EXISTS stardict" +
  *
  * 从 stardict.csv 文件 导入数据库
  */
-
 const val CREATE_ECDICT = "CREATE TABLE IF NOT EXISTS ecdict" +
         "(word VARCHAR(255) NOT NULL UNIQUE , " +
         " phonetic VARCHAR(255), " +
@@ -50,12 +48,19 @@ const val CREATE_ECDICT = "CREATE TABLE IF NOT EXISTS ecdict" +
         " PRIMARY KEY ( word ))" +
         " AS SELECT * FROM CSVREAD('file:C:/Users/tangs/OneDrive/文档/ECDICT/ecdict.csv')"
 
-// 创建索引
+/**
+ * 创建索引
+ */
 const val WORD_INDEX_STARDICT = "CREATE INDEX IF NOT EXISTS word_index ON stardict(word)"
 const val WORD_INDEX_ECDICT = "CREATE INDEX IF NOT EXISTS word_index ON ecdict(word)"
+/**
+ * 删除索引
+ */
 const val DROP_INDEX = "DROP INDEX word_index"
 
-// JDBC driver name and database URL
+/**
+ * JDBC driver name
+ */
 const val JDBC_DRIVER = "org.h2.Driver"
 
 //  Database credentials
@@ -90,6 +95,9 @@ object Dictionary {
     }
 
 
+    /**
+     * 查询一个单词
+     */
     fun query(word: String): Word? {
         try {
             Class.forName(JDBC_DRIVER)
@@ -120,6 +128,9 @@ object Dictionary {
         return null
     }
 
+    /**
+     * 查询一个集合
+     */
     fun querySet(words: Set<String>): MutableSet<Word> {
         val results = mutableSetOf<Word>()
         try {
@@ -156,6 +167,9 @@ object Dictionary {
         return results
     }
 
+    /**
+     * 执行更新
+     */
     fun executeUpdate(sql: String) {
         try {
             Class.forName(JDBC_DRIVER)
@@ -174,6 +188,9 @@ object Dictionary {
     }
 }
 
+/**
+ * 把结果集映射成单词
+ */
 fun mapToWord(result: ResultSet): Word {
     var value = result.getString("word")
     var phonetic = result.getString("phonetic")

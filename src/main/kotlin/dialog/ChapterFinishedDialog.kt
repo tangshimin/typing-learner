@@ -24,6 +24,21 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.Word
 
+/**
+ * 当前章节完成之后的对话框
+ * @param close 点击取消之后调用的回调函数
+ * @param correctRate 正确率
+ * @param isVocabularyFinished 是否整个词典的单词都已经学习完成
+ * @param isDictation 是否是默写模式
+ * @param isReviewWrongList 是否在复习错误单词
+ * @param dictationWrongWords 默写模式的错误单词
+ * @param enterDictation 进入默写模式后调用的回调函数
+ * @param learnAgain 选择【重复本章】后调用的回调函数
+ * @param reviewWrongWords 选择【复习错误单词】后调用的回调函数
+ * @param nextChapter 选择【下一章】后调用的回调函数
+ * @param resetIndex 选择【返回到第一章】后调用的回调函数，或者选择【随机重置词库】后调用的函数
+ * boolean 为 true 表示要随机重置词库
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @ExperimentalComposeUiApi
 @Composable

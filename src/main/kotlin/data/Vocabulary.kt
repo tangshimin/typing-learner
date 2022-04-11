@@ -1,10 +1,8 @@
 package data
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
-import dialog.VocabularyType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -15,6 +13,9 @@ import java.io.InputStreamReader
 import java.lang.Exception
 import java.nio.charset.StandardCharsets
 
+/**
+ * 词库
+ */
 @Serializable
 data class Vocabulary(
     var name: String = "",
@@ -26,6 +27,9 @@ data class Vocabulary(
     var wordList: MutableList<Word> = mutableListOf(),
 )
 
+/**
+ * 可观察的词库
+ */
 class MutableVocabulary(vocabulary: Vocabulary) {
     var name by mutableStateOf(vocabulary.name)
     var type by mutableStateOf(vocabulary.type)
@@ -40,7 +44,9 @@ class MutableVocabulary(vocabulary: Vocabulary) {
 
 }
 
-
+/**
+ * 获得可观察的单词列表
+ */
 fun getMutableStateList(wordList: MutableList<Word>): MutableList<Word> {
     val list = mutableStateListOf<Word>()
     list.addAll(wordList)
