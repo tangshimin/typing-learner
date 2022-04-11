@@ -118,18 +118,18 @@ fun WordComponents(
                 playKeySound()
                 lastInputTime = System.currentTimeMillis()
                 // 计时器
-                if (!state.isStart) {
-                    state.isStart = true
-                    state.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
-                        state.time = state.time.plusSeconds(1)
+                if (!state.speed.isStart) {
+                    state.speed.isStart = true
+                    state.speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
+                        state.speed.time = state.speed.time.plusSeconds(1)
                     }
                     // 超过一分钟没有输入自动暂停
-                    state.autoPauseTimer =
+                    state.speed.autoPauseTimer =
                         fixedRateTimer("autoPause", false, 0L, 60 * 1000) {
                             val span = System.currentTimeMillis() - lastInputTime
                             if (span > 60 * 1000) {
-                                state.isStart = false
-                                state.timer.cancel()
+                                state.speed.isStart = false
+                                state.speed.timer.cancel()
                             }
                         }
                 }

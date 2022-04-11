@@ -147,8 +147,18 @@ class MutableTypingState(typingState: TypingState) {
     var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
 }
 
-
-
+/**
+ * 速度组件可观察的状态
+ */
+class MutableSpeedState(){
+    var isStart by mutableStateOf(false)
+    var inputCount by mutableStateOf(0)
+    var correctCount by mutableStateOf(0F)
+    var wrongCount by mutableStateOf(0)
+    var time: LocalTime by mutableStateOf(LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss")))
+    var timer by mutableStateOf(Timer())
+    var autoPauseTimer by mutableStateOf(Timer())
+}
 
 
 
@@ -235,15 +245,10 @@ class AppState {
     var generateVocabularyFromMKV by mutableStateOf(false)
 
 
-    // TODO 这些状态可以封装起来
-    // Speed
-    var isStart by mutableStateOf(false)
-    var inputCount by mutableStateOf(0)
-    var correctCount by mutableStateOf(0F)
-    var wrongCount by mutableStateOf(0)
-    var time: LocalTime by mutableStateOf(LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss")))
-    var timer by mutableStateOf(Timer())
-    var autoPauseTimer by mutableStateOf(Timer())
+    /**
+     * 速度组件的状态
+     */
+    var speed = MutableSpeedState()
 
 
     /**

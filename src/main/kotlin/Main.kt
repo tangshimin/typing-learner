@@ -122,7 +122,8 @@ fun main() = application {
                                 )
                                 val speedAlignment = Alignment.TopEnd
                                 Speed(
-                                    state = state,
+                                   speedVisible = state.typing.speedVisible,
+                                    speed = state.speed,
                                     modifier = Modifier
                                         .width(IntrinsicSize.Max)
                                         .align(speedAlignment)
@@ -408,12 +409,12 @@ fun globalShortcuts(
             true
         }
         (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
-            reset(state)
+            reset(state.speed)
             true
         }
 
         (it.isCtrlPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
-            startTimer(state)
+            startTimer(state.speed)
             true
         }
 
