@@ -5,9 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -165,7 +163,7 @@ fun Typing(
                  * 播放错误音效
                  */
                 val playBeepSound = {
-                    if (state.typing.soundTips) {
+                    if (state.typing.isPlaySoundTips) {
                         playSound("audio/beep.wav", state.typing.soundTipsVolume)
                     }
                 }
@@ -174,7 +172,7 @@ fun Typing(
                  * 播放成功音效
                  */
                 val playSuccessSound = {
-                    if (state.typing.soundTips) {
+                    if (state.typing.isPlaySoundTips) {
                         playSound("audio/hint.wav", state.typing.soundTipsVolume)
                     }
                 }
@@ -183,7 +181,7 @@ fun Typing(
                  * 播放整个章节完成时音效
                  */
                 val playChapterFinished = {
-                    if (state.typing.soundTips) {
+                    if (state.typing.isPlaySoundTips) {
                         playSound("audio/Success!!.wav", state.typing.soundTipsVolume)
                     }
                 }
@@ -192,7 +190,7 @@ fun Typing(
                  * 播放按键音效
                  */
                 val playKeySound = {
-                    if (state.typing.keystrokeSound) {
+                    if (state.typing.isPlayKeystrokeSound) {
                         playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
                     }
                 }

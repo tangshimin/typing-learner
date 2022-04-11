@@ -247,9 +247,9 @@ fun TypingSidebar(state: AppState) {
                 Spacer(Modifier.width(15.dp))
                 Switch(
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                    checked = state.typing.darkTheme,
+                    checked = state.typing.isDarkTheme,
                     onCheckedChange = {
-                        state.typing.darkTheme = it
+                        state.typing.isDarkTheme = it
                         state.saveTypingState()
                     },
                     )
@@ -273,9 +273,9 @@ fun TypingSidebar(state: AppState) {
                 Spacer(Modifier.width(15.dp))
                 Switch(
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                    checked = state.typing.keystrokeSound,
+                    checked = state.typing.isPlayKeystrokeSound,
                     onCheckedChange = {
-                        state.typing.keystrokeSound = it
+                        state.typing.isPlayKeystrokeSound = it
                         state.saveTypingState()
                     },
 
@@ -299,9 +299,9 @@ fun TypingSidebar(state: AppState) {
                 Spacer(Modifier.width(15.dp))
                 Switch(
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                    checked = state.typing.soundTips,
+                    checked = state.typing.isPlaySoundTips,
                     onCheckedChange = {
-                        state.typing.soundTips = it
+                        state.typing.isPlaySoundTips = it
                         state.saveTypingState()
                     },
 
