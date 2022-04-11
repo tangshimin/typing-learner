@@ -286,7 +286,7 @@ fun Typing(
                                 // TODO 这里可以添加一个判断，如果不是英语，就不清除输入的字符
                                 done = false
                                 wordTypingResult.add(Pair(char, false))
-                                state.wrongCount = state.wrongCount + 1
+                                state.speed.wrongCount = state.speed.wrongCount + 1
                                 playBeepSound()
                                 wrongTime++
                                 if (state.isDictation) {
@@ -307,7 +307,7 @@ fun Typing(
                         // 用户输入的单词完全正确
                         if (wordTypingResult.size == word.value.length && done) {
                             // 输入完全正确
-                            state.correctCount = state.correctCount + 1
+                            state.speed.correctCount = state.speed.correctCount + 1
                             playSuccessSound()
                             if (state.isDictation) chapterCorrectTime++
                             if (state.typing.isAuto) {

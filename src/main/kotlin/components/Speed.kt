@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.ExperimentalSerializationApi
-import state.AppState
+import state.MutableSpeedState
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.concurrent.fixedRateTimer
@@ -20,8 +20,11 @@ import kotlin.concurrent.fixedRateTimer
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
-fun Speed(state: AppState, modifier: Modifier) {
-    if (state.typing.speedVisible) {
+fun Speed(
+    speedVisible:Boolean,
+    speed: MutableSpeedState,
+    modifier: Modifier) {
+    if (speedVisible) {
 
         Box(modifier = modifier) {
             Row (
@@ -39,22 +42,22 @@ fun Speed(state: AppState, modifier: Modifier) {
                     ) {
                         val textColor = MaterialTheme.colors.onBackground
 
-                        StartButton(state)
+                        StartButton(speed)
                         Spacer(Modifier.width(10.dp))
-                        ResetButton(state)
+                        ResetButton(speed)
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.width(IntrinsicSize.Max)) {
-                            var minute = state.time.toSecondOfDay().div(60F)
+                            var minute = speed.time.toSecondOfDay().div(60F)
                             if(minute<1) minute = 1F
-                            val speed = state.correctCount.div(minute).toInt()
+                            val perMinute = speed.correctCount.div(minute).toInt()
                             Row(Modifier.width(110.dp)){
                                 Text("速度:",color = textColor,)
-                                Text("${if(speed != 0) speed else ""}",color = textColor,textAlign = TextAlign.Center,modifier = Modifier.width(60.dp))
+                                Text("${if(perMinute != 0) perMinute else ""}",color = textColor,textAlign = TextAlign.Center,modifier = Modifier.width(60.dp))
                             }
                             Divider(Modifier.fillMaxWidth())
                             Row(Modifier.width(110.dp)){
                                 Text(text = "时间:",color = textColor,)
-                                Text(text = state.time.format( DateTimeFormatter.ofPattern("HH:mm:ss")),color = textColor,textAlign = TextAlign.Center)
+                                Text(text = speed.time.format( DateTimeFormatter.ofPattern("HH:mm:ss")),color = textColor,textAlign = TextAlign.Center)
                             }
                         }
 
@@ -67,9 +70,9 @@ fun Speed(state: AppState, modifier: Modifier) {
 }
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
-fun ResetButton(state: AppState) {
+fun ResetButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
-        reset(state)
+        reset(speed)
     }){
         Text(text = "重置")
     }
@@ -77,30 +80,30 @@ fun ResetButton(state: AppState) {
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
-fun StartButton(state: AppState) {
+fun StartButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
-        startTimer(state)
+        startTimer(speed)
     }){
-        Text(text = if(state.isStart) "暂停" else "开始")
+        Text(text = if(speed.isStart) "暂停" else "开始")
     }
 }
 
 
 @OptIn(ExperimentalSerializationApi::class)
-fun startTimer(state: AppState) {
-    state.isStart = !state.isStart
-    if(state.isStart){
-        state.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
-            state.time = state.time.plusSeconds(1)
+fun startTimer(speed: MutableSpeedState) {
+    speed.isStart = !speed.isStart
+    if(speed.isStart){
+        speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
+            speed.time = speed.time.plusSeconds(1)
         }
     }else{
-        state.timer.cancel()
+        speed.timer.cancel()
     }
 }
 @OptIn(ExperimentalSerializationApi::class)
- fun reset(state: AppState) {
-    state.time = LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
-    state.inputCount = 0
-    state.correctCount = 0F
-    state.wrongCount = 0
+ fun reset(speed: MutableSpeedState) {
+    speed.time = LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
+    speed.inputCount = 0
+    speed.correctCount = 0F
+    speed.wrongCount = 0
 }
