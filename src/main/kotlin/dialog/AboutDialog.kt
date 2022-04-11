@@ -20,6 +20,9 @@ import state.getResourcesFile
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 
+/**
+ * 关于 对话框
+ */
 @Composable
 fun AboutDialog(close:()->Unit) {
     Dialog(

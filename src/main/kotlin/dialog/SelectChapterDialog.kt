@@ -22,6 +22,9 @@ import androidx.compose.ui.window.rememberDialogState
 import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
 
+/**
+ * 选择章节
+ */
 @OptIn(ExperimentalFoundationApi::class,
     ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class

@@ -39,7 +39,7 @@ import com.formdev.flatlaf.FlatLaf
 import com.matthewn4444.ebml.EBMLReader
 import data.*
 import data.Dictionary
-import dialog.VocabularyType.*
+import data.VocabularyType.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import opennlp.tools.tokenize.Tokenizer
 import opennlp.tools.tokenize.TokenizerME
@@ -60,7 +60,6 @@ import theme.LightColorScheme
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.Desktop
 import java.io.File
 import java.io.FileInputStream
@@ -78,7 +77,12 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 import kotlin.collections.HashMap
 
-
+/**
+ * 生成词库
+ * @param state 应用程序状态
+ * @param title 标题
+ * @param type 词库类型
+ */
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
@@ -119,21 +123,61 @@ fun GenerateVocabulary(
         Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
             Divider()
             Row {
+                /**
+                 * 摘要词库
+                 */
                 val summaryVocabulary = loadSummaryVocabulary()
+
+                /**
+                 * 分析之后得到的单词
+                 */
                 val documentWords = remember { mutableStateListOf<Word>() }
+
+                /**
+                 * 预览的单词
+                 */
                 val previewList = remember { mutableStateListOf<Word>() }
-                // 用于显示过滤列表
+
+                /**
+                 * 用于显示过滤列表
+                 */
                 val selectedNameList = remember { mutableStateListOf<String>() }
-                // 用于过滤单词
+
+                /**
+                 * 用于过滤单词
+                 */
                 val selectedPathList = remember { mutableStateListOf<String>() }
 
+                /**
+                 * 选择的文件名
+                 */
                 var selectedFileName by remember { mutableStateOf("") }
+
+                /**
+                 * 是否过滤 BNC 词频为0的单词
+                 */
                 var notBncFilter by remember { mutableStateOf(false) }
+
+                /**
+                 * 是否过滤 FRQ 词频为0的单词
+                 */
                 var notFrqFilter by remember { mutableStateOf(false) }
+
+                /**
+                 * 是否替换索引派生词
+                 */
                 var replaceToLemma by remember { mutableStateOf(false) }
 
+                /**
+                 * 从字幕生成单词 -> 相关视频的地址
+                 */
                 var relateVideoPath by remember { mutableStateOf("") }
+
+                /**
+                 * 字幕的轨道 ID
+                 */
                 var selectedTrackId by remember { mutableStateOf(0) }
+
                 val left = ComposePanel()
                 left.setContent {
                     MaterialTheme(colors = if (state.typing.darkTheme) DarkColorScheme else LightColorScheme) {
@@ -175,7 +219,9 @@ fun GenerateVocabulary(
                             Column(
                                 Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
                             ) {
-                                // 这个 flag 有三个状态：""、"start"、"end"
+                                /**
+                                 * 这个 flag 有三个状态：""、"start"、"end"
+                                 */
                                 var flag by remember { mutableStateOf("") }
                                 var progress by remember { mutableStateOf(0.1f) }
                                 val animatedProgress by animateFloatAsState(
@@ -392,6 +438,9 @@ fun Summary(
 
 }
 
+/**
+ * 计算摘要
+ */
 private fun computeSummary(
     list: List<Word>,
     vocabularySummary: Map<String, List<String>>
@@ -418,6 +467,9 @@ private fun computeSummary(
     return listOf(oxfordCount, cet4Count, cet6Count, greCount)
 }
 
+/**
+ * 载入摘要词库
+ */
 private fun loadSummaryVocabulary(): Map<String, List<String>> {
 
     val oxford = loadVocabulary("vocabulary/牛津核心词/The_Oxford_5000.json").wordList
@@ -1062,11 +1114,20 @@ fun filterDocumentWords(
     val previewList = ArrayList(documentWords)
     val notBncList = ArrayList<Word>()
     val notFrqList = ArrayList<Word>()
-    // 派生词列表，需要转换为原型的单词
+
+    /**
+     * 派生词列表，需要转换为原型的单词
+     */
     val toLemmaList = ArrayList<Word>()
-    // 原型词列表
+
+    /**
+     * 原型词列表
+     */
     val lemmaList = ArrayList<Word>()
-    // 准备批量查询的原型词词典
+
+    /**
+     * 准备批量查询的原型词词典
+     */
     val queryMap = HashMap<String,MutableList<Caption>>()
     documentWords.forEach { word ->
         if (notBncFilter && word.bnc == 0) notBncList.add(word)
@@ -1109,7 +1170,9 @@ fun filterSelectVocabulary(pathList: List<String>, filteredDocumentList: List<Wo
     return list
 }
 
-
+/**
+ * 预览单词
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PreviewWords(
@@ -1492,6 +1555,9 @@ private fun readMKV(
     return validSet
 }
 
+/**
+ * 替换一些特殊字符
+ */
 private fun replaceSpecialCharacter(captionContent: String): String {
     var content = captionContent
     if (content.startsWith("-")) content = content.substring(1)

@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -39,7 +38,7 @@ import data.saveVocabulary
 import dialog.AboutDialog
 import dialog.GenerateVocabulary
 import dialog.SelectChapterDialog
-import dialog.VocabularyType
+import data.VocabularyType
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
@@ -113,7 +112,7 @@ fun main() = application {
                     ) {
 
                         Row {
-                            TypingToolbar(state)
+                            TypingSidebar(state)
                             if (state.openSettings) {
                                 Divider(Modifier.fillMaxHeight().width(1.dp))
                             }
@@ -148,7 +147,9 @@ fun main() = application {
 
 }
 
-
+/**
+ * 菜单栏
+ */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
@@ -200,6 +201,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 }
             )
         }
+        // TODO 这个逻辑有缺陷，应用程序没有要求用户必须保存到字幕文件夹，也没有明显的提示
         val enableImportVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT && subtitleDirectoryIsNotEmpty()
         // 当前词库类型为文档，同时字幕文件夹有文件
         Item(
@@ -230,6 +232,9 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     }
 }
 
+/**
+ * 设置
+ */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
     ExperimentalSerializationApi::class
 )
@@ -293,11 +298,17 @@ val LocalCtrl = staticCompositionLocalOf<String> {
     error("LocalCtrl isn't provided")
 }
 
+/**
+ * 本地的 Ctrl 键
+ */
 @Composable
 fun rememberCtrl(): String = remember {
-    if (isMacOS()) "⌘" else "Ctrl"
+    if (isMacOS()) "⌃" else "Ctrl"
 }
 
+/**
+ * 全局快捷键
+ */
 @OptIn(ExperimentalSerializationApi::class)
 @ExperimentalComposeUiApi
 fun globalShortcuts(
@@ -307,10 +318,6 @@ fun globalShortcuts(
     videoBounds: Rectangle,
 ): Boolean {
     return when {
-        (it.isCtrlPressed && it.key == Key.O && it.type == KeyEventType.KeyUp) -> {
-            state.selectVocabulary = true
-            true
-        }
         (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
             state.typing.isAuto = !state.typing.isAuto
             true
@@ -419,6 +426,13 @@ fun globalShortcuts(
     }
 }
 
+/**
+ * 用快捷键播放视频
+ * @param state 应用程序的状态
+ * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+ * @param mediaPlayerComponent 视频播放组件
+ * @param videoBounds 视频播放器的位置和大小
+ */
 @OptIn(ExperimentalSerializationApi::class)
 private fun shortcutPlay(
     state: AppState,
@@ -448,7 +462,9 @@ private fun shortcutPlay(
     }
 }
 
-
+/**
+ * 对话框
+ */
 @ExperimentalFoundationApi
 @OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
 @ExperimentalComposeUiApi
@@ -458,8 +474,9 @@ fun MenuDialogs(state: AppState) {
         SelectChapterDialog(state)
     }
 
-    LoadingDialog(visible = state.loadingFileChooserVisible)
-
+    if(state.loadingFileChooserVisible){
+        LoadingDialog()
+    }
     if (state.generateVocabularyFromDocument) {
         GenerateVocabulary(
             state = state,
@@ -485,11 +502,12 @@ fun MenuDialogs(state: AppState) {
 }
 
 
-
+/**
+ * 等待窗口
+ */
 @Composable
-fun LoadingDialog(visible:Boolean) {
+fun LoadingDialog() {
     Dialog(
-        visible = visible,
         title = "正在加载文件选择器",
         icon = painterResource("logo/logo.svg"),
         onCloseRequest = {},
@@ -512,20 +530,46 @@ fun LoadingDialog(visible:Boolean) {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
+/**
+ * 链接字幕词库窗口
+ */
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun ImportVocabularyDialog(
     state: AppState,
     close: () -> Unit
 ) {
+    /**
+     * 预览的单词列表
+     */
     val previewWords = remember { mutableStateListOf<Pair<String, List<Caption>>>() }
+
+    /**
+     * 当前词库链接到字幕词库的字幕的数量
+     */
     var linkCounter by remember { mutableStateOf(0) }
+
+    /**
+     * 准备链接的单词和字幕
+     */
     val prepareLinks = remember { mutableStateMapOf<String, List<String>>() }
+
+    /**
+     * 视频地址
+     */
     var relateVideoPath by remember { mutableStateOf("") }
+
+    /**
+     * 字幕轨道 ID
+     */
     var subtitlesTrackId by remember { mutableStateOf(0) }
     var vocabularyType by remember { mutableStateOf(VocabularyType.DOCUMENT) }
     var vocabularyTypeWrong by remember { mutableStateOf(false) }
     var extractCaptionResultInfo by remember { mutableStateOf("") }
+
+    /**
+     * 点击【导入】后执行的回调函数
+     */
     val import: () -> Unit = {
         if (prepareLinks.isNotEmpty()) {
             state.vocabulary.wordList.forEach { word ->
@@ -549,7 +593,9 @@ fun ImportVocabularyDialog(
 
     }
 
-    // 用户选择字幕文件后，用这个函数提取相关信息
+    /**
+     * 用户选择字幕文件后，用这个函数提取相关信息
+     */
     val extractCaption: (File) -> Unit = {
         Thread(Runnable {
             val selectedVocabulary = loadVocabulary(it.absolutePath)
@@ -901,6 +947,9 @@ fun ImportVocabularyDialog(
     }
 }
 
+/**
+ * 是否有字幕词库
+ */
 fun subtitleDirectoryIsNotEmpty(): Boolean {
     val file = getResourcesFile("vocabulary/字幕")
     return if (file != null) {

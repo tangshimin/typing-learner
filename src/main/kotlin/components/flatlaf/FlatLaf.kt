@@ -17,17 +17,28 @@ import javax.swing.UIManager
 import javax.swing.border.LineBorder
 
 
-
+/**
+ * 初始化 FlatLaf 和文件选择器
+ */
 fun InitializeFileChooser(darkTheme: Boolean): FutureTask<JFileChooser> {
     InitializeFlatLaf(darkTheme)
     return setupFileChooser()
 }
+
+/**
+ * 设置文件选择器
+ * 相关链接：https://stackoverflow.com/questions/49792375/jfilechooser-is-very-slow-when-using-windows-look-and-feel
+ */
 fun setupFileChooser(): FutureTask<JFileChooser> {
     val futureFileChooser = FutureTask { JFileChooser() }
     val executor = Executors.newSingleThreadExecutor()
     executor.execute(futureFileChooser)
     return futureFileChooser
 }
+
+/**
+ * 初始化 FlatLaf
+ */
 fun InitializeFlatLaf(darkTheme: Boolean) {
     if (darkTheme) FlatDarkLaf.setup()
     else FlatLightLaf.setup()
@@ -41,6 +52,9 @@ fun InitializeFlatLaf(darkTheme: Boolean) {
     UIManager.put("SplitPane.dividerSize", 1)
 }
 
+/**
+ * 更新 FlatLaf
+ */
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun UpdateFlatLaf(darkTheme: Boolean,state:AppState) {

@@ -15,12 +15,15 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import state.AppState
 
+/**
+ * 侧边菜单
+ */
 @OptIn(
     ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
     kotlinx.serialization.ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class
 )
 @Composable
-fun TypingToolbar(state: AppState) {
+fun TypingSidebar(state: AppState) {
     if (state.openSettings) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
