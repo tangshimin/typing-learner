@@ -245,7 +245,7 @@ fun Settings(state: AppState, modifier: Modifier) {
                 modifier = Modifier
                     .width(if (state.openSettings) 217.dp else 48.dp)
                     .shadow(
-                        elevation = if (state.openSettings) 0.dp else 0.dp,
+                        elevation =  0.dp,
                         shape = if (state.openSettings) RectangleShape else RoundedCornerShape(50)
                     )
                     .background(MaterialTheme.colors.background)
