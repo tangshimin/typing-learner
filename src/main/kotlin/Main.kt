@@ -245,7 +245,7 @@ fun Settings(state: AppState, modifier: Modifier) {
                 modifier = Modifier
                     .width(if (state.openSettings) 217.dp else 48.dp)
                     .shadow(
-                        elevation = if (state.openSettings) 0.dp else 0.dp,
+                        elevation =  0.dp,
                         shape = if (state.openSettings) RectangleShape else RoundedCornerShape(50)
                     )
                     .background(MaterialTheme.colors.background)
@@ -526,17 +526,4 @@ fun LoadingDialog() {
             }
         }
     }
-}
-
-
-
-/**
- * 是否有字幕词库
- */
-fun subtitleDirectoryIsNotEmpty(): Boolean {
-    val file = getResourcesFile("vocabulary/字幕")
-    return if (file != null) {
-        file.listFiles().isNotEmpty()
-    } else false
-
 }
