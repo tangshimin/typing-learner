@@ -34,11 +34,10 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberDialogState
 import data.Caption
+import data.VocabularyType
 import data.Word
 import data.loadCaptionsMap
-import data.VocabularyType
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.LocalMediaPlayerComponent
 import player.isMacOS
 import player.mediaPlayer
 import state.AppState
@@ -448,6 +447,7 @@ fun Typing(
                     playTripleMap = getPlayTripleMap(state, word),
                     vocabularyType = state.vocabulary.type,
                     videoPlayerWindow = state.videoPlayerWindow,
+                    videoPlayerComponent = state.videoPlayerComponent,
                     isPlaying = state.isPlaying,
                     volume = state.typing.audioVolume,
                     setIsPlaying = { state.isPlaying = it },
@@ -845,6 +845,7 @@ fun Captions(
     playTripleMap: Map<Int, Triple<Caption, String, Int>>,
     vocabularyType: VocabularyType,
     videoPlayerWindow:JFrame,
+    videoPlayerComponent:Component,
     isPlaying: Boolean,
     volume: Float,
     setIsPlaying: (Boolean) -> Unit,
@@ -880,6 +881,7 @@ fun Captions(
                     }
                     Caption(
                         videoPlayerWindow = videoPlayerWindow,
+                        videoPlayerComponent = videoPlayerComponent,
                         setIsPlaying = {
                             setIsPlaying(it)
                         },
@@ -990,6 +992,7 @@ fun secondsToString(seconds: Double): String {
 @Composable
 fun Caption(
     videoPlayerWindow:JFrame,
+    videoPlayerComponent:Component,
     setIsPlaying: (Boolean) -> Unit,
     isEditing: Boolean,
     deleteCaption: (Int) -> Unit,
@@ -1005,9 +1008,7 @@ fun Caption(
     bounds: Rectangle
 ) {
 
-    val mediaPlayerComponent = LocalMediaPlayerComponent.current
     val relativeVideoPath = playTriple.second
-
     val columnModifier = if (isEditing) {
         Modifier.fillMaxWidth().padding(12.dp)
     } else {
@@ -1142,7 +1143,7 @@ fun Caption(
                                         setIsPlaying = { setIsPlaying(it) },
                                         volume,
                                         playTriple,
-                                        mediaPlayerComponent,
+                                        videoPlayerComponent,
                                         bounds
                                     )
 
@@ -1169,6 +1170,7 @@ fun Caption(
                             index = index,
                             volume = volume,
                             playTriple = playTriple,
+                            mediaPlayerComponent = videoPlayerComponent,
                             confirm = {
                                 onChangeTime(it)
                             },
@@ -1262,7 +1264,8 @@ fun SettingTimeLine(
     volume: Float,
     close: () -> Unit,
     confirm: (Triple<Int, Double, Double>) -> Unit,
-    playTriple: Triple<Caption, String, Int>
+    playTriple: Triple<Caption, String, Int>,
+    mediaPlayerComponent:Component,
 ) {
     Dialog(
         title = "调整时间轴",
@@ -1280,11 +1283,6 @@ fun SettingTimeLine(
             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
         ) {
             Column(Modifier.fillMaxSize()) {
-                /**
-                 * 视频播放组件
-                 */
-                val mediaPlayerComponent = LocalMediaPlayerComponent.current
-
                 /**
                  * 字幕内容
                  */
@@ -1543,7 +1541,7 @@ fun TimeControl(
  * @param setIsPlaying 设置是否正在播放视频
  * @param volume 音量
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
- * @param mediaPlayerComponent 视频播放组件
+ * @param videoPlayerComponent 视频播放组件
  * @param bounds 视频播放窗口的位置和大小
  * 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
  */
@@ -1552,7 +1550,7 @@ fun play(
     setIsPlaying: (Boolean) -> Unit,
     volume: Float,
     playTriple: Triple<Caption, String, Int>,
-    mediaPlayerComponent: Component,
+    videoPlayerComponent: Component,
     bounds: Rectangle
 ) {
     //  ComposePanel should be created inside AWT Event Dispatch Thread (use SwingUtilities.invokeLater).
@@ -1567,7 +1565,7 @@ fun play(
         start = start.div(1000_000_000)
         var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
         end = end.div(1000_000_000)
-        mediaPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
+        videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
 
         val closeButton = ComposePanel()
         closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
@@ -1590,7 +1588,7 @@ fun play(
             }
         }
 
-        mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+        videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
                 mediaPlayer.audio().setVolume((volume * 100).toInt())
             }
@@ -1599,16 +1597,16 @@ fun play(
                 setIsPlaying(false)
                 window.isVisible = false
                 EventQueue.invokeLater{
-                    window.remove(mediaPlayerComponent)
+                    window.remove(videoPlayerComponent)
                 }
 
-                mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+                videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
             }
         })
         window.layout = null
-        window.contentPane.add(mediaPlayerComponent)
+        window.contentPane.add(videoPlayerComponent)
         window.isVisible = true
-        mediaPlayerComponent.mediaPlayer().media()
+        videoPlayerComponent.mediaPlayer().media()
             .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
 
     }

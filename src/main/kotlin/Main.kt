@@ -65,7 +65,7 @@ fun main() = application {
         LocalCtrl provides rememberCtrl(),
         LocalTextSelectionColors provides textSelectionColors
     ) {
-        val mediaPlayerComponent = LocalMediaPlayerComponent.current
+        val audioPlayerComponent = LocalMediaPlayerComponent.current
         val windowState = rememberWindowState(
             position = WindowPosition(Alignment.Center),
             placement = WindowPlacement.Maximized,
@@ -86,7 +86,8 @@ fun main() = application {
                 state = windowState,
                 onCloseRequest = {
                     isOpen = false
-                    mediaPlayerComponent.mediaPlayer().release()
+                    audioPlayerComponent.mediaPlayer().release()
+                    state.videoPlayerComponent.mediaPlayer().release()
                 },
             ) {
                 MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
@@ -100,7 +101,8 @@ fun main() = application {
                         globalShortcuts(
                             it,
                             state,
-                            mediaPlayerComponent,
+                            state.videoPlayerComponent,
+                            audioPlayerComponent,
                             videoBounds,
                         )
                     }
@@ -310,7 +312,8 @@ fun rememberCtrl(): String = remember {
 fun globalShortcuts(
     it: KeyEvent,
     state: AppState,
-    mediaPlayerComponent: Component,
+    videoPlayerComponent: Component,
+    audioPlayerComponent: Component,
     videoBounds: Rectangle,
 ): Boolean {
     return when {
@@ -348,7 +351,7 @@ fun globalShortcuts(
             playAudio(
                 word = word.value,
                 pronunciation = state.typing.pronunciation,
-                mediaPlayerComponent = mediaPlayerComponent,
+                mediaPlayerComponent = audioPlayerComponent,
                 changePlayerState = {}
             )
             true
@@ -356,34 +359,34 @@ fun globalShortcuts(
         (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
             if (state.vocabulary.type == VocabularyType.DOCUMENT) {
                 val playTriple = getCaption(state, 0)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
             } else {
                 val caption = state.getCurrentWord().captions[0]
                 val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
             }
             true
         }
         (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
             if (state.getCurrentWord().links.size >= 2) {
                 val playTriple = getCaption(state, 1)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
 
             } else if (state.getCurrentWord().captions.size >= 2) {
                 val caption = state.getCurrentWord().captions[1]
                 val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
             }
             true
         }
         (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
             if (state.getCurrentWord().links.size >= 3) {
                 val playTriple = getCaption(state, 2)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
             } else if (state.getCurrentWord().captions.size >= 3) {
                 val caption = state.getCurrentWord().captions[2]
                 val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                shortcutPlay(state,  playTriple, mediaPlayerComponent, videoBounds)
+                shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
             }
             true
         }

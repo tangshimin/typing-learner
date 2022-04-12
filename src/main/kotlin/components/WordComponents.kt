@@ -712,6 +712,7 @@ fun EditWord(
                     playTripleMap = getPlayTripleMap(state, word),
                     vocabularyType = state.vocabulary.type,
                     videoPlayerWindow = state.videoPlayerWindow,
+                    videoPlayerComponent = state.videoPlayerComponent,
                     isPlaying = state.isPlaying,
                     volume = state.typing.audioVolume,
                     setIsPlaying = { state.isPlaying = it },
