@@ -46,9 +46,7 @@ import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
-import player.LocalMediaPlayerComponent
 import player.mediaPlayer
-import player.rememberMediaPlayerComponent
 import state.AppState
 import state.composeAppResource
 import state.getResourcesFile
@@ -61,6 +59,8 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.Dimension
+import java.awt.Point
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -75,7 +75,6 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
-import kotlin.collections.HashMap
 
 /**
  * 生成词库
@@ -212,110 +211,106 @@ fun GenerateVocabulary(
                 }
                 val right = ComposePanel()
                 right.setContent {
-                    CompositionLocalProvider(
-                        LocalMediaPlayerComponent provides rememberMediaPlayerComponent(),
-                    ) {
-                        MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
-                            Column(
-                                Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
-                            ) {
-                                /**
-                                 * 这个 flag 有三个状态：""、"start"、"end"
-                                 */
-                                var flag by remember { mutableStateOf("") }
-                                var progress by remember { mutableStateOf(0.1f) }
-                                val animatedProgress by animateFloatAsState(
-                                    targetValue = progress,
-                                    animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
-                                )
-                                var progressText by remember { mutableStateOf("") }
-                                val trackMap  = remember { mutableStateMapOf<Int,String>() }
-                                SelectFile(
-                                    state = state,
-                                    type = type,
-                                    fileFilter = fileFilter,
-                                    setSelectFileName = {selectedFileName = it },
-                                    relateVideoPath = relateVideoPath,
-                                    setRelateVideoPath = {relateVideoPath = it},
-                                    trackMap = trackMap,
-                                    setTrackMap = {
-                                        trackMap.clear()
-                                        trackMap.putAll(it)
-                                    },
-                                    selectedTrackId = selectedTrackId,
-                                    setSelectedTrackId = {selectedTrackId = it},
-                                    analysis = { pathName,trackId ->
-                                        flag = "start"
-                                        selectedNameList.clear()
-                                        documentWords.clear()
-                                        progress = 0.15F
-                                        Thread(Runnable() {
+                    MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
+                        Column(
+                            Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
+                        ) {
+                            /**
+                             * 这个 flag 有三个状态：""、"start"、"end"
+                             */
+                            var flag by remember { mutableStateOf("") }
+                            var progress by remember { mutableStateOf(0.1f) }
+                            val animatedProgress by animateFloatAsState(
+                                targetValue = progress,
+                                animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+                            )
+                            var progressText by remember { mutableStateOf("") }
+                            val trackMap  = remember { mutableStateMapOf<Int,String>() }
+                            SelectFile(
+                                state = state,
+                                type = type,
+                                fileFilter = fileFilter,
+                                setSelectFileName = {selectedFileName = it },
+                                relateVideoPath = relateVideoPath,
+                                setRelateVideoPath = {relateVideoPath = it},
+                                trackMap = trackMap,
+                                setTrackMap = {
+                                    trackMap.clear()
+                                    trackMap.putAll(it)
+                                },
+                                selectedTrackId = selectedTrackId,
+                                setSelectedTrackId = {selectedTrackId = it},
+                                analysis = { pathName,trackId ->
+                                    flag = "start"
+                                    selectedNameList.clear()
+                                    documentWords.clear()
+                                    progress = 0.15F
+                                    Thread(Runnable() {
 
-                                            val words = when (type) {
-                                                DOCUMENT -> {
-                                                    readPDF(pathName = pathName,
-                                                        addProgress = { progress += it },
-                                                        setProgressText = { progressText = it })
-                                                }
-                                                SUBTITLES -> {
-                                                    readSRT(
-                                                        pathName = pathName,
-                                                        addProgress = { progress += it },
-                                                        setProgressText = { progressText = it })
-                                                }
-                                                MKV -> {
-                                                    readMKV(
-                                                        pathName = pathName,
-                                                        trackId = trackId,
-                                                        addProgress = { progress += it },
-                                                        setProgressText = { progressText = it })
-                                                }
+                                        val words = when (type) {
+                                            DOCUMENT -> {
+                                                readPDF(pathName = pathName,
+                                                    addProgress = { progress += it },
+                                                    setProgressText = { progressText = it })
                                             }
-
-
-                                            words.forEach { word -> documentWords.add(word) }
-
-
-                                            progress = 1F
-                                            flag = "end"
-                                            progress = 0F
-                                        }).start()
-
-                                    })
-
-                                Box(Modifier.fillMaxSize()) {
-                                    if (flag == "start") {
-                                        Column(
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.align(Alignment.Center).fillMaxSize()
-                                        ) {
-                                            LinearProgressIndicator(
-                                                progress = animatedProgress,
-                                            )
-                                            Text(text = progressText, color = MaterialTheme.colors.onBackground)
+                                            SUBTITLES -> {
+                                                readSRT(
+                                                    pathName = pathName,
+                                                    addProgress = { progress += it },
+                                                    setProgressText = { progressText = it })
+                                            }
+                                            MKV -> {
+                                                readMKV(
+                                                    pathName = pathName,
+                                                    trackId = trackId,
+                                                    addProgress = { progress += it },
+                                                    setProgressText = { progressText = it })
+                                            }
                                         }
-                                    } else if (flag == "end") {
-                                        val filteredDocumentList = filterDocumentWords(
-                                            documentWords,
-                                            notBncFilter,
-                                            notFrqFilter,
-                                            replaceToLemma
-                                        )
-                                        previewList.clear()
-                                        val filteredList = filterSelectVocabulary(
-                                            pathList = selectedPathList,
-                                            filteredDocumentList = filteredDocumentList
-                                        )
-                                        previewList.addAll(filteredList)
-                                        PreviewWords(previewList, summaryVocabulary,
-                                            removeWord = {
-                                                previewList.remove(it)
-                                            })
-                                    }
-                                }
 
+
+                                        words.forEach { word -> documentWords.add(word) }
+
+
+                                        progress = 1F
+                                        flag = "end"
+                                        progress = 0F
+                                    }).start()
+
+                                })
+
+                            Box(Modifier.fillMaxSize()) {
+                                if (flag == "start") {
+                                    Column(
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.align(Alignment.Center).fillMaxSize()
+                                    ) {
+                                        LinearProgressIndicator(
+                                            progress = animatedProgress,
+                                        )
+                                        Text(text = progressText, color = MaterialTheme.colors.onBackground)
+                                    }
+                                } else if (flag == "end") {
+                                    val filteredDocumentList = filterDocumentWords(
+                                        documentWords,
+                                        notBncFilter,
+                                        notFrqFilter,
+                                        replaceToLemma
+                                    )
+                                    previewList.clear()
+                                    val filteredList = filterSelectVocabulary(
+                                        pathList = selectedPathList,
+                                        filteredDocumentList = filteredDocumentList
+                                    )
+                                    previewList.addAll(filteredList)
+                                    PreviewWords(previewList, summaryVocabulary,
+                                        removeWord = {
+                                            previewList.remove(it)
+                                        })
+                                }
                             }
+
                         }
                     }
 
@@ -831,7 +826,7 @@ fun SelectFile(
                     .padding(start = 8.dp)
                     .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
             )
-            val mediaPlayerComponent = LocalMediaPlayerComponent.current
+//            val mediaPlayerComponent = LocalMediaPlayerComponent.current
             IconButton(onClick = {
 //                state.loadingFileChooserVisible = true
                 Thread(Runnable {
@@ -847,7 +842,8 @@ fun SelectFile(
                         filePath = file.absolutePath
                         if(type == MKV) {
                             setRelateVideoPath(file.absolutePath)
-                            mediaPlayerComponent.mediaPlayer().media().play(filePath)
+                            val window = state.videoPlayerWindow
+                            val  mediaPlayerComponent= state.videoPlayerComponent
                             mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
                                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
                                     val map = HashMap<Int, String>()
@@ -857,10 +853,22 @@ fun SelectFile(
                                         }
                                     }
                                     mediaPlayer.controls().pause()
+                                    window.isAlwaysOnTop = true
+                                    window.title = "视频播放窗口"
+                                    window.isVisible = false
                                     mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
                                     setTrackMap(map)
                                 }
                             })
+                            window.title = "正在读取字幕"
+                            window.isAlwaysOnTop = false
+                            window.toBack()
+                            window.size = Dimension(1,1)
+                            window.location = Point(0,0)
+                            window.layout = null
+                            window.contentPane.add(mediaPlayerComponent)
+                            window.isVisible = true
+                            mediaPlayerComponent.mediaPlayer().media().play(filePath)
                         }
                         setSelectFileName(file.nameWithoutExtension)
                         fileChooser.selectedFile = File("")
@@ -876,13 +884,6 @@ fun SelectFile(
                     tint = MaterialTheme.colors.onBackground,
                 )
             }
-            //VLC 组件必须显示
-            SwingPanel(
-                modifier = Modifier.width(0.dp).height(0.dp),
-                factory = {
-                    mediaPlayerComponent
-                }
-            )
             if (filePath.isNotEmpty() && type == MKV) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

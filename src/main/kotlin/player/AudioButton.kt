@@ -35,10 +35,10 @@ fun AudioButton(
     pronunciation: String,
 ) {
     if (pronunciation != "false") {
-        val mediaPlayerComponent = LocalMediaPlayerComponent.current
+        val audioPlayerComponent = LocalMediaPlayerComponent.current
         var isPlaying by remember { mutableStateOf(false) }
         val playAudio = {
-            playAudio(word,pronunciation,mediaPlayerComponent,changePlayerState = {isPlaying = it})
+            playAudio(word,pronunciation,audioPlayerComponent,changePlayerState = {isPlaying = it})
         }
         Column(
             modifier = Modifier
@@ -91,11 +91,10 @@ fun AudioButton(
             SwingPanel(
                 modifier = Modifier.size(DpSize(0.dp, 0.dp)),
                 factory = {
-                    mediaPlayerComponent
+                    audioPlayerComponent
                 }
             )
         }
-
 
         SideEffect {
             playAudio()

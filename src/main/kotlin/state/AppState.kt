@@ -3,6 +3,7 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
+import com.sun.jna.NativeLibrary
 import components.flatlaf.InitializeFileChooser
 import data.Caption
 import data.Word
@@ -12,7 +13,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import player.createMediaPlayerComponent
 import player.isMacOS
+import uk.co.caprica.vlcj.binding.RuntimeUtil
+import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
+import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
+import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
+import java.awt.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.time.LocalTime
@@ -179,6 +186,11 @@ class AppState {
      */
     var videoPlayerWindow = createVideoPlayerWindow()
     /**
+     * VLC 视频播放组件
+     */
+    var videoPlayerComponent = createMediaPlayerComponent()
+
+    /**
      * 词库
      */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
@@ -283,7 +295,6 @@ class AppState {
         window.isAlwaysOnTop = true
         return window
     }
-
 
     /**
      * 保存应用程序设置信息
