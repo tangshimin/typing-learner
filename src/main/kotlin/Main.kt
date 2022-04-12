@@ -199,9 +199,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 }
             )
         }
-        // TODO 这个逻辑有缺陷，应用程序没有要求用户必须保存到字幕文件夹，也没有明显的提示
-        val enableImportVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT && subtitleDirectoryIsNotEmpty()
-        // 当前词库类型为文档，同时字幕文件夹有文件
+        //如果当前词库类型为文档就启用
+        val enableImportVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT
         Item(
             "导入字幕",
             enabled = enableImportVocabulary,
