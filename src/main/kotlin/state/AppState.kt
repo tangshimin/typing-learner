@@ -207,7 +207,7 @@ class AppState {
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
     /**
      * 链接的视频或字幕词库 Map
-     * subtitleName to captionsMap (word.value to word.captions)
+     * vocabularyPath to captionsMap (word.value to word.captions)
      */
     var captionsMap = mutableMapOf<String, HashMap<String, List<Caption>>>()
 
