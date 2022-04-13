@@ -33,7 +33,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.Dictionary
 import data.Word
-import data.saveVocabulary
 import dialog.ChapterFinishedDialog
 import player.AudioButton
 import state.AppState
@@ -280,10 +279,7 @@ fun WordComponents(
                                 val index = state.typing.index
                                 state.vocabulary.wordList.removeAt(index)
                                 state.vocabulary.size = state.vocabulary.wordList.size
-                                saveVocabulary(
-                                    state.vocabulary.vocabulary,
-                                    state.typing.vocabularyPath
-                                )
+                                state.saveCurrentVocabulary()
                             }).start()
 
                             showConfirmationDialog = false
@@ -355,10 +351,7 @@ fun WordComponents(
                                 newWord.links = current.links
                                 state.vocabulary.wordList.removeAt(index)
                                 state.vocabulary.wordList.add(index, newWord)
-                                saveVocabulary(
-                                    state.vocabulary.vocabulary,
-                                    state.typing.vocabularyPath
-                                )
+                                state.saveCurrentVocabulary()
                                 setShowEditWordDialog(false)
                             },
                             close = { setShowEditWordDialog(false) }
@@ -485,10 +478,7 @@ fun WordComponents(
         state.typing.chapter = 1
         if (isShuffle) {
             state.vocabulary.wordList.shuffle()
-            saveVocabulary(
-                state.vocabulary.vocabulary,
-                state.typing.vocabularyPath
-            )
+            state.saveCurrentVocabulary()
         }
         state.saveTypingState()
         resetChapterTime()
