@@ -168,6 +168,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     state.typing.vocabularyPath = file.absolutePath
                     state.typing.chapter = 1
                     state.typing.index = 0
+                    state.wordCorrectTime = 0
+                    state.wordWrongTime = 0
                     state.saveTypingState()
                     state.loadingFileChooserVisible = false
                 } else {
