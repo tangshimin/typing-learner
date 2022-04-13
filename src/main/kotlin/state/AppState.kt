@@ -481,7 +481,7 @@ class AppState {
             encodeDefaults = true
         }
         Thread(Runnable {
-            val json = format.encodeToString(vocabulary)
+            val json = format.encodeToString(vocabulary.serializeVocabulary)
             val file = getResourcesFile(typing.vocabularyPath)
             file?.writeText(json)
         }).start()
