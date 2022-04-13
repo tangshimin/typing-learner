@@ -183,6 +183,16 @@ class AppState {
     var typing: MutableTypingState = loadTypingState()
 
     /**
+     * 当前单词的正确次数
+     */
+    var wordCorrectTime by mutableStateOf(0)
+
+    /**
+     * 当前单词的错误次数
+     */
+    var wordWrongTime by mutableStateOf(0)
+
+    /**
      * 视频播放窗口
      */
     var videoPlayerWindow = createVideoPlayerWindow()
