@@ -166,6 +166,10 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     state.vocabulary = loadMutableVocabulary(file.absolutePath)
                     state.typing.vocabularyName = file.nameWithoutExtension
                     state.typing.vocabularyPath = file.absolutePath
+                    if (state.isDictation) {
+                        state.exitDictationMode()
+                        state.resetChapterTime()
+                    }
                     state.typing.chapter = 1
                     state.typing.index = 0
                     state.wordCorrectTime = 0

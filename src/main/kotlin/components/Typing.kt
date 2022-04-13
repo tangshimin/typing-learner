@@ -120,21 +120,6 @@ fun Typing(
                     remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
 
                 /**
-                 * 当前章节的正确数，主要用于默写模式
-                 */
-                var chapterCorrectTime by remember { mutableStateOf(0F) }
-
-                /**
-                 * 当前章节的错误数，主要用于默写模式
-                 */
-                var chapterWrongTime by remember { mutableStateOf(0F) }
-
-                /**
-                 * 默写模式的错误单词
-                 */
-                val dictationWrongWords = remember { mutableMapOf<Word, Int>() }
-
-                /**
                  * 显示本章节已经完成对话框
                  */
                 var showChapterFinishedDialog by remember { mutableStateOf(false) }
@@ -146,7 +131,6 @@ fun Typing(
                  * 显示编辑单词对话框
                  */
                 var showEditWordDialog by remember { mutableStateOf(false) }
-
 
                 /**
                  * 播放错误音效
@@ -190,10 +174,10 @@ fun Typing(
                  */
                 val dictationSkipCurrentWord:()->Unit = {
                     if(state.wordCorrectTime == 0){
-                        chapterWrongTime++
-                        val dictationWrongTime = dictationWrongWords[word]
+                        state.chapterWrongTime++
+                        val dictationWrongTime = state.dictationWrongWords[word]
                         if (dictationWrongTime == null) {
-                            dictationWrongWords[word] = 1
+                            state.dictationWrongWords[word] = 1
                         }
                     }
                 }
@@ -240,14 +224,6 @@ fun Typing(
                     }
                 }
 
-                /**
-                 * 重置章节计数器,清空默写模式存储的错误单词
-                 */
-                val resetChapterTime: () -> Unit = {
-                    chapterCorrectTime = 0F
-                    chapterWrongTime = 0F
-                    dictationWrongWords.clear()
-                }
 
                 /**
                  * 检查输入的单词
@@ -277,12 +253,12 @@ fun Typing(
                                 playBeepSound()
                                 state.wordWrongTime++
                                 if (state.isDictation) {
-                                    chapterWrongTime++
-                                    val dictationWrongTime = dictationWrongWords[word]
+                                    state.chapterWrongTime++
+                                    val dictationWrongTime = state.dictationWrongWords[word]
                                     if (dictationWrongTime != null) {
-                                        dictationWrongWords[word] = dictationWrongTime + 1
+                                        state.dictationWrongWords[word] = dictationWrongTime + 1
                                     } else {
-                                        dictationWrongWords[word] = 1
+                                        state.dictationWrongWords[word] = 1
                                     }
                                 }
                                 Timer("cleanInputChar", false).schedule(50) {
@@ -296,7 +272,7 @@ fun Typing(
                             // 输入完全正确
                             state.speed.correctCount = state.speed.correctCount + 1
                             playSuccessSound()
-                            if (state.isDictation) chapterCorrectTime++
+                            if (state.isDictation) state.chapterCorrectTime++
                             if (state.typing.isAuto) {
                                 Timer("cleanInputChar", false).schedule(50) {
                                     toNext()
@@ -385,10 +361,10 @@ fun Typing(
                     setShowEditWordDialog = { showEditWordDialog = it },
                     isVocabularyFinished = isVocabularyFinished,
                     setIsVocabularyFinished = { isVocabularyFinished = it },
-                    chapterCorrectTime = chapterCorrectTime,
-                    chapterWrongTime = chapterWrongTime,
-                    dictationWrongWords = dictationWrongWords,
-                    resetChapterTime = resetChapterTime,
+                    chapterCorrectTime = state.chapterCorrectTime,
+                    chapterWrongTime = state.chapterWrongTime,
+                    dictationWrongWords = state.dictationWrongWords,
+                    resetChapterTime = {state.resetChapterTime()},
                     playKeySound = { playKeySound() },
                 )
                 Phonetic(
