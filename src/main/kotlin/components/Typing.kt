@@ -1624,7 +1624,9 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
 }
 
 /**
- * 根据 index 返回字幕信息
+ * @param state 应用程序的状态
+ * @param index links 的 index
+ * @return Triple<Caption, String, Int>? ,视频播放器需要的信息
  */
 @OptIn(ExperimentalSerializationApi::class)
 fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
