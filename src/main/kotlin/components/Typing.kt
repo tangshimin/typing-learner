@@ -33,10 +33,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberDialogState
-import data.Caption
-import data.VocabularyType
-import data.Word
-import data.loadCaptionsMap
+import data.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.isMacOS
 import player.mediaPlayer
@@ -859,7 +856,21 @@ fun Captions(
                         },
                         onChangeTime = { (index, start, end) ->
                             if (vocabularyType == VocabularyType.DOCUMENT) {
-                                // TODO 单词没有字幕，只要链接，需要加载字幕词库，然后找到这个单词，再遍历字幕找到相等的，再更新
+                                playTriple.first.start = secondsToString(start)
+                                playTriple.first.end = secondsToString(end)
+                                val item = word.links[index]
+                                val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
+                                val matcher = captionPattern.matcher(item)
+                                if (matcher.find()) {
+                                    val vocabularyPath = matcher.group(1)
+                                    val subtitleIndex = matcher.group(4).toInt()
+                                    val subtitleVocabulary = loadVocabulary(vocabularyPath)
+                                    val index = subtitleVocabulary.wordList.indexOf(word)
+                                    var subtitleWord = subtitleVocabulary.wordList[index]
+                                    subtitleWord.captions[subtitleIndex].start = secondsToString(start)
+                                    subtitleWord.captions[subtitleIndex].end = secondsToString(end)
+                                    saveVocabulary(subtitleVocabulary,vocabularyPath)
+                                }
                             } else {
                                 word.captions[index].start = secondsToString(start)
                                 word.captions[index].end = secondsToString(end)

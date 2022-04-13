@@ -724,7 +724,6 @@ fun EditWord(
                 ) {
                     OutlinedButton(onClick = {
                         // 单词可以从词典查询到，或者只修改了中文释义或英文释义
-                        // TODO 保存字幕的方法在save() 方法里面，保存方法需要重构
                         if (inputWordStr.text == mutableWord.value) {
                             mutableWord.translation = translationFieldValue.text
                             mutableWord.definition = definitionFieldValue.text
