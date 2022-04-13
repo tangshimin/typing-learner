@@ -89,16 +89,6 @@ fun Typing(
                 val word = state.getCurrentWord()
 
                 /**
-                 * 当前单词的正确次数
-                 */
-                var correctTime by remember { mutableStateOf(0) }
-
-                /**
-                 * 当前单词的错误次数
-                 */
-                var wrongTime by remember { mutableStateOf(0) }
-
-                /**
                  * 单词输入框里的字符串
                  */
                 var wordTextFieldValue by remember { mutableStateOf("") }
@@ -199,7 +189,7 @@ fun Typing(
                  * 在默写模式跳过单词也算一次错误
                  */
                 val dictationSkipCurrentWord:()->Unit = {
-                    if(correctTime == 0){
+                    if(state.wordCorrectTime == 0){
                         chapterWrongTime++
                         val dictationWrongTime = dictationWrongWords[word]
                         if (dictationWrongTime == null) {
@@ -219,8 +209,8 @@ fun Typing(
                     definitionTypingResult.clear()
                     captionsTypingResultMap.clear()
                     captionsTextFieldValueList = mutableStateListOf("", "", "")
-                    correctTime = 0
-                    wrongTime = 0
+                    state.wordCorrectTime = 0
+                    state.wordWrongTime = 0
                     if (state.isDictation) {
                         if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
                             /**
@@ -282,12 +272,11 @@ fun Typing(
                                 wordTypingResult.add(Pair(char, true))
                             } else {
                                 // 字母输入错误
-                                // TODO 这里可以添加一个判断，如果不是英语，就不清除输入的字符
                                 done = false
                                 wordTypingResult.add(Pair(char, false))
                                 state.speed.wrongCount = state.speed.wrongCount + 1
                                 playBeepSound()
-                                wrongTime++
+                                state.wordWrongTime++
                                 if (state.isDictation) {
                                     chapterWrongTime++
                                     val dictationWrongTime = dictationWrongWords[word]
@@ -316,7 +305,7 @@ fun Typing(
                                     wordTypingResult.clear()
                                 }
                             } else {
-                                correctTime++
+                                state.wordCorrectTime++
                                 Timer("cleanInputChar", false).schedule(50) {
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
@@ -385,8 +374,8 @@ fun Typing(
                 WordComponents(
                     state = state,
                     word = word,
-                    correctTime = correctTime,
-                    wrongTime = wrongTime,
+                    correctTime = state.wordCorrectTime,
+                    wrongTime = state.wordWrongTime,
                     toNext = { toNext() },
                     dictationSkip = {dictationSkipCurrentWord()},
                     textFieldValue = wordTextFieldValue,
