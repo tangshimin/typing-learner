@@ -320,7 +320,6 @@ fun Typing(
                 val checkDefinitionInput: (String) -> Unit = { input ->
                     definitionTextFieldValue = input
                     definitionTypingResult.clear()
-                    // TODO 如果定义超过10行？
                     if (input.length <= word.definition.length) {
                         val chars = input.toList()
                         for (i in chars.indices) {

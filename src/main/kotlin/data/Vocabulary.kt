@@ -120,7 +120,6 @@ fun loadMutableVocabularyFromAbsolutePath(absolutePath: String):MutableVocabular
 
 fun loadMutableVocabulary(path: String):MutableVocabulary{
     val file = getResourcesFile(path)
-    // TODO 处理 FileNotFoundException
     return if (file != null && file.exists()) {
         val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
         MutableVocabulary(vocabulary)
