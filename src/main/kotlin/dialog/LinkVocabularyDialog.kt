@@ -34,7 +34,6 @@ import components.play
 import data.Caption
 import data.VocabularyType
 import data.loadVocabulary
-import data.saveVocabulary
 import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
 import state.getResourcesFile
@@ -94,7 +93,7 @@ fun LinkVocabularyDialog(
                     word.links.addAll(links)
                 }
             }
-            saveVocabulary(state.vocabulary.vocabulary, state.typing.vocabularyPath)
+            state.saveCurrentVocabulary()
         }
     }
     val clear: () -> Unit = {
@@ -273,11 +272,7 @@ fun LinkVocabularyDialog(
                                                                 word.links.removeAll(tempLinks)
                                                             }
                                                             showConfirmationDialog = false
-
-                                                            saveVocabulary(
-                                                                state.vocabulary.vocabulary,
-                                                                state.typing.vocabularyPath
-                                                            )
+                                                            state.saveCurrentVocabulary()
                                                         },
                                                         close = { showConfirmationDialog = false }
                                                     )

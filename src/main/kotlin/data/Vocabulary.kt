@@ -39,7 +39,10 @@ class MutableVocabulary(vocabulary: Vocabulary) {
     var subtitlesTrackId by mutableStateOf(vocabulary.subtitlesTrackId)
     var wordList = getMutableStateList(vocabulary.wordList)
 
-    val vocabulary
+    /**
+     * 用于持久化
+     */
+    val serializeVocabulary
         get() = Vocabulary(name, type, language, size, relateVideoPath, subtitlesTrackId, wordList)
 
 }
@@ -190,7 +193,6 @@ fun saveVocabularyToTempDirectory(vocabulary: Vocabulary, directory: String) {
     File("src/main/resources/temp/$directory/${vocabulary.name}.json").writeText(json)
 }
 
-// TODO 大多数方法都是相同的参数，可以分成两个方法，一个是 saveCurrentVocabulary(),另一个是 saveVocabulary(path:String)
 fun saveVocabulary(vocabulary: Vocabulary, path: String) {
     val format = Json {
         prettyPrint = true

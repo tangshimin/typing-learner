@@ -6,6 +6,7 @@ import androidx.compose.ui.res.ResourceLoader
 import com.sun.jna.NativeLibrary
 import components.flatlaf.InitializeFileChooser
 import data.Caption
+import data.Vocabulary
 import data.Word
 import data.loadMutableVocabulary
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -436,6 +437,20 @@ class AppState {
         dictationIndex = 0
     }
 
+    /**
+     * 保存当前的词库
+     */
+    fun saveCurrentVocabulary() {
+        val format = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+        Thread(Runnable {
+            val json = format.encodeToString(vocabulary)
+            val file = getResourcesFile(typing.vocabularyPath)
+            file?.writeText(json)
+        }).start()
+    }
 
 }
 
@@ -477,7 +492,6 @@ fun composeAppResource(path: String): File {
  * 获得资源文件
  * @param path 文件路径
  */
-// TODO 调用这个方法的地方都有加错误处理
 fun getResourcesFile(path: String): File? {
     var file: File? = null
     try {
