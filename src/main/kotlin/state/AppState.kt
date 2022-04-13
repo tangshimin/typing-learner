@@ -215,6 +215,22 @@ class AppState {
      * 是否是默写模式
      */
     var isDictation by mutableStateOf(false)
+
+    /**
+     * 当前章节的正确数，主要用于默写模式
+     */
+    var chapterCorrectTime by mutableStateOf(0F)
+
+    /**
+     * 当前章节的错误数，主要用于默写模式
+     */
+    var chapterWrongTime by mutableStateOf(0F)
+
+    /**
+     * 默写模式的错误单词
+     */
+    val dictationWrongWords = mutableMapOf<Word, Int>()
+
     /**
      * 默写模式 -> 复习错误单词模式
      */
@@ -433,6 +449,15 @@ class AppState {
 
         isDictation = false
         isReviewWrongList = false
+    }
+
+    /**
+     * 重置章节计数器,清空默写模式存储的错误单词
+     */
+    val resetChapterTime: () -> Unit = {
+        chapterCorrectTime = 0F
+        chapterWrongTime = 0F
+        dictationWrongWords.clear()
     }
 
     /**
