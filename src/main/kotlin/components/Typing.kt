@@ -901,7 +901,7 @@ fun getPlayTripleMap(state: AppState, word: Word): Map<Int, Triple<Caption, Stri
     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
         if (word.links.isNotEmpty()) {
             word.links.forEachIndexed { index, _ ->
-                val playTriple = getCaption(state, index)
+                val playTriple = getPayTriple(state, index)
                 if (playTriple != null) {
                     playTripleMap[index] = playTriple
                 }
@@ -1627,26 +1627,26 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
  * 根据 index 返回字幕信息
  */
 @OptIn(ExperimentalSerializationApi::class)
-fun getCaption(state: AppState, index: Int): Triple<Caption, String, Int>? {
+fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
     /**
      * 字幕链接的模式
-     * (subtitlePath)[videoPath][subtitleTrackId][index]
+     * (vocabularyPath)[videoPath][subtitleTrackId][index]
      */
     val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
     val word = state.getCurrentWord().value
     val item = state.getCurrentWord().links[index]
     val matcher = captionPattern.matcher(item)
     if (matcher.find()) {
-        val subtitlesPath = matcher.group(1)
+        val vocabularyPath = matcher.group(1)
         val relativeVideoPath = matcher.group(2)
         val subtitleTrackId = matcher.group(3).toInt()
         val subtitleIndex = matcher.group(4).toInt()
 
-        // subtitlesPath to captionsMap (word.value to word.captions)
-        if (!state.captionsMap.containsKey(subtitlesPath)) {
-            state.captionsMap[subtitlesPath] = loadCaptionsMap(subtitlesPath)
+        // vocabularyPath to captionsMap (word.value to word.captions)
+        if (!state.captionsMap.containsKey(vocabularyPath)) {
+            state.captionsMap[vocabularyPath] = loadCaptionsMap(vocabularyPath)
         }
-        val caption = state.captionsMap[subtitlesPath]?.get(word)?.get(subtitleIndex) ?: return null
+        val caption = state.captionsMap[vocabularyPath]?.get(word)?.get(subtitleIndex) ?: return null
 
         return Triple(caption, relativeVideoPath, subtitleTrackId)
     } else {

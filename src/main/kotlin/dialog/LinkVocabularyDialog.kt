@@ -109,7 +109,7 @@ fun LinkVocabularyDialog(
     }
 
     /**
-     * 用户选择字幕文件后，用这个函数提取相关信息
+     * 用户选择字幕词库后，用这个函数提取相关信息
      */
     val extractCaption: (File) -> Unit = {
         Thread(Runnable {
