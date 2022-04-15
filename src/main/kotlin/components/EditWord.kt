@@ -660,7 +660,10 @@ fun SettingTimeLine(
 
                         Spacer(Modifier.width(20.dp))
                         OutlinedButton(onClick = {
-                            confirm(Triple(index, start, end))
+                            if(oldStart != secondsToString(start)||
+                                oldEnd != secondsToString(end)){
+                                confirm(Triple(index, start, end))
+                            }
                             close()
                         }) {
                             Text("确定")
