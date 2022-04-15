@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -405,14 +406,12 @@ fun Typing(
                 Captions(
                     captionsVisible = state.typing.subtitlesVisible,
                     playTripleMap = getPlayTripleMap(state, word),
-                    vocabularyType = state.vocabulary.type,
                     videoPlayerWindow = state.videoPlayerWindow,
                     videoPlayerComponent = state.videoPlayerComponent,
                     isPlaying = state.isPlaying,
                     volume = state.typing.audioVolume,
                     setIsPlaying = { state.isPlaying = it },
                     word = word,
-                    isEditing = false,
                     bounds = videoBounds,
                     textFieldValueList = captionsTextFieldValueList,
                     typingResultMap = captionsTypingResultMap,
@@ -773,9 +772,6 @@ fun Translation(
     }
 }
 
-// TODO 字幕库，是指存放在字幕文件夹里的所有词库组成的一个 Map,
-//  用户可以从这个字幕库搜索字幕，然后链接到 word 的 captions
-
 /** 字幕列表组件
  * @param captionsVisible 字幕的可见性
  * @param playTripleMap 要显示的字幕。Map 的类型参数说明：
@@ -783,13 +779,11 @@ fun Translation(
  * - Triple 的 Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
  * - Triple 的 String   -> 字幕对应的视频地址
  * - Triple 的 Int      -> 字幕的轨道
- * @param vocabularyType 词库的类型
  * @param videoPlayerWindow 视频播放窗口
  * @param isPlaying 是否正在播放视频
  * @param volume 音量
  * @param setIsPlaying 设置是否正在播放视频播放的回调
  * @param word 单词
- * @param isEditing 是否在修改单词
  * @param bounds 视频播放窗口的位置
  * @param textFieldValueList 用户输入的字幕列表
  * @param typingResultMap 用户输入字幕的结果 Map
@@ -803,14 +797,12 @@ fun Translation(
 fun Captions(
     captionsVisible: Boolean,
     playTripleMap: Map<Int, Triple<Caption, String, Int>>,
-    vocabularyType: VocabularyType,
     videoPlayerWindow:JFrame,
     videoPlayerComponent:Component,
     isPlaying: Boolean,
     volume: Float,
     setIsPlaying: (Boolean) -> Unit,
     word: Word,
-    isEditing: Boolean,
     bounds: Rectangle,
     textFieldValueList: List<String>,
     typingResultMap: Map<Int, MutableList<Pair<Char, Boolean>>>,
@@ -833,9 +825,9 @@ fun Captions(
                     } else if (captionContent.contains("\n")) {
                         captionContent = captionContent.replace("\n", " ")
                     }
-                    val textFieldValue = if (!isEditing) textFieldValueList[index] else ""
-                    var typingResult = if (!isEditing) typingResultMap[index] else listOf()
-                    if (!isEditing && typingResult == null) {
+                    val textFieldValue =  textFieldValueList[index]
+                    var typingResult = typingResultMap[index]
+                    if (typingResult == null) {
                         typingResult = mutableListOf()
                         putTypingResultMap(index, typingResult)
                     }
@@ -844,37 +836,6 @@ fun Captions(
                         videoPlayerComponent = videoPlayerComponent,
                         setIsPlaying = {
                             setIsPlaying(it)
-                        },
-                        isEditing = isEditing,
-                        deleteCaption = {
-                            // 在 EditDialog 界面中点击保存，会保存整个词库
-                            if (vocabularyType == VocabularyType.DOCUMENT) {
-                                word.links.removeAt(index)
-                            } else {
-                                word.captions.removeAt(index)
-                            }
-                        },
-                        onChangeTime = { (index, start, end) ->
-                            if (vocabularyType == VocabularyType.DOCUMENT) {
-                                playTriple.first.start = secondsToString(start)
-                                playTriple.first.end = secondsToString(end)
-                                val item = word.links[index]
-                                val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-                                val matcher = captionPattern.matcher(item)
-                                if (matcher.find()) {
-                                    val vocabularyPath = matcher.group(1)
-                                    val subtitleIndex = matcher.group(4).toInt()
-                                    val subtitleVocabulary = loadVocabulary(vocabularyPath)
-                                    val index = subtitleVocabulary.wordList.indexOf(word)
-                                    var subtitleWord = subtitleVocabulary.wordList[index]
-                                    subtitleWord.captions[subtitleIndex].start = secondsToString(start)
-                                    subtitleWord.captions[subtitleIndex].end = secondsToString(end)
-                                    saveVocabulary(subtitleVocabulary,vocabularyPath)
-                                }
-                            } else {
-                                word.captions[index].start = secondsToString(start)
-                                word.captions[index].end = secondsToString(end)
-                            }
                         },
                         volume = volume,
                         captionContent = captionContent,
@@ -893,7 +854,7 @@ fun Captions(
             }
         }
         if (!isPlaying && (word.captions.isNotEmpty() || word.links.isNotEmpty()))
-            Divider(Modifier.padding(start = if (!isEditing) 50.dp else 0.dp))
+            Divider(Modifier.padding(start =  50.dp ))
     }
 }
 
@@ -906,7 +867,7 @@ fun Captions(
  * - Triple 的 Int      -> 字幕的轨道
  */
 @OptIn(ExperimentalSerializationApi::class)
-fun getPlayTripleMap(state: AppState, word: Word): Map<Int, Triple<Caption, String, Int>> {
+fun getPlayTripleMap(state: AppState, word: Word): MutableMap<Int, Triple<Caption, String, Int>> {
 
     val playTripleMap = mutableMapOf<Int, Triple<Caption, String, Int>>()
     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
@@ -943,9 +904,6 @@ fun secondsToString(seconds: Double): String {
  * 字幕组件
  * @param videoPlayerWindow 视频播放窗口
  * @param setIsPlaying 设置是否正在播放视频的回调
- * @param isEditing 是否正在编辑单词
- * @param deleteCaption 删除当前字幕的回调
- * @param onChangeTime 设置当前字幕的时间轴的回调
  * @param volume 音量
  * @param captionContent 字幕的内容
  * @param textFieldValue 输入的字幕
@@ -968,9 +926,6 @@ fun Caption(
     videoPlayerWindow:JFrame,
     videoPlayerComponent:Component,
     setIsPlaying: (Boolean) -> Unit,
-    isEditing: Boolean,
-    deleteCaption: (Int) -> Unit,
-    onChangeTime: (Triple<Int, Double, Double>) -> Unit,
     volume: Float,
     captionContent: String,
     textFieldValue: String,
@@ -983,57 +938,40 @@ fun Caption(
 ) {
 
     val relativeVideoPath = playTriple.second
-    val columnModifier = if (isEditing) {
-        Modifier.fillMaxWidth().padding(12.dp)
-    } else {
-        Modifier.width(IntrinsicSize.Max)
-    }
-    Column(modifier = columnModifier) {
-        val rowModifier = if (isEditing) {
-            Modifier.height(36.dp).fillMaxWidth()
-        } else {
-            Modifier.height(36.dp).width(IntrinsicSize.Max)
-        }
+    Column(modifier = Modifier.width(IntrinsicSize.Max)) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = rowModifier
+            modifier =  Modifier.height(36.dp).width(IntrinsicSize.Max)
         ) {
 
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
-                if (!isEditing) {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { input ->
-                            checkTyping(index, input, captionContent)
-                        },
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                        textStyle = LocalTextStyle.current.copy(color = Color.Transparent),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(32.dp)
-                            .align(Alignment.CenterStart).onKeyEvent {
-                                if (it.type == KeyEventType.KeyDown
-                                    && it.key != Key.ShiftRight
-                                    && it.key != Key.ShiftLeft
-                                    && it.key != Key.CtrlRight
-                                    && it.key != Key.CtrlLeft) {
-                                    playKeySound()
-                                }
-                                true
+                BasicTextField(
+                    value = textFieldValue,
+                    onValueChange = { input ->
+                        checkTyping(index, input, captionContent)
+                    },
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                    textStyle = LocalTextStyle.current.copy(color = Color.Transparent),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .align(Alignment.CenterStart).onKeyEvent {
+                            if (it.type == KeyEventType.KeyDown
+                                && it.key != Key.ShiftRight
+                                && it.key != Key.ShiftLeft
+                                && it.key != Key.CtrlRight
+                                && it.key != Key.CtrlLeft) {
+                                playKeySound()
                             }
-                    )
-                }
-                val textModifier = if (isEditing) {
-                    Modifier.align(Alignment.CenterStart).height(32.dp).width(430.dp)
-                } else {
-                    Modifier.align(Alignment.CenterStart).height(32.dp)
-                }
+                            true
+                        }
+                )
                 Text(
                     textAlign = TextAlign.Start,
                     color = MaterialTheme.colors.onBackground,
-                    modifier = textModifier,
+                    modifier =  Modifier.align(Alignment.CenterStart).height(32.dp),
                     overflow = TextOverflow.Ellipsis,
                     text = buildAnnotatedString {
                         typingResult.forEach { (char, correct) ->
@@ -1080,435 +1018,68 @@ fun Caption(
                     },
                 )
             }
-            Row {
-                if (!isEditing) {
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                shape = RectangleShape
-                            ) {
-                                val ctrl = LocalCtrl.current
-                                val shift = if (isMacOS()) "⇧" else "Shift"
-                                val text:Any = when (index) {
-                                    0 -> "播放 $ctrl+$shift+Z"
-                                    1 -> "播放 $ctrl+$shift+X"
-                                    2 -> "播放 $ctrl+$shift+C"
-                                    else -> println("字幕数量超出范围")
-                                }
-                                Text(text = text.toString(), modifier = Modifier.padding(10.dp))
-                            }
-                        },
-                        delayMillis = 300,
-                        tooltipPlacement = TooltipPlacement.ComponentRect(
-                            anchor = Alignment.CenterEnd,
-                            alignment = Alignment.CenterEnd,
-                            offset = DpOffset.Zero
-                        )
+
+            TooltipArea(
+                tooltip = {
+                    Surface(
+                        elevation = 4.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                        shape = RectangleShape
                     ) {
-                        IconButton(onClick = {
-                            val file = File(relativeVideoPath)
-                            if (file.exists()) {
-                                setIsPlaying(true)
-                                Thread(Runnable {
-                                    play(
-                                        videoPlayerWindow,
-                                        setIsPlaying = { setIsPlaying(it) },
-                                        volume,
-                                        playTriple,
-                                        videoPlayerComponent,
-                                        bounds
-                                    )
-
-                                }).start()
-
-                            } else {
-                                println("通知用户，视频地址错误")
-                            }
-
-                        }) {
-                            Icon(
-                                Icons.Filled.PlayArrow,
-                                contentDescription = "Localized description",
-                                tint = MaterialTheme.colors.primary
-                            )
+                        val ctrl = LocalCtrl.current
+                        val shift = if (isMacOS()) "⇧" else "Shift"
+                        val text:Any = when (index) {
+                            0 -> "播放 $ctrl+$shift+Z"
+                            1 -> "播放 $ctrl+$shift+X"
+                            2 -> "播放 $ctrl+$shift+C"
+                            else -> println("字幕数量超出范围")
                         }
+                        Text(text = text.toString(), modifier = Modifier.padding(10.dp))
                     }
-                }
-                // 编辑单词
-                if (isEditing) {
-                    var showSettingTimeLineDialog by remember { mutableStateOf(false) }
-                    if (showSettingTimeLineDialog) {
-                        SettingTimeLine(
-                            index = index,
-                            volume = volume,
-                            playTriple = playTriple,
-                            mediaPlayerComponent = videoPlayerComponent,
-                            confirm = {
-                                onChangeTime(it)
-                            },
-                            close = { showSettingTimeLineDialog = false }
-                        )
-                    }
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                shape = RectangleShape
-                            ) {
-                                Text(text = "调整时间轴", modifier = Modifier.padding(10.dp))
-                            }
-                        },
-                        delayMillis = 300,
-                        tooltipPlacement = TooltipPlacement.ComponentRect(
-                            anchor = Alignment.BottomCenter,
-                            alignment = Alignment.BottomCenter,
-                            offset = DpOffset.Zero
-                        )
-                    ) {
-                        val progress = 0.5f
-                        IconButton(onClick = {
-                            showSettingTimeLineDialog = true
-                        }, modifier = Modifier.size(48.dp)) {
-                            LinearProgressIndicator(
-                                progress = progress,
-                                modifier = Modifier.width(24.dp)
-                            )
-                        }
-                    }
-                    var showConfirmationDialog by remember { mutableStateOf(false) }
-                    if (showConfirmationDialog) {
-                        ConfirmationDelete(
-                            message = "确定要删除 $captionContent 吗？",
-                            confirm = {
-                                deleteCaption(index)
-                                showConfirmationDialog = false
-                            },
-                            close = { showConfirmationDialog = false }
-                        )
-                    }
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                shape = RectangleShape
-                            ) {
-                                Text(text = "删除", modifier = Modifier.padding(10.dp))
-                            }
-                        },
-                        delayMillis = 300,
-                        tooltipPlacement = TooltipPlacement.ComponentRect(
-                            anchor = Alignment.BottomCenter,
-                            alignment = Alignment.BottomCenter,
-                            offset = DpOffset.Zero
-                        )
-                    ) {
-                        IconButton(onClick = {
-                            showConfirmationDialog = true
-
-                        }, modifier = Modifier.size(48.dp)) {
-                            Icon(Icons.Filled.Delete, contentDescription = "", tint = MaterialTheme.colors.primary)
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-
-}
-
-/**
- * 调整字幕时间轴
- * @param index 字幕的索引
- * @param volume 音量
- * @param close 点击取消后调用的回调
- * @param confirm 点击确定后调用的回调
- * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
- */
-@OptIn(ExperimentalMaterialApi::class)
-@ExperimentalComposeUiApi
-@Composable
-fun SettingTimeLine(
-    index: Int,
-    volume: Float,
-    close: () -> Unit,
-    confirm: (Triple<Int, Double, Double>) -> Unit,
-    playTriple: Triple<Caption, String, Int>,
-    mediaPlayerComponent:Component,
-) {
-    Dialog(
-        title = "调整时间轴",
-        onCloseRequest = { close() },
-        undecorated = true,
-        resizable = false,
-        state = rememberDialogState(
-            position = WindowPosition(Alignment.Center),
-            size = DpSize(610.dp, 654.dp)
-        ),
-    ) {
-        Surface(
-            elevation = 5.dp,
-            shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
-        ) {
-            Column(Modifier.fillMaxSize()) {
-                /**
-                 * 字幕内容
-                 */
-                val caption = playTriple.first
-
-                /**
-                 * 视频地址
-                 */
-                val relativeVideoPath = playTriple.second
-
-                /**
-                 * 字幕轨道 ID
-                 */
-                val trackId = playTriple.third
-
-                /**
-                 * 当前字幕的开始时间，单位是秒
-                 */
-                var start by remember {
-                    mutableStateOf(
-                        LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
-                            .toNanoOfDay().toDouble().div(1000_000_000)
-                    )
-                }
-                /**
-                 * 当前字幕的结束时间，单位是秒
-                 */
-                var end by remember {
-                    mutableStateOf(
-                        LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
-                            .toNanoOfDay().toDouble().div(1000_000_000)
-                    )
-                }
-
-                /**
-                 * 调整时间轴的精度
-                 */
-                var precise by remember { mutableStateOf("1S") }
-
-                mediaPlayerComponent.mediaPlayer().events()
-                    .addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-                        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                            mediaPlayer.audio().setVolume((volume * 100).toInt())
-                        }
-
-                        override fun finished(mediaPlayer: MediaPlayer) {
-                            mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-                        }
-                    })
-
-                SwingPanel(
-                    modifier = Modifier.width(610.dp).height(343.dp),
-                    factory = {
-                        mediaPlayerComponent
-                    }
+                },
+                delayMillis = 300,
+                tooltipPlacement = TooltipPlacement.ComponentRect(
+                    anchor = Alignment.CenterEnd,
+                    alignment = Alignment.CenterEnd,
+                    offset = DpOffset.Zero
                 )
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(top = 20.dp)
-                ) {
+            ) {
+                IconButton(onClick = {
+                    val file = File(relativeVideoPath)
+                    if (file.exists()) {
+                        setIsPlaying(true)
+                        Thread(Runnable {
+                            play(
+                                videoPlayerWindow,
+                                setIsPlaying = { setIsPlaying(it) },
+                                volume,
+                                playTriple,
+                                videoPlayerComponent,
+                                bounds
+                            )
 
-                    Text("开始:")
-                    TimeControl(
-                        time = start,
-                        addTime = { start += it },
-                        minusTime = { start -= it },
-                        precise = precise,
+                        }).start()
+
+                    } else {
+                        println("通知用户，视频地址错误")
+                    }
+
+                }) {
+                    Icon(
+                        Icons.Filled.PlayArrow,
+                        contentDescription = "Localized description",
+                        tint = MaterialTheme.colors.primary
                     )
-                    Spacer(Modifier.width(20.dp))
-                    Text("结束:")
-                    TimeControl(
-                        time = end,
-                        addTime = { end += it },
-                        minusTime = { end -= it },
-                        precise = precise,
-                    )
-                    Spacer(Modifier.width(20.dp))
-                    var expanded by remember { mutableStateOf(false) }
-                    Text("精度:")
-                    Box {
-                        OutlinedButton(
-                            onClick = { expanded = true },
-                            modifier = Modifier
-                                .width(93.dp)
-                                .background(Color.Transparent)
-                                .border(1.dp, Color.Transparent)
-                        ) {
-                            Text(text = precise)
-                            Icon(Icons.Default.ExpandMore, contentDescription = "Localized description")
-                        }
-                        val menuItemModifier = Modifier.width(93.dp).height(30.dp)
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.width(93.dp)
-                                .height(190.dp)
-                        ) {
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "1S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("1S")
-                            }
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "0.5S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("0.5S")
-                            }
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "0.1S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("0.1S")
-                            }
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "0.05S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("0.05S")
-                            }
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "0.01S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("0.01S")
-                            }
-                            DropdownMenuItem(
-                                onClick = {
-                                    precise = "0.001S"
-                                    expanded = false
-                                },
-                                modifier = menuItemModifier
-                            ) {
-                                Text("0.001S")
-                            }
-                        }
-
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedButton(onClick = {
-                        mediaPlayerComponent.mediaPlayer().media()
-                            .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
-
-                    }) {
-                        Text("播放")
-                    }
-                    Spacer(Modifier.width(20.dp))
-                    OutlinedButton(onClick = {
-                        confirm(Triple(index, start, end))
-                        close()
-                    }) {
-                        Text("确定")
-                    }
-                    Spacer(Modifier.width(20.dp))
-                    OutlinedButton(onClick = { close() }) {
-                        Text("取消")
-                    }
                 }
             }
+
         }
     }
+
+
 }
 
-/**
- * 调整时间轴的开始或结束时间
- * @param time 时间
- * @param addTime 点击增加按钮后调用的回调
- * @param minusTime 点击减少按钮后调用的回调
- * @param precise 调整精度
- */
-@Composable
-fun TimeControl(
-    time: Double,
-    addTime: (Float) -> Unit,
-    minusTime: (Float) -> Unit,
-    precise: String,
-) {
-    Text(text = secondsToString(time))
-    Column {
-        Icon(Icons.Filled.Add,
-            contentDescription = "",
-            tint = MaterialTheme.colors.primary,
-            modifier = Modifier.clickable {
-                when (precise) {
-                    "1S" -> {
-                        addTime(1F)
-                    }
-                    "0.5S" -> {
-                        addTime(0.5F)
-                    }
-                    "0.1S" -> {
-                        addTime(0.1F)
-                    }
-                    "0.05S" -> {
-                        addTime(0.05F)
-                    }
-                    "0.01S" -> {
-                        addTime(0.01F)
-                    }
-                    "0.001S" -> {
-                        addTime(0.001F)
-                    }
-                }
-            })
-        Icon(Icons.Filled.Remove,
-            contentDescription = "",
-            tint = MaterialTheme.colors.primary,
-            modifier = Modifier.clickable {
-                when (precise) {
-                    "1S" -> {
-                        minusTime(1F)
-                    }
-                    "0.5S" -> {
-                        minusTime(0.5F)
-                    }
-                    "0.1S" -> {
-                        minusTime(0.1F)
-                    }
-                    "0.05S" -> {
-                        minusTime(0.05F)
-                    }
-                    "0.01S" -> {
-                        minusTime(0.01F)
-                    }
-                    "0.001S" -> {
-                        minusTime(0.001F)
-                    }
-                }
-            })
-    }
-}
+
 
 /**
  * @param window 视频播放窗口
@@ -1545,7 +1116,7 @@ fun play(
         closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
         closeButton.setContent {
             MaterialTheme(colors = if (MaterialTheme.colors.isLight) LightColorScheme else DarkColorScheme) {
-                // TODO ComposePanel 还没有支持背景透明之前的临时措施，等支持背景透明之后重写
+                // TODO 等 ComposePanel 支持背景透明之后重写
                 Box(Modifier
                     .clickable { window.isVisible = false }
                     .fillMaxSize()
