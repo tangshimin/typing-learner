@@ -196,23 +196,22 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         })
     }
     Menu("字幕(S)",mnemonic = 'S'){
-        var showImportVocabulary by remember { mutableStateOf(false) }
-        if (showImportVocabulary) {
+        var showLinkVocabulary by remember { mutableStateOf(false) }
+        if (showLinkVocabulary) {
             LinkVocabularyDialog(
                 state = state,
                 close = {
-                    showImportVocabulary = false
+                    showLinkVocabulary = false
                 }
             )
         }
         //如果当前词库类型为文档就启用
-        val enableImportVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT
+        val enableLinkVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT
         Item(
-            "导入字幕",
-            enabled = enableImportVocabulary,
-            onClick = { showImportVocabulary = true },
+            "链接字幕词库",
+            enabled = enableLinkVocabulary,
+            onClick = { showLinkVocabulary = true },
         )
-
     }
     Menu("章节(C)", mnemonic = 'C') {
         Item(
