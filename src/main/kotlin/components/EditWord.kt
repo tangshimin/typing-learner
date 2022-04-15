@@ -527,6 +527,7 @@ fun SettingTimeLine(
                                 .toNanoOfDay().toDouble().div(1000_000_000)
                         )
                     }
+                    val oldStart = caption.start
                     /**
                      * 当前字幕的结束时间，单位是秒
                      */
@@ -536,7 +537,7 @@ fun SettingTimeLine(
                                 .toNanoOfDay().toDouble().div(1000_000_000)
                         )
                     }
-
+                    val oldEnd = caption.end
                     /**
                      * 调整时间轴的精度
                      */
@@ -676,6 +677,8 @@ fun SettingTimeLine(
                                         val file = File(relativeVideoPath)
                                         if (file.exists()) {
                                             scope.launch {
+                                                playTriple.first.start = secondsToString(start)
+                                                playTriple.first.end = secondsToString(end)
                                                 play(
                                                     window = state.videoPlayerWindow,
                                                     setIsPlaying = {},
