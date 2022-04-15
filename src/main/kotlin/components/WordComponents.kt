@@ -21,6 +21,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.*
@@ -154,29 +155,31 @@ fun WordComponents(
                     if(!state.isDictation || (state.isDictation && state.isReviewWrongList)){
                         activeMenu = true
                     } }) {
-                BasicTextField(
-                    value = textFieldValue,
-                    onValueChange = { input ->
-                        scope.launch {
-                            checkTyping(input)
-                        }
-                    },
-                    singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                    textStyle = TextStyle(
-                        color = Color.Transparent,
-                        fontSize = 3.5.em,
-                        letterSpacing = 5.sp,
-                        fontFamily = FontFamily.Monospace
-                    ),
-
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.Center)
-                        .focusRequester(focusRequester)
-                        .onKeyEvent { textFieldKeyEvent(it) }
-
-                )
+                CompositionLocalProvider(
+                    LocalTextInputService provides null
+                ) {
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = { input ->
+                            scope.launch {
+                                checkTyping(input)
+                            }
+                        },
+                        singleLine = true,
+                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                        textStyle = TextStyle(
+                            color = Color.Transparent,
+                            fontSize = 3.5.em,
+                            letterSpacing = 5.sp,
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center)
+                            .focusRequester(focusRequester)
+                            .onKeyEvent { textFieldKeyEvent(it) }
+                    )
+                }
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
