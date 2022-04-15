@@ -7,14 +7,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -23,6 +21,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
@@ -31,19 +30,28 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import data.Dictionary
-import data.Word
+import data.*
 import dialog.ChapterFinishedDialog
+import dialog.LinkCaptionDialog
 import player.AudioButton
+import player.mediaPlayer
 import state.AppState
 import state.getResourcesFile
+import uk.co.caprica.vlcj.player.base.MediaPlayer
+import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
+import java.awt.Dimension
+import java.awt.Point
 import java.awt.Rectangle
+import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.HashMap
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.FloatControl
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.fixedRateTimer
 
 /** 单词组件
@@ -540,227 +548,7 @@ fun Phonetic(
     }
 }
 
-/**
- * 编辑当前单词
- * @param word 当前单词
- * @param state 应用程序的状态
- * @param save 点击保存之后调用的回调
- * @param close 点击取消之后调用的回调
- */
-@OptIn(ExperimentalComposeUiApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
-@Composable
-fun EditWord(
-    word: Word,
-    state: AppState,
-    save: (Word) -> Unit,
-    close: () -> Unit
-) {
-    Dialog(
-        title = "编辑单词",
-        onCloseRequest = { close() },
-        undecorated = !MaterialTheme.colors.isLight,
-        resizable = false,
-        state = rememberDialogState(
-            position = WindowPosition(Alignment.Center),
-            size = DpSize(610.dp, 634.dp)
-        ),
-    ) {
-        Surface(
-            elevation = 5.dp,
-            shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-        ) {
 
-            var mutableWord by remember { mutableStateOf(word) }
-            var inputWordStr by remember { mutableStateOf(TextFieldValue(word.value)) }
-            var translationFieldValue by remember { mutableStateOf(TextFieldValue(word.translation)) }
-            var definitionFieldValue by remember { mutableStateOf(TextFieldValue(word.definition)) }
-
-
-            Column(Modifier.fillMaxSize()) {
-                val textStyle = TextStyle(
-                    color = MaterialTheme.colors.onBackground
-                )
-                val border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
-                val modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                if (!MaterialTheme.colors.isLight) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("编辑单词", modifier = Modifier.align(Alignment.Center))
-                        var isHover by remember { mutableStateOf(false) }
-                        IconButton(
-                            onClick = { close() },
-                            modifier = Modifier
-                                .onPointerEvent(PointerEventType.Enter) { isHover = true }
-                                .onPointerEvent(PointerEventType.Exit) { isHover = false }
-                                .background(if (isHover) Color(196, 43, 28) else Color.Transparent)
-                                .align(Alignment.CenterEnd)) {
-                            Icon(
-                                Icons.Filled.Close,
-                                contentDescription = "",
-                                tint = MaterialTheme.colors.onBackground,
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = modifier
-                ) {
-                    Text("单词：")
-                    Spacer(Modifier.width(20.dp))
-                    BasicTextField(
-                        value = inputWordStr,
-                        onValueChange = { inputWordStr = it },
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                        textStyle = TextStyle(
-                            lineHeight = 26.sp,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colors.onBackground
-                        ),
-                        modifier = Modifier
-                            .height(36.dp)
-                            .border(border = border).padding(start = 10.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-
-                    var updateFailed by remember { mutableStateOf(false) }
-                    OutlinedButton(onClick = {
-                        Thread(Runnable {
-                            val newWord = Dictionary.query(inputWordStr.text)
-                            if (newWord != null) {
-                                mutableWord = newWord
-                                translationFieldValue = TextFieldValue(newWord.translation)
-                                definitionFieldValue = TextFieldValue(newWord.definition)
-                                updateFailed = false
-                            } else {
-                                updateFailed = true
-                            }
-                        }).start()
-                    }) {
-                        Text("查询")
-                    }
-                    if (updateFailed) {
-                        Text("没有相关信息", color = Color.Red, modifier = Modifier.padding(start = 10.dp))
-                    }
-                }
-                val boxModifier = Modifier.fillMaxWidth().height(115.dp).border(border = border)
-                Column(modifier = modifier) {
-                    Text("中文释义：")
-                    Box(modifier = boxModifier) {
-
-                        val stateVertical = rememberScrollState(0)
-                        BasicTextField(
-                            value = translationFieldValue,
-                            onValueChange = {
-                                translationFieldValue = it
-                            },
-                            textStyle = textStyle,
-                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                            modifier = Modifier
-                                .verticalScroll(stateVertical)
-                                .fillMaxSize().padding(10.dp)
-                        )
-                        VerticalScrollbar(
-                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                            adapter = rememberScrollbarAdapter(stateVertical),
-                            style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
-                        )
-                    }
-
-                }
-                Column(modifier = modifier) {
-                    Text("英语释义：")
-                    Box(modifier = boxModifier) {
-
-                        val stateVertical = rememberScrollState(0)
-                        BasicTextField(
-                            value = definitionFieldValue,
-                            onValueChange = {
-                                definitionFieldValue = it
-                            },
-                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                            textStyle = textStyle,
-                            modifier = Modifier
-                                .verticalScroll(stateVertical)
-                                .fillMaxWidth().padding(10.dp)
-                        )
-                        VerticalScrollbar(
-                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                            adapter = rememberScrollbarAdapter(stateVertical),
-                            style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
-                        )
-                    }
-
-                }
-
-                Captions(
-                    captionsVisible = state.typing.subtitlesVisible,
-                    playTripleMap = getPlayTripleMap(state, word),
-                    vocabularyType = state.vocabulary.type,
-                    videoPlayerWindow = state.videoPlayerWindow,
-                    videoPlayerComponent = state.videoPlayerComponent,
-                    isPlaying = state.isPlaying,
-                    volume = state.typing.audioVolume,
-                    setIsPlaying = { state.isPlaying = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(intrinsicSize = IntrinsicSize.Max),
-                    word = word,
-                    isEditing = true,
-                    bounds = Rectangle(0, 0, 0, 0),
-                    textFieldValueList = listOf(),
-                    typingResultMap = mapOf(),
-                    putTypingResultMap = { _, _ -> },
-                    checkTyping = { _, _, _ -> },
-                    playKeySound = {},
-                )
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp)
-                ) {
-                    OutlinedButton(onClick = {
-                        // 单词可以从词典查询到，或者只修改了中文释义或英文释义
-                        if (inputWordStr.text == mutableWord.value) {
-                            mutableWord.translation = translationFieldValue.text
-                            mutableWord.definition = definitionFieldValue.text
-                            save(mutableWord)
-                        } else {
-                            // 词典里没有这个单词，用户手动修改中文释义和英文释义
-                            val newWord = Word(
-                                value = inputWordStr.text,
-                                usphone = "",
-                                ukphone = "",
-                                definition = definitionFieldValue.text,
-                                translation = translationFieldValue.text,
-                                pos = "",
-                                collins = 0,
-                                oxford = false,
-                                tag = "",
-                                bnc = 0,
-                                frq = 0,
-                                exchange = "",
-                                links = mutableListOf(),
-                                captions = mutableListOf()
-                            )
-                            save(newWord)
-                        }
-
-                    }) {
-                        Text("保存")
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    OutlinedButton(onClick = { close() }) {
-                        Text("取消")
-                    }
-                }
-            }
-        }
-    }
-}
 
 /**
  * 确认删除对话框

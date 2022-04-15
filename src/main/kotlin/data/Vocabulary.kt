@@ -86,6 +86,23 @@ data class Word(
     }
 }
 
+class MutableWord(word:Word){
+    var value by mutableStateOf(word.value)
+    var usphone by mutableStateOf(word.usphone)
+    var ukphone by mutableStateOf(word.usphone)
+    var definition by mutableStateOf(word.definition)
+    var translation by mutableStateOf(word.translation)
+    var pos by mutableStateOf(word.pos)
+    var collins by mutableStateOf(word.collins)
+    var oxford by mutableStateOf(word.oxford)
+    var tag by mutableStateOf(word.tag)
+    var bnc by mutableStateOf(word.bnc)
+    var frq by mutableStateOf(word.frq)
+    var exchange by mutableStateOf(word.exchange)
+    var links by mutableStateOf(word.links)
+    var captions by mutableStateOf(word.captions)
+}
+
 @Serializable
 data class Caption(var start: String, var end: String, var content: String) {
     override fun toString(): String {

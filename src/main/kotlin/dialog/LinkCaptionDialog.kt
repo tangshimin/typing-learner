@@ -1,0 +1,286 @@
+package dialog
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.awtEventOrNull
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
+import components.EditingCaptions
+import components.play
+import data.Word
+import data.loadVocabulary
+import state.AppState
+import state.getResourcesFile
+import java.awt.Rectangle
+import java.io.File
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileSystemView
+
+/**
+ * 链接一条字幕到一个单词
+ * @param word 当前正在链接的单词
+ * @param state 应用程序的状态
+ * @param setLinkSize 由于 word 是不可观察的，增加或删除链接后需要更新链接的数量。
+ * @param close 关闭当前窗口
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun LinkCaptionDialog(
+    word: Word,
+    state:AppState,
+    setLinkSize:(Int) ->Unit,
+    close:()->Unit
+) {
+    Dialog(
+        title = "链接字幕",
+        icon = painterResource("logo/logo.svg"),
+        onCloseRequest = {close()},
+        undecorated = !MaterialTheme.colors.isLight,
+        resizable = false,
+        state = rememberDialogState(
+            position = WindowPosition(Alignment.Center),
+            size = DpSize(610.dp,700.dp)
+        ),
+    ) {
+        Surface(
+            elevation = 5.dp,
+            shape = RectangleShape,
+            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+        ) {
+            Box(modifier = Modifier.fillMaxSize()){
+
+                var wordList = remember{ mutableStateListOf<Word>() }
+                var subtitleVocabularyPath by remember { mutableStateOf("") }
+                var relateVideoPath by remember { mutableStateOf("") }
+                var subtitlesTrackId by remember { mutableStateOf(0) }
+                var selectedCaptionContent by remember { mutableStateOf("") }
+                var selectedCaptionIndex by remember{ mutableStateOf(0)}
+                if(!MaterialTheme.colors.isLight){
+                    Row(horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)){
+                        Text("链接字幕")
+                    }
+                }
+                Column (Modifier.width(IntrinsicSize.Max).align(Alignment.Center)){
+                    EditingCaptions(
+                        state = state,
+                        setLinkSize = {setLinkSize(it)},
+                        word = word
+                    )
+                    Divider(Modifier.padding(start = 10.dp))
+                    Row( verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp)){
+                        Text("选择字幕词库：")
+                        BasicTextField(
+                            value = subtitleVocabularyPath,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                            textStyle = TextStyle(
+                                lineHeight = 26.sp,
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colors.onBackground
+                            ),
+                            modifier = Modifier
+                                .width(275.dp)
+                                .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
+                        )
+                        IconButton(onClick = {
+                            Thread(Runnable {
+                                state.loadingFileChooserVisible = true
+                                val fileChooser = state.futureFileChooser.get()
+                                fileChooser.dialogTitle = "选择字幕词库"
+                                fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                                fileChooser.currentDirectory = getResourcesFile("vocabulary")
+                                fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+                                fileChooser.isAcceptAllFileFilterUsed = false
+                                fileChooser.selectedFile = null
+                                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                                    val file = fileChooser.selectedFile
+                                    subtitleVocabularyPath = file.absolutePath
+                                    wordList.clear()
+                                    val vocabulary= loadVocabulary(file.absolutePath)
+                                    wordList.addAll(vocabulary.wordList)
+                                    relateVideoPath = vocabulary.relateVideoPath
+                                    subtitlesTrackId = vocabulary.subtitlesTrackId
+                                    fileChooser.selectedFile = File("")
+                                }
+                                state.loadingFileChooserVisible = false
+                            }).start()
+
+                        }){
+                            Icon(
+                                Icons.Filled.FolderOpen,
+                                contentDescription = "",
+                                tint = MaterialTheme.colors.onBackground)
+                        }
+                    }
+
+
+                    if (wordList.isNotEmpty()) {
+                        val index = wordList.indexOf(word)
+                        if(index != -1){
+                            val subtitleWord = wordList[index]
+                            if(subtitleWord.captions.size>0){
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Start,
+                                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp)){
+                                    Text("选择字幕：",
+                                        color = MaterialTheme.colors.onBackground,
+                                        textAlign = TextAlign.Start,
+                                    modifier = Modifier.width(116.dp))
+                                    Box(Modifier.width(IntrinsicSize.Max)){
+                                        var expanded by remember { mutableStateOf(false) }
+                                        OutlinedButton(
+                                            onClick = {expanded = true},
+                                            modifier = Modifier.width(IntrinsicSize.Max)
+                                                .background(Color.Transparent)
+                                                .border(1.dp, Color.Transparent)
+                                        ){
+                                            Text(
+                                                text = selectedCaptionContent.ifEmpty { "" },
+                                                color = MaterialTheme.colors.onBackground
+                                            )
+                                            Icon(
+                                                Icons.Default.ExpandMore,
+                                                contentDescription = "",
+                                                modifier = Modifier.size(20.dp,20.dp)
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = {expanded = false},
+                                            modifier = Modifier.width(500.dp).height(140.dp)
+                                        ){
+                                            subtitleWord.captions.forEachIndexed{ index, caption ->
+                                                DropdownMenuItem(
+                                                    onClick = {
+                                                        selectedCaptionContent = caption.content
+                                                        selectedCaptionIndex = index
+                                                        expanded = false
+                                                    },
+                                                    modifier = Modifier.width(500.dp).height(40.dp)
+                                                ){
+                                                    Text(
+                                                        text = caption.content,
+                                                        fontSize = 12.sp,
+                                                        modifier = Modifier.width(IntrinsicSize.Max)
+                                                    )
+                                                    val playTriple =
+                                                        Triple(caption, relateVideoPath, subtitlesTrackId)
+                                                    val playerBounds by remember {
+                                                        mutableStateOf(
+                                                            Rectangle(
+                                                                0,
+                                                                0,
+                                                                540,
+                                                                303
+                                                            )
+                                                        )
+                                                    }
+                                                    IconButton(
+                                                        onClick = {},
+                                                        modifier = Modifier
+                                                            .onPointerEvent(PointerEventType.Press) {
+                                                                val location =
+                                                                    it.awtEventOrNull?.locationOnScreen
+                                                                if (location != null) {
+                                                                    playerBounds.x = location.x - 270 + 24
+                                                                    playerBounds.y = location.y - 320
+
+                                                                    val file = File(relateVideoPath)
+                                                                    if (file.exists()) {
+                                                                        Thread(Runnable {
+                                                                            play(
+                                                                                window = state.videoPlayerWindow,
+                                                                                setIsPlaying = {},
+                                                                                volume = state.typing.audioVolume,
+                                                                                playTriple = playTriple,
+                                                                                videoPlayerComponent= state.videoPlayerComponent,
+                                                                                bounds =playerBounds
+                                                                            )
+                                                                        }).start()
+                                                                    }
+                                                                }
+                                                            }
+                                                    ) {
+                                                        Icon(
+                                                            Icons.Filled.PlayArrow,
+                                                            contentDescription = "Localized description",
+                                                            tint = MaterialTheme.colors.primary
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    }
+
+                                    OutlinedButton(onClick = {
+                                        if(subtitleVocabularyPath.isNotEmpty() && selectedCaptionContent.isNotEmpty()){
+                                            val link =
+                                                "(${subtitleVocabularyPath})[${relateVideoPath}][${subtitlesTrackId}][$selectedCaptionIndex]"
+                                            if (word.links.size <3 && !word.links.contains(link)) {
+                                                word.links.add(link)
+                                            }
+
+                                            setLinkSize( word.links.size)
+                                            state.vocabulary.wordList.removeAt(index)
+                                            state.vocabulary.wordList.add(index, word)
+                                        }
+                                    },modifier = Modifier.padding(start = 10.dp)){
+                                        Text("添加")
+                                    }
+
+                                }
+                            }
+                        }else{
+                            Text("所选择的词库没有与 ${word.value} 相等的单词，请重新选择字幕词库",color = Color.Red)
+                        }
+
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)){
+                    OutlinedButton(onClick = {
+
+                        close()
+                    }){
+                        Text("确定")
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    OutlinedButton(onClick = { close() }){
+                        Text("取消")
+                    }
+                }
+            }
+        }
+    }
+}
