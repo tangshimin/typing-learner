@@ -34,6 +34,7 @@ import components.EditingCaptions
 import components.play
 import data.Word
 import data.loadVocabulary
+import kotlinx.coroutines.launch
 import state.AppState
 import state.getResourcesFile
 import java.awt.Rectangle
@@ -74,6 +75,7 @@ fun LinkCaptionDialog(
         ) {
             Box(modifier = Modifier.fillMaxSize()){
 
+                val scope = rememberCoroutineScope()
                 var wordList = remember{ mutableStateListOf<Word>() }
                 var subtitleVocabularyPath by remember { mutableStateOf("") }
                 var relateVideoPath by remember { mutableStateOf("") }
@@ -217,7 +219,7 @@ fun LinkCaptionDialog(
 
                                                                     val file = File(relateVideoPath)
                                                                     if (file.exists()) {
-                                                                        Thread(Runnable {
+                                                                        scope.launch {
                                                                             play(
                                                                                 window = state.videoPlayerWindow,
                                                                                 setIsPlaying = {},
@@ -226,7 +228,8 @@ fun LinkCaptionDialog(
                                                                                 videoPlayerComponent= state.videoPlayerComponent,
                                                                                 bounds =playerBounds
                                                                             )
-                                                                        }).start()
+                                                                        }
+
                                                                     }
                                                                 }
                                                             }

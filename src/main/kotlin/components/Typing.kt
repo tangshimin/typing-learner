@@ -8,33 +8,32 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.rememberDialogState
-import data.*
+import data.Caption
+import data.VocabularyType
+import data.Word
+import data.loadCaptionsMap
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.isMacOS
 import player.mediaPlayer
@@ -51,7 +50,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
 import javax.swing.JFrame
-import javax.swing.SwingUtilities
 import kotlin.concurrent.schedule
 
 /**
@@ -644,7 +642,7 @@ fun Definition(
             .width(554.dp)
             .height(260.dp)
             .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
-
+        val scope = rememberCoroutineScope()
         Column {
             Box(modifier = if (rows > 5) greaterThen10Modifier else normalModifier) {
                 val stateVertical = rememberScrollState(0)
@@ -652,7 +650,9 @@ fun Definition(
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = { input ->
-                            checkTyping(input)
+                            scope.launch{
+                                checkTyping(input)
+                            }
                         },
                         cursorBrush = SolidColor(MaterialTheme.colors.primary),
                         textStyle = MaterialTheme.typography.body1.copy(color = Color.Transparent, lineHeight = 26.sp),
@@ -936,7 +936,7 @@ fun Caption(
     playTriple: Triple<Caption, String, Int>,
     bounds: Rectangle
 ) {
-
+    val scope = rememberCoroutineScope()
     val relativeVideoPath = playTriple.second
     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
         Row(
@@ -949,7 +949,10 @@ fun Caption(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { input ->
-                        checkTyping(index, input, captionContent)
+                        scope.launch {
+                            checkTyping(index, input, captionContent)
+                        }
+
                     },
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colors.primary),
@@ -1048,7 +1051,7 @@ fun Caption(
                     val file = File(relativeVideoPath)
                     if (file.exists()) {
                         setIsPlaying(true)
-                        Thread(Runnable {
+                        scope.launch {
                             play(
                                 videoPlayerWindow,
                                 setIsPlaying = { setIsPlaying(it) },
@@ -1057,8 +1060,7 @@ fun Caption(
                                 videoPlayerComponent,
                                 bounds
                             )
-
-                        }).start()
+                        }
 
                     } else {
                         println("通知用户，视频地址错误")
@@ -1098,9 +1100,6 @@ fun play(
     videoPlayerComponent: Component,
     bounds: Rectangle
 ) {
-    //  ComposePanel should be created inside AWT Event Dispatch Thread (use SwingUtilities.invokeLater).
-    SwingUtilities.invokeLater {
-
         val caption = playTriple.first
         val relativeVideoPath = playTriple.second
         val trackId = playTriple.third
@@ -1116,7 +1115,7 @@ fun play(
         closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
         closeButton.setContent {
             MaterialTheme(colors = if (MaterialTheme.colors.isLight) LightColorScheme else DarkColorScheme) {
-                // TODO 等 ComposePanel 支持背景透明之后重写
+                // TODO 等 ComposePanel 支持背景透明之后重构
                 Box(Modifier
                     .clickable { window.isVisible = false }
                     .fillMaxSize()
@@ -1150,11 +1149,10 @@ fun play(
         })
         window.layout = null
         window.contentPane.add(videoPlayerComponent)
+//        window.contentPane.add(closeButton)
         window.isVisible = true
         videoPlayerComponent.mediaPlayer().media()
             .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
-
-    }
 
 }
 

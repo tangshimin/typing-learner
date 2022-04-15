@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -21,37 +20,25 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.*
 import dialog.ChapterFinishedDialog
-import dialog.LinkCaptionDialog
+import kotlinx.coroutines.launch
 import player.AudioButton
-import player.mediaPlayer
 import state.AppState
 import state.getResourcesFile
-import uk.co.caprica.vlcj.player.base.MediaPlayer
-import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
-import java.awt.Dimension
-import java.awt.Point
-import java.awt.Rectangle
-import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.HashMap
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.FloatControl
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.fixedRateTimer
 
 /** 单词组件
@@ -101,6 +88,12 @@ fun WordComponents(
     playKeySound: () -> Unit,
 
     ) {
+
+    /**
+     * 协程构建器
+     */
+    val scope = rememberCoroutineScope()
+
     val wordValue = word.value
     val focusRequester = remember { FocusRequester() }
     var lastInputTime by remember { mutableStateOf(0L) }
@@ -164,7 +157,9 @@ fun WordComponents(
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { input ->
-                        checkTyping(input)
+                        scope.launch {
+                            checkTyping(input)
+                        }
                     },
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colors.primary),
@@ -283,14 +278,13 @@ fun WordComponents(
                     ConfirmationDelete(
                         message = "确定要删除单词 $wordValue ?",
                         confirm = {
-                            Thread(Runnable {
+                            scope.launch {
                                 val index = state.typing.index
                                 state.vocabulary.wordList.removeAt(index)
                                 state.vocabulary.size = state.vocabulary.wordList.size
                                 state.saveCurrentVocabulary()
-                            }).start()
-
-                            showConfirmationDialog = false
+                                showConfirmationDialog = false
+                            }
                         },
                         close = { showConfirmationDialog = false }
                     )
@@ -353,14 +347,17 @@ fun WordComponents(
                             word = word,
                             state = state,
                             save = { newWord ->
-                                val current = state.getCurrentWord()
-                                val index = state.typing.index
-                                newWord.captions = current.captions
-                                newWord.links = current.links
-                                state.vocabulary.wordList.removeAt(index)
-                                state.vocabulary.wordList.add(index, newWord)
-                                state.saveCurrentVocabulary()
-                                setShowEditWordDialog(false)
+                                scope.launch{
+                                    val current = state.getCurrentWord()
+                                    val index = state.typing.index
+                                    newWord.captions = current.captions
+                                    newWord.links = current.links
+                                    state.vocabulary.wordList.removeAt(index)
+                                    state.vocabulary.wordList.add(index, newWord)
+                                    state.saveCurrentVocabulary()
+                                    setShowEditWordDialog(false)
+                                }
+
                             },
                             close = { setShowEditWordDialog(false) }
                         )

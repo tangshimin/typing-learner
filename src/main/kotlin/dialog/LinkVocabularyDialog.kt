@@ -34,6 +34,7 @@ import components.play
 import data.Caption
 import data.VocabularyType
 import data.loadVocabulary
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
 import state.getResourcesFile
@@ -54,6 +55,10 @@ fun LinkVocabularyDialog(
     state: AppState,
     close: () -> Unit
 ) {
+    /**
+     * 协程构建器
+     */
+    val scope = rememberCoroutineScope()
     /**
      * 预览的单词列表
      */
@@ -390,7 +395,7 @@ fun LinkVocabularyDialog(
 
                                                                             val file = File(relateVideoPath)
                                                                             if (file.exists()) {
-                                                                                Thread(Runnable {
+                                                                                scope.launch{
                                                                                     play(
                                                                                         window = state.videoPlayerWindow,
                                                                                         setIsPlaying = {},
@@ -399,7 +404,7 @@ fun LinkVocabularyDialog(
                                                                                         videoPlayerComponent= state.videoPlayerComponent,
                                                                                         bounds =playerBounds
                                                                                     )
-                                                                                }).start()
+                                                                                }
                                                                             }
                                                                         }
                                                                     }

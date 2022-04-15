@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -28,10 +27,8 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.*
 import dialog.LinkCaptionDialog
-import player.mediaPlayer
+import kotlinx.coroutines.launch
 import state.AppState
-import uk.co.caprica.vlcj.player.base.MediaPlayer
-import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.Component
 import java.awt.Rectangle
 import java.io.File
@@ -72,6 +69,10 @@ fun EditWord(
             shape = RectangleShape,
             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         ) {
+            /**
+             * 协程构建器
+             */
+            val scope = rememberCoroutineScope()
 
             var mutableWord by remember { mutableStateOf(word) }
 
@@ -149,7 +150,7 @@ fun EditWord(
                             Text("查询")
                         }
                         if (updateFailed) {
-                            Text("没有相关信息", color = Color.Red, modifier = Modifier.padding(start = 10.dp))
+                            Text("本地词典没有找到 ${inputWordStr.text} ",  modifier = Modifier.padding(start = 10.dp))
                         }
                     }
                     val boxModifier = Modifier.fillMaxWidth().height(115.dp).border(border = border)
@@ -294,6 +295,7 @@ fun EditingCaptions(
     setLinkSize:(Int) ->Unit,
     word: Word
 ) {
+    val scope = rememberCoroutineScope()
     val playTripleMap = getPlayTripleMap(state, word)
     playTripleMap.forEach { (index, playTriple) ->
         var captionContent = playTriple.first.content
@@ -326,7 +328,7 @@ fun EditingCaptions(
                                 playerBounds.y = location.y - 320
                                 val file = File(relativeVideoPath)
                                 if (file.exists()) {
-                                    Thread(Runnable {
+                                    scope.launch {
                                         play(
                                             window = state.videoPlayerWindow,
                                             setIsPlaying = {},
@@ -335,7 +337,7 @@ fun EditingCaptions(
                                             videoPlayerComponent= state.videoPlayerComponent,
                                             bounds =playerBounds
                                         )
-                                    }).start()
+                                    }
                                 } else {
                                     println("视频地址错误")
                                 }
@@ -356,26 +358,29 @@ fun EditingCaptions(
                         playTriple = playTriple,
                         mediaPlayerComponent = state.videoPlayerComponent,
                         confirm = { (index, start, end) ->
-                            if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                playTriple.first.start = secondsToString(start)
-                                playTriple.first.end = secondsToString(end)
-                                val item = word.links[index]
-                                val captionPattern: Pattern =
-                                    Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-                                val matcher = captionPattern.matcher(item)
-                                if (matcher.find()) {
-                                    val vocabularyPath = matcher.group(1)
-                                    val subtitleIndex = matcher.group(4).toInt()
-                                    val subtitleVocabulary = loadVocabulary(vocabularyPath)
-                                    val index = subtitleVocabulary.wordList.indexOf(word)
-                                    var subtitleWord = subtitleVocabulary.wordList[index]
-                                    subtitleWord.captions[subtitleIndex].start = secondsToString(start)
-                                    subtitleWord.captions[subtitleIndex].end = secondsToString(end)
-                                    saveVocabulary(subtitleVocabulary, vocabularyPath)
+                            scope.launch{
+                                if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                    playTriple.first.start = secondsToString(start)
+                                    playTriple.first.end = secondsToString(end)
+                                    val item = word.links[index]
+                                    val captionPattern: Pattern =
+                                        Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
+                                    val matcher = captionPattern.matcher(item)
+                                    if (matcher.find()) {
+                                        val vocabularyPath = matcher.group(1)
+                                        val subtitleIndex = matcher.group(4).toInt()
+                                        val subtitleVocabulary = loadVocabulary(vocabularyPath)
+                                        val index = subtitleVocabulary.wordList.indexOf(word)
+                                        var subtitleWord = subtitleVocabulary.wordList[index]
+                                        subtitleWord.captions[subtitleIndex].start = secondsToString(start)
+                                        subtitleWord.captions[subtitleIndex].end = secondsToString(end)
+                                        saveVocabulary(subtitleVocabulary, vocabularyPath)
+                                    }
+                                } else {
+                                    word.captions[index].start = secondsToString(start)
+                                    word.captions[index].end = secondsToString(end)
+                                   state.saveCurrentVocabulary()
                                 }
-                            } else {
-                                word.captions[index].start = secondsToString(start)
-                                word.captions[index].end = secondsToString(end)
                             }
                         },
                         close = { showSettingTimeLineDialog = false }
@@ -413,15 +418,17 @@ fun EditingCaptions(
                     ConfirmationDelete(
                         message = "确定要删除 $captionContent 吗？",
                         confirm = {
-                            // 在 EditDialog 界面中点击保存，会保存整个词库
-                            if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                word.links.removeAt(index)
-                            } else {
-                                word.captions.removeAt(index)
+                            scope.launch {
+                                // 在 EditDialog 界面中点击保存，会保存整个词库
+                                if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                    word.links.removeAt(index)
+                                } else {
+                                    word.captions.removeAt(index)
+                                }
+                                playTripleMap.remove(index)
+                                setLinkSize(playTripleMap.size)
+                                showConfirmationDialog = false
                             }
-                            playTripleMap.remove(index)
-                            setLinkSize(playTripleMap.size)
-                            showConfirmationDialog = false
                         },
                         close = { showConfirmationDialog = false }
                     )
@@ -463,7 +470,6 @@ fun EditingCaptions(
 /**
  * 调整字幕时间轴
  * @param index 字幕的索引
- * @param volume 音量
  * @param close 点击取消后调用的回调
  * @param confirm 点击确定后调用的回调
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
@@ -498,6 +504,10 @@ fun SettingTimeLine(
                 Column(horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier.align(Alignment.Center)) {
+                    /**
+                     * 协程构建器
+                     */
+                    val scope = rememberCoroutineScope()
                     /**
                      * 字幕内容
                      */
@@ -665,7 +675,7 @@ fun SettingTimeLine(
                                         playerBounds.y = location.y - 390
                                         val file = File(relativeVideoPath)
                                         if (file.exists()) {
-                                            Thread(Runnable {
+                                            scope.launch {
                                                 play(
                                                     window = state.videoPlayerWindow,
                                                     setIsPlaying = {},
@@ -674,7 +684,8 @@ fun SettingTimeLine(
                                                     videoPlayerComponent= mediaPlayerComponent,
                                                     bounds =playerBounds
                                                 )
-                                            }).start()
+                                            }
+
                                         } else {
                                             println("视频地址错误")
                                         }
