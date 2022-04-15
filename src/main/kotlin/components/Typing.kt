@@ -238,13 +238,14 @@ fun Typing(
                     } else if (input.length <= word.value.length) {
                         val chars = input.toList()
                         for (i in chars.indices) {
-                            val char = chars[i]
-                            if (char == word.value[i]) {
-                                wordTypingResult.add(Pair(char, true))
+                            val inputChar = chars[i]
+                            val wordChar = word.value[i]
+                            if (inputChar == wordChar) {
+                                wordTypingResult.add(Pair(inputChar, true))
                             } else {
                                 // 字母输入错误
                                 done = false
-                                wordTypingResult.add(Pair(char, false))
+                                wordTypingResult.add(Pair(wordChar, false))
                                 state.speed.wrongCount = state.speed.wrongCount + 1
                                 playBeepSound()
                                 state.wordWrongTime++
