@@ -38,6 +38,7 @@ import state.rememberAppState
 import theme.DarkColorScheme
 import theme.LightColorScheme
 import java.awt.Component
+import java.awt.EventQueue
 import java.awt.Rectangle
 import java.io.File
 import javax.swing.JFileChooser
@@ -449,14 +450,17 @@ private fun shortcutPlay(
             if (file.exists()) {
                 state.isPlaying = true
                 Thread(Runnable {
-                    play(
-                        window = state.videoPlayerWindow,
-                        setIsPlaying = { state.isPlaying = it },
-                        state.typing.audioVolume,
-                        playTriple,
-                        mediaPlayerComponent,
-                        videoBounds
-                    )
+                    EventQueue.invokeLater {
+                        play(
+                            window = state.videoPlayerWindow,
+                            setIsPlaying = { state.isPlaying = it },
+                            state.typing.audioVolume,
+                            playTriple,
+                            mediaPlayerComponent,
+                            videoBounds
+                        )
+                    }
+
                 }).start()
             }
         } else {
