@@ -16,6 +16,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
@@ -495,6 +498,16 @@ fun SettingTimeLine(
             size = DpSize(610.dp, 700.dp)
         ),
     ) {
+        val playerBounds by remember {
+            mutableStateOf(
+                Rectangle(
+                    0,
+                    0,
+                    540,
+                    303
+                )
+            )
+        }
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
@@ -502,8 +515,7 @@ fun SettingTimeLine(
         ) {
             Box(modifier = Modifier.fillMaxSize()){
                 Column(horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.align(Alignment.Center)) {
+                    modifier = Modifier.align(Alignment.TopCenter)) {
                     /**
                      * 协程构建器
                      */
@@ -542,11 +554,16 @@ fun SettingTimeLine(
                      * 调整时间轴的精度
                      */
                     var precise by remember { mutableStateOf("1S") }
-
+                    Row (Modifier.width(540.dp).height(303.dp).padding(top = 40.dp)
+                        .onGloballyPositioned { coordinates ->
+                            val rect = coordinates.boundsInWindow()
+                            playerBounds.x = window.x + rect.left.toInt()
+                            playerBounds.y = window.y + rect.top.toInt()
+                        }){  }
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(top = 120.dp)
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max).padding(top = 40.dp)
                     ) {
 
                         Text("开始:")
@@ -647,17 +664,6 @@ fun SettingTimeLine(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        val playerBounds by remember {
-                            mutableStateOf(
-                                Rectangle(
-                                    0,
-                                    0,
-                                    540,
-                                    303
-                                )
-                            )
-                        }
-
                         Spacer(Modifier.width(20.dp))
                         OutlinedButton(onClick = {
                             if(oldStart != secondsToString(start)||
@@ -675,8 +681,6 @@ fun SettingTimeLine(
                                     val location =
                                         it.awtEventOrNull?.locationOnScreen
                                     if (location != null) {
-                                        playerBounds.x = location.x - 270 + 24
-                                        playerBounds.y = location.y - 390
                                         val file = File(relativeVideoPath)
                                         if (file.exists()) {
                                             scope.launch {
