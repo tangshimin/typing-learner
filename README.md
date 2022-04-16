@@ -31,6 +31,7 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 11. 可以扩展其他语言，只要有类似于 [ECDICT](https://github.com/skywind3000/ECDICT) 的本地词典
 
 
+MacOS 操作系统需要安装 VLC 播放器。
 
 
 
