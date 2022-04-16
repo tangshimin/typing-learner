@@ -7,11 +7,16 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
@@ -51,7 +56,7 @@ fun SelectChapterDialog(state: AppState) {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @ExperimentalFoundationApi
 @ExperimentalMaterialApi
 @Composable
@@ -70,15 +75,44 @@ fun SelectChapter(
             modifier = Modifier
                 .size(930.dp, 785.dp) .background(color = MaterialTheme.colors.background)
         ) {
-            Column (modifier = Modifier.align(Alignment.TopCenter)){
+            Column (modifier = Modifier.align(Alignment.TopCenter).onGloballyPositioned { layoutCoordinates ->
+                println("size: ${layoutCoordinates.size}")
+            }){
+                if(!MaterialTheme.colors.isLight){
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(44.dp)
+                    ) {
+                        Text("选择章节",
+                            modifier = Modifier.align(Alignment.Center).padding(top = 5.dp,bottom = 5.dp),
+                            color = MaterialTheme.colors.onBackground)
+                        var isHover by remember { mutableStateOf(false) }
+                        IconButton(
+                            onClick = { state.openSelectChapter = false},
+                            modifier = Modifier
+                                .onPointerEvent(PointerEventType.Enter) { isHover = true }
+                                .onPointerEvent(PointerEventType.Exit) { isHover = false }
+                                .background(if (isHover) Color(196, 43, 28) else Color.Transparent)
+                                .align(Alignment.CenterEnd)) {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = "",
+                                tint = MaterialTheme.colors.onBackground,
+                            )
+                        }
+                    }
+                    Divider()
+                }
                 Row(horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 5.dp,bottom = 5.dp)){
-                    Text("${state.vocabulary.name}  ${state.vocabulary.size}个单词",color = MaterialTheme.colors.onBackground)
+                    Text("${state.vocabulary.name}  ${state.vocabulary.size}个单词",
+                        modifier = Modifier.padding(top = 5.dp,bottom = 5.dp),
+                        color = MaterialTheme.colors.onBackground)
                 }
                 Divider()
             }
-            Row(modifier = Modifier.align(Alignment.Center).padding(top = 31.dp,bottom = 55.dp)){
+            val top = if(!MaterialTheme.colors.isLight) 85.dp else 55.dp
+            Row(modifier = Modifier.align(Alignment.Center).padding(top = top,bottom = 55.dp)){
                 Chapters(
                     checkedChapter = chapter,
                     size = state.vocabulary.size,
@@ -96,13 +130,11 @@ fun SelectChapter(
                     state.typing.chapter = chapter
                     state.typing.index = (chapter - 1) * 20
                     state.openSelectChapter = false
-//                    state.typingVisible = true
                     state.saveTypingState()
 
                 },
                 exit = {
                     state.openSelectChapter = false
-//                    state.typingVisible = true
                 })
         }
     }
