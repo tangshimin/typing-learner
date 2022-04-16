@@ -4,13 +4,13 @@
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)， qwerty leaner desktop 的所有的本地词典数据都来源于 ECDICT。现在程序使用的是一个基础版有76万词条，完整版的数据实在太大，导入到 H2 数据库之后有500M,后续可能会增加一个功能，加载那个350万词条的数据库。
 
-https://user-images.githubusercontent.com/16540656/162030268-dddfa054-3fe1-414f-8563-73ca9f841d89.mp4
+https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
 
 ### 主要新增功能如下：
 
-1. 可以用电影或字幕生成词库，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了
+1. 可以用[电影](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)生成词库，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了
   
-2. 可以用英文文档生成词库，比如你需要学习 TypeScript 最新的文档又没有中文版，你就可以用英文文档生成词库，然后过滤掉一些你熟悉的词，剩下的就是一些陌生的单词。把陌生单词学习几遍之后再阅读技术文档就更流畅了。
+2. 可以[用英文文档生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，比如你需要学习 TypeScript 最新的文档又没有中文版，你就可以用英文文档生成词库，然后过滤掉一些你熟悉的词，剩下的就是一些陌生的单词。把陌生单词学习几遍之后再阅读技术文档就更流畅了。
   
 3. 基于文档的词库可以链接用 MKV 视频或字幕生成的词库。
   
@@ -29,3 +29,9 @@ https://user-images.githubusercontent.com/16540656/162030268-dddfa054-3fe1-414f-
 10. 增加了词性，词形和英语定义等属性，可以自由的关闭和隐藏。
   
 11. 可以扩展其他语言，只要有类似于 [ECDICT](https://github.com/skywind3000/ECDICT) 的本地词典
+
+
+
+
+
+
