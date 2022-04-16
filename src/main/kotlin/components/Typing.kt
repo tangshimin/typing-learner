@@ -119,10 +119,12 @@ fun Typing(
                  * 显示本章节已经完成对话框
                  */
                 var showChapterFinishedDialog by remember { mutableStateOf(false) }
+
                 /**
                  * 显示整个词库已经学习完成对话框
                  */
                 var isVocabularyFinished by remember { mutableStateOf(false) }
+
                 /**
                  * 显示编辑单词对话框
                  */
@@ -168,8 +170,8 @@ fun Typing(
                  * 当用户在默写模式按 enter 调用的回调，
                  * 在默写模式跳过单词也算一次错误
                  */
-                val dictationSkipCurrentWord:()->Unit = {
-                    if(state.wordCorrectTime == 0){
+                val dictationSkipCurrentWord: () -> Unit = {
+                    if (state.wordCorrectTime == 0) {
                         state.chapterWrongTime++
                         val dictationWrongTime = state.dictationWrongWords[word]
                         if (dictationWrongTime == null) {
@@ -348,7 +350,7 @@ fun Typing(
                     correctTime = state.wordCorrectTime,
                     wrongTime = state.wordWrongTime,
                     toNext = { toNext() },
-                    dictationSkip = {dictationSkipCurrentWord()},
+                    dictationSkip = { dictationSkipCurrentWord() },
                     textFieldValue = wordTextFieldValue,
                     typingResult = wordTypingResult,
                     checkTyping = { checkWordInput(it) },
@@ -361,7 +363,7 @@ fun Typing(
                     chapterCorrectTime = state.chapterCorrectTime,
                     chapterWrongTime = state.chapterWrongTime,
                     dictationWrongWords = state.dictationWrongWords,
-                    resetChapterTime = {state.resetChapterTime()},
+                    resetChapterTime = { state.resetChapterTime() },
                     playKeySound = { playKeySound() },
                 )
                 Phonetic(
@@ -651,7 +653,7 @@ fun Definition(
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = { input ->
-                            scope.launch{
+                            scope.launch {
                                 checkTyping(input)
                             }
                         },
@@ -798,8 +800,8 @@ fun Translation(
 fun Captions(
     captionsVisible: Boolean,
     playTripleMap: Map<Int, Triple<Caption, String, Int>>,
-    videoPlayerWindow:JFrame,
-    videoPlayerComponent:Component,
+    videoPlayerWindow: JFrame,
+    videoPlayerComponent: Component,
     isPlaying: Boolean,
     volume: Float,
     setIsPlaying: (Boolean) -> Unit,
@@ -826,7 +828,7 @@ fun Captions(
                     } else if (captionContent.contains("\n")) {
                         captionContent = captionContent.replace("\n", " ")
                     }
-                    val textFieldValue =  textFieldValueList[index]
+                    val textFieldValue = textFieldValueList[index]
                     var typingResult = typingResultMap[index]
                     if (typingResult == null) {
                         typingResult = mutableListOf()
@@ -855,7 +857,7 @@ fun Captions(
             }
         }
         if (!isPlaying && (word.captions.isNotEmpty() || word.links.isNotEmpty()))
-            Divider(Modifier.padding(start =  50.dp ))
+            Divider(Modifier.padding(start = 50.dp))
     }
 }
 
@@ -924,8 +926,8 @@ fun secondsToString(seconds: Double): String {
 )
 @Composable
 fun Caption(
-    videoPlayerWindow:JFrame,
-    videoPlayerComponent:Component,
+    videoPlayerWindow: JFrame,
+    videoPlayerComponent: Component,
     setIsPlaying: (Boolean) -> Unit,
     volume: Float,
     captionContent: String,
@@ -943,7 +945,7 @@ fun Caption(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier =  Modifier.height(36.dp).width(IntrinsicSize.Max)
+            modifier = Modifier.height(36.dp).width(IntrinsicSize.Max)
         ) {
 
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
@@ -966,7 +968,8 @@ fun Caption(
                                 && it.key != Key.ShiftRight
                                 && it.key != Key.ShiftLeft
                                 && it.key != Key.CtrlRight
-                                && it.key != Key.CtrlLeft) {
+                                && it.key != Key.CtrlLeft
+                            ) {
                                 playKeySound()
                             }
                             true
@@ -975,7 +978,7 @@ fun Caption(
                 Text(
                     textAlign = TextAlign.Start,
                     color = MaterialTheme.colors.onBackground,
-                    modifier =  Modifier.align(Alignment.CenterStart).height(32.dp),
+                    modifier = Modifier.align(Alignment.CenterStart).height(32.dp),
                     overflow = TextOverflow.Ellipsis,
                     text = buildAnnotatedString {
                         typingResult.forEach { (char, correct) ->
@@ -1032,7 +1035,7 @@ fun Caption(
                     ) {
                         val ctrl = LocalCtrl.current
                         val shift = if (isMacOS()) "⇧" else "Shift"
-                        val text:Any = when (index) {
+                        val text: Any = when (index) {
                             0 -> "播放 $ctrl+$shift+Z"
                             1 -> "播放 $ctrl+$shift+X"
                             2 -> "播放 $ctrl+$shift+C"
@@ -1083,7 +1086,6 @@ fun Caption(
 }
 
 
-
 /**
  * @param window 视频播放窗口
  * @param setIsPlaying 设置是否正在播放视频
@@ -1094,66 +1096,65 @@ fun Caption(
  * 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
  */
 fun play(
-    window:JFrame,
+    window: JFrame,
     setIsPlaying: (Boolean) -> Unit,
     volume: Float,
     playTriple: Triple<Caption, String, Int>,
     videoPlayerComponent: Component,
     bounds: Rectangle
 ) {
-        val caption = playTriple.first
-        val relativeVideoPath = playTriple.second
-        val trackId = playTriple.third
-        window.size = bounds.size
-        window.location = bounds.location
-        var start = LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
-        start = start.div(1000_000_000)
-        var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
-        end = end.div(1000_000_000)
-        videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
+    val caption = playTriple.first
+    val relativeVideoPath = playTriple.second
+    val trackId = playTriple.third
+    window.size = bounds.size
+    window.location = bounds.location
+    var start = LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    start = start.div(1000_000_000)
+    var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    end = end.div(1000_000_000)
+    videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
 
-        val closeButton = ComposePanel()
-        closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
-        closeButton.setContent {
-            MaterialTheme(colors = if (MaterialTheme.colors.isLight) LightColorScheme else DarkColorScheme) {
-                // TODO 等 ComposePanel 支持背景透明之后重构
-                Box(Modifier
-                    .clickable { window.isVisible = false }
-                    .fillMaxSize()
-                    .background(Color.Black)
-                ) {
-                    IconButton(onClick = { window.isVisible = false }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "",
-                            tint = MaterialTheme.colors.primary
-                        )
-                    }
+    val closeButton = ComposePanel()
+    closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
+    closeButton.setContent {
+        MaterialTheme(colors = if (MaterialTheme.colors.isLight) LightColorScheme else DarkColorScheme) {
+            // TODO 等 ComposePanel 支持背景透明之后重构
+            Box(Modifier
+                .clickable { window.isVisible = false }
+                .fillMaxSize()
+                .background(Color.Black)
+            ) {
+                IconButton(onClick = { window.isVisible = false }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.primary
+                    )
                 }
             }
         }
+    }
 
-        videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-            override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                mediaPlayer.audio().setVolume((volume * 100).toInt())
+    videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+            mediaPlayer.audio().setVolume((volume * 100).toInt())
+        }
+
+        override fun finished(mediaPlayer: MediaPlayer) {
+            setIsPlaying(false)
+            window.isVisible = false
+            EventQueue.invokeLater {
+                window.remove(videoPlayerComponent)
             }
-
-            override fun finished(mediaPlayer: MediaPlayer) {
-                setIsPlaying(false)
-                window.isVisible = false
-                EventQueue.invokeLater{
-                    window.remove(videoPlayerComponent)
-                }
-
-                videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-            }
-        })
-        window.layout = null
-        window.contentPane.add(videoPlayerComponent)
+            videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+        }
+    })
+    window.layout = null
+    window.contentPane.add(videoPlayerComponent)
 //        window.contentPane.add(closeButton)
-        window.isVisible = true
-        videoPlayerComponent.mediaPlayer().media()
-            .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
+    window.isVisible = true
+    videoPlayerComponent.mediaPlayer().media()
+        .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
 
 }
 
