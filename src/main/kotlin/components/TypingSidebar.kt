@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import player.isMacOS
 import state.AppState
 
 /**
@@ -32,7 +33,7 @@ fun TypingSidebar(state: AppState) {
                 .width(216.dp)
                 .fillMaxHeight()
         ) {
-            Spacer(Modifier.fillMaxWidth().height(48.dp))
+            Spacer(Modifier.fillMaxWidth().height(if(isMacOS()) 78.dp else 48.dp))
             Divider()
             val ctrl = LocalCtrl.current
             Row(

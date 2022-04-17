@@ -82,7 +82,7 @@ fun main() = application {
         title = "${state.typing.vocabularyName} - $title"
         if (isOpen) {
             Window(
-                title = if(isMacOS()) "" else title ,
+                title = title ,
                 icon = painterResource("logo/logo.svg"),
                 state = windowState,
                 onCloseRequest = {
@@ -112,11 +112,18 @@ fun main() = application {
                         Row {
                             TypingSidebar(state)
                             if (state.openSettings) {
-                                Divider(Modifier.fillMaxHeight().width(1.dp))
+                                val topPadding = if(isMacOS()) 30.dp else 0.dp
+                                Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
                             }
                             Box(Modifier.fillMaxSize()) {
                                 val endPadding = 0.dp
-
+                                if(isMacOS()){
+                                    Text(text = title, color = MaterialTheme.colors.onBackground,
+                                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
+                                    window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
+                                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
+                                    window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
+                                }
                                 Typing(
                                     state = state,
                                     videoBounds = videoBounds,
@@ -244,12 +251,15 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
 @Composable
 fun Settings(state: AppState, modifier: Modifier) {
     Box(modifier = modifier) {
-        Column {
+        val topPadding = if(isMacOS()) 30.dp else 0.dp
+        Column (Modifier.width(IntrinsicSize.Max).padding(top = topPadding)){
+            if(isMacOS()  && state.openSettings ) Divider(Modifier.fillMaxWidth())
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .width(if (state.openSettings) 217.dp else 48.dp)
+                    //.padding(top = topPadding)
                     .shadow(
                         elevation =  0.dp,
                         shape = if (state.openSettings) RectangleShape else RoundedCornerShape(50)
@@ -292,7 +302,7 @@ fun Settings(state: AppState, modifier: Modifier) {
                     Divider(Modifier.height(48.dp).width(1.dp))
                 }
             }
-
+            if(isMacOS()  && state.openSettings ) Divider(Modifier.fillMaxWidth())
         }
     }
 }
