@@ -144,10 +144,13 @@ fun getAudioPath(word: String, pronunciation: String): String {
             }
         }
     }
-
+    var mutableWord = word
+    if(pronunciation == "us" || pronunciation == "uk"){
+        mutableWord = mutableWord.replace(" ","-")
+    }
     // 这里从服务器读了一次，返回 URL player 会再读一次
     if (path.isEmpty()) {
-       val audioURL = "https://dict.youdao.com/dictvoice?audio=${word}&${type}"
+       val audioURL = "https://dict.youdao.com/dictvoice?audio=${mutableWord}&${type}"
         try {
             val audioBytes = URL(audioURL).readBytes()
             val file = File("audio/${fileName}.mp3")
