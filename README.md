@@ -8,7 +8,7 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 
 ### 主要新增功能如下：
 
-1. 可以用[电影](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)生成词库，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了
+1. 可以用[电影](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)生成词库，让每个单词都有具体的语境。
   
 2. 可以[用英文文档生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，比如你需要学习 TypeScript 最新的文档又没有中文版，你就可以用英文文档生成词库，然后过滤掉一些你熟悉的词，剩下的就是一些陌生的单词。把陌生单词学习几遍之后再阅读技术文档就更流畅了。
   
@@ -31,6 +31,7 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 11. 可以扩展其他语言，只要有类似于 [ECDICT](https://github.com/skywind3000/ECDICT) 的本地词典
 
 
+MacOS 操作系统需要安装 VLC 播放器。
 
 
 
