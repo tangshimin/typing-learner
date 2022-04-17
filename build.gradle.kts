@@ -23,12 +23,12 @@ dependencies {
     implementation("org.jetbrains.compose.material3:material3:1.0.1")
     implementation ("org.jetbrains.compose.material:material-icons-extended:1.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
     implementation("uk.co.caprica:vlcj:4.7.1")
     implementation("com.formdev:flatlaf:2.1")
     implementation("org.apache.opennlp:opennlp-tools:1.9.4")
     implementation("org.apache.pdfbox:pdfbox:2.0.24")
     implementation("com.h2database:h2:2.1.210")
-    implementation("org.slf4j:slf4j-parent:2.0.0-alpha7")
     implementation(files("lib/ebml-reader-0.1.0.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
 }
