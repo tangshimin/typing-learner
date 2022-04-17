@@ -4,3 +4,6 @@
 /build
 /resources/common/settings.json
 /resources/windows/settings.json
+/gradlew
+/gradlew.bat
+/gradle/
