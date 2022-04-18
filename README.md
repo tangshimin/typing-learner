@@ -35,6 +35,8 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 ### 大文件拉取
 本地词库是一个大文件(265MB)如果安装了[Git Large File Storage (LFS)](https://git-lfs.github.com/) 可以直接 `clone`即可。若在安装 Git LFS 之前执行了 `clone`，则拉取下来的仓库并不包含大文件本体，而是一个指向其 LFS 存储对象的文件指针，这种情况需要使用 `git lfs pull` 拉取文件指针所指向的完整对象。
 
-### MacOS
-MacOS 操作系统需要安装 VLC 播放器。
 
+
+### 开发环境
+- jdk 17
+- VLC 视频播放器
