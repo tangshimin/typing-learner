@@ -30,6 +30,7 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
   
 11. 可以扩展其他语言，只要有类似于 [ECDICT](https://github.com/skywind3000/ECDICT) 的本地词典
 
+12. 默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。
 
 
 ### 大文件拉取
