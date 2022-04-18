@@ -3,10 +3,8 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
-import com.sun.jna.NativeLibrary
 import components.flatlaf.InitializeFileChooser
 import data.Caption
-import data.Vocabulary
 import data.Word
 import data.loadMutableVocabulary
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -16,11 +14,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
-import uk.co.caprica.vlcj.binding.RuntimeUtil
-import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
-import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
-import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
-import java.awt.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.time.LocalTime
@@ -50,7 +43,7 @@ data class TypingState(
     val pronunciation: String = "us",
     val isAuto: Boolean = false,
     val index: Int = 0,
-    val chapter: Int = 1,
+//    val chapter: Int = 1,
     var vocabularyName: String = "四级",
     var vocabularyPath: String = "vocabulary/大学英语/四级.json"
 )
@@ -142,7 +135,7 @@ class MutableTypingState(typingState: TypingState) {
     /**
      * 当前单词的章节，从1开始
      */
-    var chapter by mutableStateOf(typingState.chapter)
+    var chapter by mutableStateOf((typingState.index/20)+1)
 
     /**
      * 词库的名称
@@ -153,6 +146,10 @@ class MutableTypingState(typingState: TypingState) {
      * 词库的路径
      */
     var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
+}
+
+fun calculateChapter(index: Int): Int {
+    return (index / 20) + 1
 }
 
 /**
@@ -349,7 +346,6 @@ class AppState {
             typing.pronunciation,
             typing.isAuto,
             typing.index,
-            typing.chapter,
             typing.vocabularyName,
             typing.vocabularyPath
         )
