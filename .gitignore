@@ -4,3 +4,4 @@
 /build
 /resources/common/settings.json
 /resources/windows/settings.json
+src/main/resources/.DS_Store
