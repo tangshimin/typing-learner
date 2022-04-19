@@ -29,10 +29,9 @@ fun rememberMediaPlayerComponent():Component = remember {
  */
 fun createMediaPlayerComponent() :Component{
     val os = System.getProperty("os.name", "generic").lowercase(Locale.ENGLISH)
-    if (os.indexOf("windows") >= 0) {
+    // 如果用户本地没有 VLC 就使用内置的 VLC
+    if(!NativeDiscovery().discover() && os.indexOf("windows") >= 0){
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getResourcesFile("VLC")?.absolutePath ?: "地址错误")
-    }else{
-        NativeDiscovery().discover()
     }
 
     // see https://github.com/caprica/vlcj/issues/887#issuecomment-503288294 for why we're using CallbackMediaPlayerComponent for macOS.
