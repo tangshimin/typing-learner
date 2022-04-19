@@ -410,7 +410,7 @@ fun Typing(
                     videoPlayerWindow = state.videoPlayerWindow,
                     videoPlayerComponent = state.videoPlayerComponent,
                     isPlaying = state.isPlaying,
-                    volume = state.typing.audioVolume,
+                    volume = state.typing.videoVolume,
                     setIsPlaying = { state.isPlaying = it },
                     word = word,
                     bounds = videoBounds,

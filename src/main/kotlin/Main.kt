@@ -365,6 +365,7 @@ fun globalShortcuts(
             val word = state.getCurrentWord()
             playAudio(
                 word = word.value,
+                volume = state.typing.audioVolume,
                 pronunciation = state.typing.pronunciation,
                 mediaPlayerComponent = audioPlayerComponent,
                 changePlayerState = {}
@@ -464,7 +465,7 @@ private fun shortcutPlay(
                         play(
                             window = state.videoPlayerWindow,
                             setIsPlaying = { state.isPlaying = it },
-                            state.typing.audioVolume,
+                            state.typing.videoVolume,
                             playTriple,
                             mediaPlayerComponent,
                             videoBounds

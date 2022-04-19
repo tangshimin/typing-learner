@@ -223,7 +223,7 @@ fun LinkCaptionDialog(
                                                                             play(
                                                                                 window = state.videoPlayerWindow,
                                                                                 setIsPlaying = {},
-                                                                                volume = state.typing.audioVolume,
+                                                                                volume = state.typing.videoVolume,
                                                                                 playTriple = playTriple,
                                                                                 videoPlayerComponent= state.videoPlayerComponent,
                                                                                 bounds =playerBounds

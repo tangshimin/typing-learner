@@ -32,13 +32,14 @@ import java.net.URL
 @Composable
 fun AudioButton(
     word:String,
+    volume:Float,
     pronunciation: String,
 ) {
     if (pronunciation != "false") {
         val audioPlayerComponent = LocalMediaPlayerComponent.current
         var isPlaying by remember { mutableStateOf(false) }
         val playAudio = {
-            playAudio(word,pronunciation,audioPlayerComponent,changePlayerState = {isPlaying = it})
+            playAudio(word,volume,pronunciation,audioPlayerComponent,changePlayerState = {isPlaying = it})
         }
         Column(
             modifier = Modifier
@@ -105,6 +106,7 @@ fun AudioButton(
 
 fun playAudio(
     word: String,
+    volume:Float,
     pronunciation: String,
     mediaPlayerComponent: Component,
     changePlayerState: (Boolean) -> Unit,
@@ -113,6 +115,9 @@ fun playAudio(
     if(path.isNotEmpty()){
         changePlayerState(true)
         mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+            override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+                mediaPlayer.audio().setVolume((volume * 100).toInt())
+            }
             override fun finished(mediaPlayer: MediaPlayer) {
                 changePlayerState(false)
                 mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
