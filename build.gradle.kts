@@ -50,6 +50,7 @@ compose.desktop {
 //        jvmArgs += listOf("-verbose:gc")
 //        jvmArgs += listOf("-client")
         jvmArgs += listOf("-Xmx1G")
+        jvmArgs += listOf("-Dfile.encoding=UTF-8")
 //        jvmArgs += listOf("-XX:+PrintGCDetails")
 //        jvmArgs += listOf("-XX:NativeMemoryTracking=summary")
 //        jvmArgs += listOf("-XX:+UnlockDiagnosticVMOptions")
