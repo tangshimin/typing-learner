@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -774,7 +772,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
     return curDir
 }
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun SelectFile(
     state: AppState,
@@ -826,64 +824,83 @@ fun SelectFile(
                     .padding(start = 8.dp)
                     .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
             )
-//            val mediaPlayerComponent = LocalMediaPlayerComponent.current
-            IconButton(onClick = {
-//                state.loadingFileChooserVisible = true
-                Thread(Runnable {
-                    val fileChooser = state.futureFileChooser.get()
-                    fileChooser.dialogTitle = chooseText
-                    fileChooser.fileSystemView = FileSystemView.getFileSystemView()
-                    fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
-                    fileChooser.isAcceptAllFileFilterUsed = false
-                    fileChooser.addChoosableFileFilter(fileFilter)
-                    fileChooser.selectedFile = null
-                    if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        val file = fileChooser.selectedFile
-                        filePath = file.absolutePath
-                        if(type == MKV) {
-                            setRelateVideoPath(file.absolutePath)
-                            val window = state.videoPlayerWindow
-                            val  mediaPlayerComponent= state.videoPlayerComponent
-                            mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-                                override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                                    val map = HashMap<Int, String>()
-                                    mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
-                                        if(index != 0){
-                                            map[index-1] = trackDescription.description()
-                                        }
-                                    }
-                                    mediaPlayer.controls().pause()
-                                    window.isAlwaysOnTop = true
-                                    window.title = "视频播放窗口"
-                                    window.isVisible = false
-                                    mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-                                    setTrackMap(map)
-                                }
-                            })
-                            window.title = "正在读取字幕"
-                            window.isAlwaysOnTop = false
-                            window.toBack()
-                            window.size = Dimension(1,1)
-                            window.location = Point(0,0)
-                            window.layout = null
-                            window.contentPane.add(mediaPlayerComponent)
-                            window.isVisible = true
-                            mediaPlayerComponent.mediaPlayer().media().play(filePath)
-                        }
-                        setSelectFileName(file.nameWithoutExtension)
-                        fileChooser.selectedFile = File("")
-                    }
-                    fileChooser.removeChoosableFileFilter(fileFilter)
-//                    state.loadingFileChooserVisible = false
-                }).start()
 
-            }) {
-                Icon(
-                    Icons.Filled.FolderOpen,
-                    contentDescription = "Localized description",
-                    tint = MaterialTheme.colors.onBackground,
+            TooltipArea(
+                tooltip = {
+                    Surface(
+                        elevation = 4.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                        shape = RectangleShape
+                    ) {
+                        Text(text = "打开文件", modifier = Modifier.padding(10.dp))
+                    }
+                },
+                delayMillis = 300,
+                tooltipPlacement = TooltipPlacement.ComponentRect(
+                    anchor = Alignment.BottomCenter,
+                    alignment = Alignment.BottomCenter,
+                    offset = DpOffset.Zero
                 )
+            ) {
+                IconButton(onClick = {
+//                state.loadingFileChooserVisible = true
+                    Thread(Runnable {
+                        val fileChooser = state.futureFileChooser.get()
+                        fileChooser.dialogTitle = chooseText
+                        fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+                        fileChooser.isAcceptAllFileFilterUsed = false
+                        fileChooser.addChoosableFileFilter(fileFilter)
+                        fileChooser.selectedFile = null
+                        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                            val file = fileChooser.selectedFile
+                            filePath = file.absolutePath
+                            if(type == MKV) {
+                                setRelateVideoPath(file.absolutePath)
+                                val window = state.videoPlayerWindow
+                                val  mediaPlayerComponent= state.videoPlayerComponent
+                                mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+                                    override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+                                        val map = HashMap<Int, String>()
+                                        mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
+                                            if(index != 0){
+                                                map[index-1] = trackDescription.description()
+                                            }
+                                        }
+                                        mediaPlayer.controls().pause()
+                                        window.isAlwaysOnTop = true
+                                        window.title = "视频播放窗口"
+                                        window.isVisible = false
+                                        mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+                                        setTrackMap(map)
+                                    }
+                                })
+                                window.title = "正在读取字幕"
+                                window.isAlwaysOnTop = false
+                                window.toBack()
+                                window.size = Dimension(1,1)
+                                window.location = Point(0,0)
+                                window.layout = null
+                                window.contentPane.add(mediaPlayerComponent)
+                                window.isVisible = true
+                                mediaPlayerComponent.mediaPlayer().media().play(filePath)
+                            }
+                            setSelectFileName(file.nameWithoutExtension)
+                            fileChooser.selectedFile = File("")
+                        }
+                        fileChooser.removeChoosableFileFilter(fileFilter)
+//                    state.loadingFileChooserVisible = false
+                    }).start()
+
+                }) {
+                    Icon(
+                        Icons.Filled.FolderOpen,
+                        contentDescription = "Localized description",
+                        tint = MaterialTheme.colors.onBackground,
+                    )
+                }
             }
+
             if (filePath.isNotEmpty() && type == MKV) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
