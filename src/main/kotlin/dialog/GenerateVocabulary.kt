@@ -99,7 +99,7 @@ fun GenerateVocabulary(
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(1310.dp, 785.dp)
+            size = DpSize(1360.dp, 785.dp)
         ),
     ) {
         val fileFilter = when (type) {
