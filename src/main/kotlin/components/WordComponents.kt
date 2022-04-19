@@ -270,6 +270,7 @@ fun WordComponents(
             }
             AudioButton(
                 word = wordValue,
+                volume = state.typing.audioVolume,
                 pronunciation = state.typing.pronunciation,
             )
         }

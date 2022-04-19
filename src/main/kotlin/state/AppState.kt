@@ -40,6 +40,7 @@ data class TypingState(
     val isPlaySoundTips: Boolean = true,
     val soundTipsVolume: Float = 0.6F,
     val audioVolume: Float = 0.8F,
+    val videoVolume: Float = 0.8F,
     val pronunciation: String = "us",
     val isAuto: Boolean = false,
     val index: Int = 0,
@@ -113,9 +114,13 @@ class MutableTypingState(typingState: TypingState) {
     var soundTipsVolume by mutableStateOf(typingState.soundTipsVolume)
 
     /**
-     * 音视频音量
+     * 单词发音
      */
     var audioVolume by mutableStateOf(typingState.audioVolume)
+    /**
+     * 视频播放
+     */
+    var videoVolume by mutableStateOf(typingState.videoVolume)
 
     /**
      * 选择发音，有英音、美音、日语
@@ -343,6 +348,7 @@ class AppState {
             typing.isPlaySoundTips,
             typing.soundTipsVolume,
             typing.audioVolume,
+            typing.videoVolume,
             typing.pronunciation,
             typing.isAuto,
             typing.index,

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import player.isMacOS
 import state.AppState
 
@@ -330,18 +331,38 @@ fun TypingSidebar(state: AppState) {
                             elevation = 4.dp,
                             shape = RectangleShape,
                         ) {
-                            Column (Modifier.width(300.dp).height(140.dp).padding(start = 16.dp, end = 16.dp)){
+                            Column (Modifier.width(300.dp).height(180.dp).padding(start = 16.dp, end = 16.dp)){
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("击键音效")
-                                    Slider(value = state.typing.keystrokeVolume, onValueChange = {state.typing.keystrokeVolume = it})
+                                    Slider(value = state.typing.keystrokeVolume, onValueChange = {
+                                        Thread(Runnable {
+                                            state.typing.keystrokeVolume = it
+                                        }).start()
+                                    })
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("提示音效")
-                                    Slider(value = state.typing.soundTipsVolume, onValueChange = {state.typing.soundTipsVolume = it})
+                                    Slider(value = state.typing.soundTipsVolume, onValueChange = {
+                                        Thread(Runnable {
+                                            state.typing.soundTipsVolume = it
+                                        }).start()
+                                    })
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("音频视频")
-                                    Slider(value = state.typing.audioVolume, onValueChange = {state.typing.audioVolume = it})
+                                    Text("单词发音")
+                                    Slider(value = state.typing.audioVolume, onValueChange = {
+                                        Thread(Runnable {
+                                            state.typing.audioVolume = it
+                                        }).start()
+                                    })
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("视频播放")
+                                    Slider(value = state.typing.videoVolume, onValueChange = {
+                                        Thread(Runnable {
+                                            state.typing.videoVolume = it
+                                        }).start()
+                                    })
                                 }
 
                             }
