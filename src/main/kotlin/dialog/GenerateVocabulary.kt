@@ -66,6 +66,7 @@ import java.io.InputStream
 import java.net.URI
 import java.text.Collator
 import java.util.*
+import java.util.regex.Pattern
 import javax.swing.*
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
@@ -1522,13 +1523,14 @@ private fun readMKV(
                 val tokenize = tokenizer.tokenize(content)
                 for (word in tokenize) {
 
+                    val stringData =removeLocationInfo(subtitle.stringData)
                     if (!map.containsKey(word)) {
                         val list = ArrayList<Caption>()
                         list.add(
                             Caption(
                                 start = subtitle.startTime.format().toString(),
                                 end = subtitle.endTime.format(),
-                                content = subtitle.stringData
+                                content = stringData
                             )
                         )
                         map[word] = list
@@ -1539,7 +1541,7 @@ private fun readMKV(
                                     Caption(
                                         start = subtitle.startTime.format().toString(),
                                         end = subtitle.endTime.format(),
-                                        content = subtitle.stringData
+                                        content =stringData
                                     )
                                 )
                         }
@@ -1594,5 +1596,15 @@ private fun replaceSpecialCharacter(captionContent: String): String {
     if (content.contains("<br />")) {
         content = content.replace("<br />", "")
     }
+    content = removeLocationInfo(content)
     return content
+}
+
+/**
+ * 有一些字幕并不是在一个的固定位置，而是标注在人物旁边，这个函数删除位置信息
+ */
+private fun removeLocationInfo(content:String):String{
+    var pattern = Pattern.compile("\\{.*\\}")
+    var matcher = pattern.matcher(content)
+    return matcher.replaceAll("")
 }
