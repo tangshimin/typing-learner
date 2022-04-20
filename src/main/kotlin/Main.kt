@@ -372,7 +372,7 @@ fun globalShortcuts(
             )
             true
         }
-        (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
+        (it.isCtrlPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
             if (state.vocabulary.type == VocabularyType.DOCUMENT) {
                 val playTriple = getPayTriple(state, 0)
                 shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
@@ -383,7 +383,7 @@ fun globalShortcuts(
             }
             true
         }
-        (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
+        (it.isCtrlPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
             if (state.getCurrentWord().links.size >= 2) {
                 val playTriple = getPayTriple(state, 1)
                 shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
@@ -395,7 +395,7 @@ fun globalShortcuts(
             }
             true
         }
-        (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
+        (it.isCtrlPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
             if (state.getCurrentWord().links.size >= 3) {
                 val playTriple = getPayTriple(state, 2)
                 shortcutPlay(state,  playTriple, videoPlayerComponent, videoBounds)
