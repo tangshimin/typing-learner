@@ -1034,11 +1034,10 @@ fun Caption(
                         shape = RectangleShape
                     ) {
                         val ctrl = LocalCtrl.current
-                        val shift = if (isMacOS()) "⇧" else "Shift"
                         val text: Any = when (index) {
-                            0 -> "播放 $ctrl+$shift+Z"
-                            1 -> "播放 $ctrl+$shift+X"
-                            2 -> "播放 $ctrl+$shift+C"
+                            0 -> "播放 $ctrl+Z"
+                            1 -> "播放 $ctrl+X"
+                            2 -> "播放 $ctrl+C"
                             else -> println("字幕数量超出范围")
                         }
                         Text(text = text.toString(), modifier = Modifier.padding(10.dp))
