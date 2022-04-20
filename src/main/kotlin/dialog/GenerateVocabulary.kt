@@ -902,7 +902,7 @@ fun SelectFile(
                 }
             }
 
-            if (filePath.isNotEmpty() && type == MKV) {
+            if (filePath.isNotEmpty() && type == MKV && trackMap.isNotEmpty()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
@@ -959,9 +959,16 @@ fun SelectFile(
                     }
 
                 }
+            }else if (filePath.isNotEmpty() && type == MKV && trackMap.isEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
+                ) {
+                    Text("选择的视频没有字幕", color =Color.Red)
+                }
             }
             if ((type != MKV && filePath.isNotEmpty()) ||
-                (type == MKV && selectedSubtitle != "    ")
+                (type == MKV && selectedSubtitle != "    " && trackMap.isNotEmpty())
             ) {
                 OutlinedButton(onClick = {
                     analysis(filePath,selectedTrackId)
