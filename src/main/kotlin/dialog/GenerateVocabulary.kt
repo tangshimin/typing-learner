@@ -22,6 +22,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIconDefaults
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.ResourceLoader
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -35,6 +36,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import com.formdev.flatlaf.FlatLaf
 import com.matthewn4444.ebml.EBMLReader
+import com.matthewn4444.ebml.subtitles.SSASubtitles
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
@@ -99,7 +101,7 @@ fun GenerateVocabulary(
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(1360.dp, 785.dp)
+            size = DpSize(1190.dp, 785.dp)
         ),
     ) {
         val fileFilter = when (type) {
@@ -181,6 +183,7 @@ fun GenerateVocabulary(
                     MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                         Column {
                             FilterVocabulary(
+                                type = type,
                                 notBncFilter = notBncFilter,
                                 setNotBncFilter = {
                                     notBncFilter = it
@@ -224,18 +227,26 @@ fun GenerateVocabulary(
                                 animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
                             )
                             var progressText by remember { mutableStateOf("") }
-                            val trackMap  = remember { mutableStateMapOf<Int,String>() }
+
+                            /**
+                             * 暂时不读取 MKV 里的 ASS 字幕，
+                             * 因为我测试了一个 MKV 里的 ASS,生成词库后，只能播放一条字幕，然后程序就崩溃了。
+                             */
+                            var isSelectedASS by remember { mutableStateOf(false) }
+                            val trackList  = remember { mutableStateListOf<Pair<Int, String>>() }
                             SelectFile(
                                 state = state,
                                 type = type,
+                                isSelectedASS = isSelectedASS,
+                                setIsSelectedASS = {isSelectedASS = it},
                                 fileFilter = fileFilter,
                                 setSelectFileName = {selectedFileName = it },
                                 relateVideoPath = relateVideoPath,
                                 setRelateVideoPath = {relateVideoPath = it},
-                                trackMap = trackMap,
-                                setTrackMap = {
-                                    trackMap.clear()
-                                    trackMap.putAll(it)
+                                trackList = trackList,
+                                setTrackList = {
+                                    trackList.clear()
+                                    trackList.addAll(it)
                                 },
                                 selectedTrackId = selectedTrackId,
                                 setSelectedTrackId = {selectedTrackId = it},
@@ -263,7 +274,8 @@ fun GenerateVocabulary(
                                                     pathName = pathName,
                                                     trackId = trackId,
                                                     addProgress = { progress += it },
-                                                    setProgressText = { progressText = it })
+                                                    setProgressText = { progressText = it },
+                                                    setIsSelectedASS = {isSelectedASS = it})
                                             }
                                         }
 
@@ -418,7 +430,7 @@ fun Summary(
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(start = 10.dp,top = 5.dp, bottom = 5.dp)
+            modifier = Modifier.fillMaxWidth().height(40.dp).padding(start = 10.dp)
         ) {
             val summary = computeSummary(list, summaryVocabulary)
             Text(
@@ -488,6 +500,7 @@ private fun loadSummaryVocabulary(): Map<String, List<String>> {
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun FilterVocabulary(
+    type :VocabularyType,
     notBncFilter: Boolean,
     setNotBncFilter: (Boolean) -> Unit,
     notFrqFilter: Boolean,
@@ -500,7 +513,7 @@ fun FilterVocabulary(
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().height(48.dp)
+            modifier = Modifier.fillMaxWidth().height(if(type == DOCUMENT) 48.dp else 34.dp)
         ) {
             Text("过滤词库", color = MaterialTheme.colors.onBackground, fontFamily = FontFamily.Default)
         }
@@ -778,10 +791,12 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
 fun SelectFile(
     state: AppState,
     type: VocabularyType,
+    isSelectedASS:Boolean,
+    setIsSelectedASS:(Boolean) ->Unit,
     relateVideoPath:String,
     setRelateVideoPath:(String) ->Unit,
-    trackMap:Map<Int,String>,
-    setTrackMap:(Map<Int,String>) ->Unit,
+    trackList:List<Pair<Int,String>>,
+    setTrackList:(List<Pair<Int,String>>) ->Unit,
     selectedTrackId:Int,
     setSelectedTrackId:(Int) -> Unit,
     fileFilter: FileNameExtensionFilter,
@@ -792,6 +807,7 @@ fun SelectFile(
     Column(Modifier.height(IntrinsicSize.Max)){
         var filePath by remember { mutableStateOf("") }
         var selectedSubtitle by remember { mutableStateOf("    ") }
+        var isReading by remember { mutableStateOf(false) }
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
@@ -816,170 +832,175 @@ fun SelectFile(
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colors.primary),
                 textStyle = TextStyle(
-                    lineHeight = 26.sp,
+                    lineHeight = 29.sp,
                     fontSize = 16.sp,
                     color = MaterialTheme.colors.onBackground
                 ),
                 modifier = Modifier
                     .width(300.dp)
-                    .padding(start = 8.dp)
+
+                    .padding(start = 8.dp,end = 10.dp,)
+                    .height(35.dp)
                     .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
             )
 
-            TooltipArea(
-                tooltip = {
-                    Surface(
-                        elevation = 4.dp,
-                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                        shape = RectangleShape
-                    ) {
-                        Text(text = "打开文件", modifier = Modifier.padding(10.dp))
-                    }
-                },
-                delayMillis = 300,
-                tooltipPlacement = TooltipPlacement.ComponentRect(
-                    anchor = Alignment.BottomCenter,
-                    alignment = Alignment.BottomCenter,
-                    offset = DpOffset.Zero
-                )
-            ) {
-                IconButton(onClick = {
+            OutlinedButton(onClick = {
 //                state.loadingFileChooserVisible = true
-                    Thread(Runnable {
-                        val fileChooser = state.futureFileChooser.get()
-                        fileChooser.dialogTitle = chooseText
-                        fileChooser.fileSystemView = FileSystemView.getFileSystemView()
-                        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
-                        fileChooser.isAcceptAllFileFilterUsed = false
-                        fileChooser.addChoosableFileFilter(fileFilter)
-                        fileChooser.selectedFile = null
-                        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                            val file = fileChooser.selectedFile
-                            filePath = file.absolutePath
-                            if(type == MKV) {
-                                setRelateVideoPath(file.absolutePath)
-                                val window = state.videoPlayerWindow
-                                val  mediaPlayerComponent= state.videoPlayerComponent
-                                mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-                                    override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                                        val map = HashMap<Int, String>()
-                                        mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
-                                            if(index != 0){
-                                                map[index-1] = trackDescription.description()
-                                            }
+                Thread(Runnable {
+                    val fileChooser = state.futureFileChooser.get()
+                    fileChooser.dialogTitle = chooseText
+                    fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                    fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+                    fileChooser.isAcceptAllFileFilterUsed = false
+                    fileChooser.addChoosableFileFilter(fileFilter)
+                    fileChooser.selectedFile = null
+                    if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        val file = fileChooser.selectedFile
+                        filePath = file.absolutePath
+                        selectedSubtitle = "    "
+                        if(type == MKV) {
+                            isReading = true
+                            setRelateVideoPath(file.absolutePath)
+                            val window = state.videoPlayerWindow
+                            val  mediaPlayerComponent= state.videoPlayerComponent
+                            mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+                                override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+                                    val list = mutableListOf<Pair<Int, String>>()
+                                    mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
+                                        if(index != 0){
+//                                            list[index-1] = trackDescription.description()
+                                            list.add(Pair(index -1, trackDescription.description()))
                                         }
-                                        mediaPlayer.controls().pause()
-                                        window.isAlwaysOnTop = true
-                                        window.title = "视频播放窗口"
-                                        window.isVisible = false
-                                        mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-                                        setTrackMap(map)
                                     }
-                                })
-                                window.title = "正在读取字幕"
-                                window.isAlwaysOnTop = false
-                                window.toBack()
-                                window.size = Dimension(1,1)
-                                window.location = Point(0,0)
-                                window.layout = null
-                                window.contentPane.add(mediaPlayerComponent)
-                                window.isVisible = true
-                                mediaPlayerComponent.mediaPlayer().media().play(filePath)
-                            }
-                            setSelectFileName(file.nameWithoutExtension)
-                            fileChooser.selectedFile = File("")
-                        }
-                        fileChooser.removeChoosableFileFilter(fileFilter)
-//                    state.loadingFileChooserVisible = false
-                    }).start()
-
-                }) {
-                    Icon(
-                        Icons.Filled.FolderOpen,
-                        contentDescription = "Localized description",
-                        tint = MaterialTheme.colors.onBackground,
-                    )
-                }
-            }
-
-            if (filePath.isNotEmpty() && type == MKV && trackMap.isNotEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
-                ) {
-                    Text("选择字幕 ", color = MaterialTheme.colors.onBackground)
-                    var expanded by remember { mutableStateOf(false) }
-
-                    Box(Modifier.width(IntrinsicSize.Max)) {
-                        OutlinedButton(
-                            onClick = { expanded = true },
-                            modifier = Modifier
-                                .width(IntrinsicSize.Max)
-//                                .widthIn(50.dp,180.dp)
-                                .background(Color.Transparent)
-                                .border(1.dp, Color.Transparent)
-                        ) {
-                            Text(
-                                text = selectedSubtitle, fontSize = 12.sp,
-//                                modifier = Modifier.widthIn(50.dp,180.dp)
-                            )
-                            Icon(
-                                Icons.Default.ExpandMore, contentDescription = "Localized description",
-                                modifier = Modifier.size(20.dp, 20.dp)
-                            )
-                        }
-                        val dropdownMenuHeight = (trackMap.size * 40 + 20).dp
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.width(160.dp)
-                                .height(dropdownMenuHeight)
-                        ) {
-                            println("trackMap size:${trackMap.size}")
-                            trackMap.forEach { name ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        expanded = false
-                                        selectedSubtitle = name.value
-                                        setSelectedTrackId(name.key)
-                                        println("选择了第${name.key}条字幕")
-                                    },
-                                    modifier = Modifier.width(160.dp).height(40.dp)
-                                ) {
-                                    Text(
-                                        text = "${name.value} ", fontSize = 12.sp,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
+                                    mediaPlayer.controls().pause()
+                                    window.isAlwaysOnTop = true
+                                    window.title = "视频播放窗口"
+                                    window.isVisible = false
+                                    setTrackList(list)
+                                    isReading = false
+                                    mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
                                 }
-                            }
-
-
+                            })
+                            window.title = "正在读取字幕列表"
+                            window.isAlwaysOnTop = false
+                            window.toBack()
+                            window.size = Dimension(10,10)
+                            window.location = Point(0,0)
+                            window.layout = null
+                            window.contentPane.add(mediaPlayerComponent)
+                            window.isVisible = true
+                            // 打开了一个 ASS 字幕为默认轨道的 MKV 文件，再打开另一个 MKV 文件会可能出现 `Invalid memory access` 错误
+                            mediaPlayerComponent.mediaPlayer().media().play(filePath)
                         }
-
+                        setSelectFileName(file.nameWithoutExtension)
+                        fileChooser.selectedFile = File("")
                     }
+                    fileChooser.removeChoosableFileFilter(fileFilter)
+//                    state.loadingFileChooserVisible = false
+                }).start()
 
-                }
-            }else if (filePath.isNotEmpty() && type == MKV && trackMap.isEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
-                ) {
-                    Text("选择的视频没有字幕", color =Color.Red)
-                }
+            }) {
+                Text("打开",fontSize = 12.sp)
             }
-            if ((type != MKV && filePath.isNotEmpty()) ||
-                (type == MKV && selectedSubtitle != "    " && trackMap.isNotEmpty())
-            ) {
+
+            if (type != MKV && filePath.isNotEmpty()) {
+                Spacer(Modifier.width(10.dp))
                 OutlinedButton(onClick = {
                     analysis(filePath,selectedTrackId)
                 }) {
                     Text("分析", fontSize = 12.sp)
                 }
-                Spacer(Modifier.width(10.dp))
             }
-
-
         }
+
+        if(filePath.isNotEmpty() && type == MKV){
+            Row(horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max)
+                    .padding(start = 10.dp)){
+                if (trackList.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
+                    ) {
+                        Text("选择字幕 ",
+                            color = MaterialTheme.colors.onBackground,
+                            modifier = Modifier.padding(end = 50.dp))
+                        var expanded by remember { mutableStateOf(false) }
+                        Box(Modifier.width(IntrinsicSize.Max)) {
+                            OutlinedButton(
+                                onClick = { expanded = true },
+                                modifier = Modifier
+                                    .width(282.dp)
+                                    .background(Color.Transparent)
+                                    .border(1.dp, Color.Transparent)
+                            ) {
+                                Text(
+                                    text = selectedSubtitle, fontSize = 12.sp,
+                                )
+                                Icon(
+                                    Icons.Default.ExpandMore, contentDescription = "Localized description",
+                                    modifier = Modifier.size(20.dp, 20.dp)
+                                )
+                            }
+                            val dropdownMenuHeight = (trackList.size * 40 + 20).dp
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier.width(282.dp)
+                                    .height(dropdownMenuHeight)
+                            ) {
+                                trackList.forEach { (index,description) ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            expanded = false
+                                            setIsSelectedASS(false)
+                                            selectedSubtitle = description
+                                            setSelectedTrackId(index)
+                                        },
+                                        modifier = Modifier.width(282.dp).height(40.dp)
+                                    ) {
+                                        Text(
+                                            text = "$description ", fontSize = 12.sp,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+                }else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
+                    ) {
+                        if(isReading){
+                            Text("正在读取字幕列表", color = MaterialTheme.colors.onBackground)
+                        }else{
+                            Text("选择的视频没有字幕", color =Color.Red)
+                        }
+                    }
+                }
+                if (selectedSubtitle != "    " && trackList.isNotEmpty()) {
+                    if(isSelectedASS){
+                        Text("暂时不支持 ASS 字幕,请重新选择", color =Color.Red)
+                    }else{
+                        OutlinedButton(onClick = {
+                            analysis(filePath,selectedTrackId)
+                        }) {
+                            Text("分析", fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+
         if(type==SUBTITLES && filePath.isNotEmpty()){
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -1026,7 +1047,7 @@ fun SelectFile(
             }
             }
         }
-        Divider()
+        if(filePath.isNotEmpty()) Divider()
     }
 }
 
@@ -1050,7 +1071,6 @@ fun getSubtitleTrackMap(pathName: String): Map<Int, String> {
         // Check if there are any subtitles in this file
         val numSubtitles: Int = reader.subtitles.size
         if (numSubtitles == 0) {
-            println("There are no subtitles in this file!")
             return mapOf()
         }
 
@@ -1109,27 +1129,7 @@ fun getSubtitleTrackMap(pathName: String): Map<Int, String> {
     }
     return map
 }
-//fun getSubtitleTrackMapFromVLC(pathName: String, mediaPlayerComponent: Component):Map<Int,String>{
-//    val map = HashMap<Int, String>()
-//    mediaPlayerComponent.mediaPlayer().media().play(pathName)
-//    mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-//        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-//               println("subtitle track count :${ mediaPlayer.subpictures().trackCount()}")
-//                mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
-//                    println("index:$index,$trackDescription")
-//                    if(index != 0){
-//                        map[index-1] = trackDescription.description()
-//                    }
-//                }
-//
-//            mediaPlayer.controls().pause()
-//            mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-//            println("remove event event adapter")
-//        }
-//    })
-//
-//    return map
-//}
+
 fun filterDocumentWords(
     documentWords: List<Word>,
     notBncFilter: Boolean,
@@ -1187,7 +1187,6 @@ fun filterDocumentWords(
 }
 
 fun filterSelectVocabulary(pathList: List<String>, filteredDocumentList: List<Word>): List<Word> {
-    println("Filter Select Vocabulary")
     var list = ArrayList(filteredDocumentList)
     pathList.forEach { pathName ->
         val vocabulary = loadVocabulary(pathName)
@@ -1377,10 +1376,8 @@ fun readPDF(
 
     addProgress(0.15F)
     setProgressText("从文档提取出 ${set.size} 个单词，正在批量查询单词，如果词典里没有的就丢弃")
-    println(" extra PDF word size: " + set.size)
     val start = System.currentTimeMillis()
     val validSet = Dictionary.querySet(set)
-    println("查询单词共耗时：${System.currentTimeMillis() - start} millis")
     setProgressText("${validSet.size} 个有效单词")
     addProgress(0.1F)
     setProgressText("")
@@ -1464,100 +1461,113 @@ private fun readMKV(
     pathName: String,
     trackId :Int,
     addProgress: (Float) -> Unit,
-    setProgressText: (String) -> Unit
+    setProgressText: (String) -> Unit,
+    setIsSelectedASS: (Boolean) -> Unit
 ): Set<Word> {
     val map: MutableMap<String, ArrayList<Caption>> = HashMap()
     var reader: EBMLReader? = null
     try {
         reader = EBMLReader(pathName)
 
-        val start = System.currentTimeMillis()
         setProgressText("正在解析 MKV 文件")
         addProgress(0.2F)
-        // Check to see if this is a valid MKV file
-        // The header contains information for where all the segments are located
+
+        /**
+         * Check to see if this is a valid MKV file
+         * The header contains information for where all the segments are located
+         */
         if (!reader.readHeader()) {
             println("This is not an mkv file!")
             return setOf()
         }
-        println("读取头文件共消耗：${System.currentTimeMillis() - start}毫秒")
-        // Read the tracks. This contains the details of video, audio and subtitles
-        // in this file
+
+        /**
+         * Read the tracks. This contains the details of video, audio and subtitles
+         * in this file
+         */
         reader.readTracks()
 
-        // Check if there are any subtitles in this file
+        /**
+         * Check if there are any subtitles in this file
+         */
         val numSubtitles: Int = reader.subtitles.size
         if (numSubtitles == 0) {
-            println("There are no subtitles in this file!")
             return setOf()
         }
-        println("There are $numSubtitles subtitles in this file")
 
-        // You need this to find the clusters scattered across the file to find
-        // video, audio and subtitle data
+        /**
+         * You need this to find the clusters scattered across the file to find
+         * video, audio and subtitle data
+         */
         reader.readCues()
 
-        // OPTIONAL: You can read the header of the subtitle if it is ASS/SSA format
-//            for (int i = 0; i < reader.getSubtitles().size(); i++) {
-//                if (reader.getSubtitles().get(i) instanceof SSASubtitles) {
-//                    SSASubtitles subs = (SSASubtitles) reader.getSubtitles().get(i);
-//                    System.out.println(subs.getHeader());
-//                }
-//            }
 
-        // Read all the subtitles from the file each from cue index.
-        // Once a cue is parsed, it is cached, so if you read the same cue again,
-        // it will not waste time.
-        // Performance-wise, this will take some time because it needs to read
-        // most of the file.
-        println("CuesCount: " + reader.cuesCount)
+
+        /**
+         *   OPTIONAL: You can read the header of the subtitle if it is ASS/SSA format
+         *       for (int i = 0; i < reader.getSubtitles().size(); i++) {
+         *         if (reader.getSubtitles().get(i) instanceof SSASubtitles) {
+         *           SSASubtitles subs = (SSASubtitles) reader.getSubtitles().get(i);
+         *           System.out.println(subs.getHeader());
+         *         }
+         *       }
+         *
+         *
+         *  Read all the subtitles from the file each from cue index.
+         *  Once a cue is parsed, it is cached, so if you read the same cue again,
+         *  it will not waste time.
+         *  Performance-wise, this will take some time because it needs to read
+         *  most of the file.
+         */
         for (i in 0 until reader.cuesCount) {
             reader.readSubtitlesInCueFrame(i)
         }
-        println("读取 Cue 共消耗：${System.currentTimeMillis() - start}毫秒")
         addProgress(0.45F)
         setProgressText("正在分词")
-        // If you had to seek the video while the subtitles are still extracting,
-        // you can use read a different cue index. Use getCueIndexFromAddress()
-        // to find the nearest floor cue from address you seek to.
-        val subtitles = reader.subtitles[trackId].readUnreadSubtitles()
         ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { inputStream ->
             val model = TokenizerModel(inputStream)
             val tokenizer: Tokenizer = TokenizerME(model)
-            for (subtitle in subtitles) {
-                var content = replaceSpecialCharacter(subtitle.stringData)
-                content = content.lowercase(Locale.getDefault())
-                val tokenize = tokenizer.tokenize(content)
-                for (word in tokenize) {
+            val subtitle = reader.subtitles[trackId]
+            // 我测试了一个 MKV 里的 ASS,生成词库后，只能播放一条字幕，然后就崩溃，
+            // 这个 bug 可能跟 VLCJ 有关
+            if(subtitle is SSASubtitles){
+                setIsSelectedASS(true)
+            }else{
+                setIsSelectedASS(false)
+                val captionList = subtitle.readUnreadSubtitles()
+                for (caption in captionList) {
+                    var content = replaceSpecialCharacter(caption.stringData)
+                    content = content.lowercase(Locale.getDefault())
+                    val tokenize = tokenizer.tokenize(content)
+                    for (word in tokenize) {
 
-                    val stringData =removeLocationInfo(subtitle.stringData)
-                    if (!map.containsKey(word)) {
-                        val list = ArrayList<Caption>()
-                        list.add(
-                            Caption(
-                                start = subtitle.startTime.format().toString(),
-                                end = subtitle.endTime.format(),
-                                content = stringData
-                            )
-                        )
-                        map[word] = list
-                    } else {
-                        if (map[word]!!.size < 3) {
-                            map[word]!!
-                                .add(
-                                    Caption(
-                                        start = subtitle.startTime.format().toString(),
-                                        end = subtitle.endTime.format(),
-                                        content =stringData
-                                    )
+                        val stringData =removeLocationInfo(caption.stringData)
+                        if (!map.containsKey(word)) {
+                            val list = ArrayList<Caption>()
+                            list.add(
+                                Caption(
+                                    start = caption.startTime.format().toString(),
+                                    end = caption.endTime.format(),
+                                    content = stringData
                                 )
+                            )
+                            map[word] = list
+                        } else {
+                            if (map[word]!!.size < 3) {
+                                map[word]!!
+                                    .add(
+                                        Caption(
+                                            start = caption.startTime.format().toString(),
+                                            end = caption.endTime.format(),
+                                            content =stringData
+                                        )
+                                    )
+                            }
                         }
                     }
                 }
             }
-            println(" map size: " + map.size)
         }
-        println("读取分词共消耗：${System.currentTimeMillis() - start}毫秒")
     } catch (e: IOException) {
         e.printStackTrace()
     } finally {

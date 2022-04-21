@@ -160,7 +160,6 @@ fun loadMutableVocabulary(path: String):MutableVocabulary{
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun loadVocabulary(path: String): Vocabulary {
-    println("loadVocabulary: $path")
     val file = getResourcesFile(path)
     return Json.decodeFromString(file?.readText() ?: "TODO(还没实现)")
 }
