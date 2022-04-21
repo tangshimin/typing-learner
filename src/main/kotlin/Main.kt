@@ -368,7 +368,8 @@ fun globalShortcuts(
                 volume = state.typing.audioVolume,
                 pronunciation = state.typing.pronunciation,
                 mediaPlayerComponent = audioPlayerComponent,
-                changePlayerState = {}
+                changePlayerState = {},
+                setIsAutoPlay = {}
             )
             true
         }
