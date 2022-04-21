@@ -38,8 +38,16 @@ fun AudioButton(
     if (pronunciation != "false") {
         val audioPlayerComponent = LocalMediaPlayerComponent.current
         var isPlaying by remember { mutableStateOf(false) }
+
+        /**
+         * 防止用户频繁按 Enter 键，频繁的调用 VLC 导致程序崩溃
+         */
+        var isAutoPlay by remember { mutableStateOf(true) }
+
         val playAudio = {
-            playAudio(word,volume,pronunciation,audioPlayerComponent,changePlayerState = {isPlaying = it})
+            playAudio(word,volume,pronunciation,audioPlayerComponent,
+                changePlayerState = {isPlaying = it},
+            setIsAutoPlay = {isAutoPlay = it})
         }
         Column(
             modifier = Modifier
@@ -98,7 +106,10 @@ fun AudioButton(
         }
 
         SideEffect {
-            playAudio()
+            if(isAutoPlay){
+                playAudio()
+            }
+
         }
     }
 
@@ -110,16 +121,19 @@ fun playAudio(
     pronunciation: String,
     mediaPlayerComponent: Component,
     changePlayerState: (Boolean) -> Unit,
+    setIsAutoPlay:(Boolean) -> Unit,
 ) {
     val path = getAudioPath(word, pronunciation)
     if(path.isNotEmpty()){
         changePlayerState(true)
+        setIsAutoPlay(false)
         mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
                 mediaPlayer.audio().setVolume((volume * 100).toInt())
             }
             override fun finished(mediaPlayer: MediaPlayer) {
                 changePlayerState(false)
+                setIsAutoPlay(true)
                 mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
             }
         })
