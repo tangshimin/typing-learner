@@ -1025,7 +1025,7 @@ fun Caption(
                     },
                 )
             }
-
+            var isPathWrong by remember { mutableStateOf(false) }
             TooltipArea(
                 tooltip = {
                     Surface(
@@ -1045,8 +1045,8 @@ fun Caption(
                 },
                 delayMillis = 300,
                 tooltipPlacement = TooltipPlacement.ComponentRect(
-                    anchor = Alignment.CenterEnd,
-                    alignment = Alignment.CenterEnd,
+                    anchor = Alignment.TopCenter,
+                    alignment = Alignment.TopCenter,
                     offset = DpOffset.Zero
                 )
             ) {
@@ -1066,7 +1066,10 @@ fun Caption(
                         }
 
                     } else {
-                        println("通知用户，视频地址错误")
+                        isPathWrong = true
+                        Timer("恢复状态", false).schedule(2000) {
+                            isPathWrong = false
+                        }
                     }
 
                 }) {
@@ -1076,6 +1079,9 @@ fun Caption(
                         tint = MaterialTheme.colors.primary
                     )
                 }
+            }
+            if(isPathWrong){
+                Text("视频地址错误",color = Color.Red)
             }
 
         }
