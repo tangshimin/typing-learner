@@ -44,7 +44,6 @@ data class TypingState(
     val pronunciation: String = "us",
     val isAuto: Boolean = false,
     val index: Int = 0,
-//    val chapter: Int = 1,
     var vocabularyName: String = "四级",
     var vocabularyPath: String = "vocabulary/大学英语/四级.json"
 )
@@ -68,6 +67,7 @@ class MutableTypingState(typingState: TypingState) {
      * 音标组件的可见性
      */
     var phoneticVisible by mutableStateOf(typingState.phoneticVisible)
+
     /**
      * 词型组件的可见性
      */
@@ -117,6 +117,7 @@ class MutableTypingState(typingState: TypingState) {
      * 单词发音
      */
     var audioVolume by mutableStateOf(typingState.audioVolume)
+
     /**
      * 视频播放
      */
@@ -140,7 +141,7 @@ class MutableTypingState(typingState: TypingState) {
     /**
      * 当前单词的章节，从1开始
      */
-    var chapter by mutableStateOf((typingState.index/20)+1)
+    var chapter by mutableStateOf((typingState.index / 20) + 1)
 
     /**
      * 词库的名称
@@ -153,14 +154,11 @@ class MutableTypingState(typingState: TypingState) {
     var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
 }
 
-fun calculateChapter(index: Int): Int {
-    return (index / 20) + 1
-}
 
 /**
  * 速度组件可观察的状态
  */
-class MutableSpeedState(){
+class MutableSpeedState() {
     var isStart by mutableStateOf(false)
     var inputCount by mutableStateOf(0)
     var correctCount by mutableStateOf(0F)
@@ -169,7 +167,6 @@ class MutableSpeedState(){
     var timer by mutableStateOf(Timer())
     var autoPauseTimer by mutableStateOf(Timer())
 }
-
 
 
 @ExperimentalSerializationApi
@@ -198,6 +195,7 @@ class AppState {
      * 视频播放窗口
      */
     var videoPlayerWindow = createVideoPlayerWindow()
+
     /**
      * VLC 视频播放组件
      */
@@ -207,6 +205,7 @@ class AppState {
      * 词库
      */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
+
     /**
      * 链接的视频或字幕词库 Map
      * vocabularyPath to captionsMap (word.value to word.captions)
@@ -237,6 +236,7 @@ class AppState {
      * 默写模式 -> 复习错误单词模式
      */
     var isReviewWrongList by mutableStateOf(false)
+
     /**
      * 默写的单词
      */
@@ -246,15 +246,17 @@ class AppState {
      * 默写模式的索引
      */
     var dictationIndex by mutableStateOf(0)
+
     /**
      * 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复
      */
     private var typingStateMap: MutableMap<String, Boolean> = mutableMapOf()
 
-     /**
-      * 是否正在播放视频
-      */
+    /**
+     * 是否正在播放视频
+     */
     var isPlaying by mutableStateOf(false)
+
     /**
      * 是否打开选择章节窗口
      */
@@ -387,14 +389,14 @@ class AppState {
 
     /**
      * 为默写模式创建一个随机词汇表
-     - 伪代码
-     - 1 -> 0,19
-     - 2 -> 20,39
-     - 3 -> 40,59
-     - if chapter == 2
-     - start = 2 * 20 -20, end = 2 * 20  -1
-     - if chapter == 3
-     - start = 3 * 20 -20, end = 3 * 20 - 1
+    - 伪代码
+    - 1 -> 0,19
+    - 2 -> 20,39
+    - 3 -> 40,59
+    - if chapter == 2
+    - start = 2 * 20 -20, end = 2 * 20  -1
+    - if chapter == 3
+    - start = 3 * 20 -20, end = 3 * 20 - 1
      */
     fun generateDictationWords(currentWord: String): List<Word> {
         val start = typing.chapter * 20 - 20
