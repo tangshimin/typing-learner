@@ -351,8 +351,8 @@ fun GenerateVocabulary(
                                         val fileChooser = state.futureFileChooser.get()
                                         fileChooser.dialogType = JFileChooser.SAVE_DIALOG
                                         fileChooser.dialogTitle = "保存词库"
-                                        val directory = getResourcesFile("vocabulary")
-                                        fileChooser.selectedFile = File("${directory?.absolutePath}/$selectedFileName.json")
+                                        val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
+                                        fileChooser.selectedFile = File("$myDocuments${File.separator}$selectedFileName.json")
                                         val userSelection = fileChooser.showSaveDialog(splitPane)
                                         if (userSelection == JFileChooser.APPROVE_OPTION) {
                                             val fileToSave = fileChooser.selectedFile
