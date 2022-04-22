@@ -174,7 +174,7 @@ class AppState {
     /**
      * 应用程序的配置文件
      */
-    private val settings = composeAppResource("settings.json")
+    private val settings = getSettingsFile()
 
     /**
      * 配置文件保存的状态
@@ -525,6 +525,18 @@ fun composeAppResource(path: String): File {
         }
         file
     }
+}
+
+/**
+ * 用户的配置文件
+ */
+fun getSettingsFile(): File {
+    val homeDir = File(System.getProperty("user.home"))
+    val applicationDir = File(homeDir, ".qwerty-learner")
+    if (!applicationDir.exists()) {
+        applicationDir.mkdir()
+    }
+    return File(applicationDir, "setting.json")
 }
 
 /**
