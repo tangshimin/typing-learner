@@ -273,6 +273,10 @@ class AppState {
     var loadingFileChooserVisible by mutableStateOf(false)
 
     /**
+     * 是否显示【合并词库】窗口
+     */
+    var mergeVocabulary by mutableStateOf(false)
+    /**
      * 是否显示【从文档生成词库】窗口
      */
     var generateVocabularyFromDocument by mutableStateOf(false)

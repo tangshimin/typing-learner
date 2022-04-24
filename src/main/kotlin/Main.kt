@@ -26,10 +26,7 @@ import components.flatlaf.UpdateFlatLaf
 import data.Caption
 import data.VocabularyType
 import data.loadMutableVocabulary
-import dialog.AboutDialog
-import dialog.GenerateVocabulary
-import dialog.LinkVocabularyDialog
-import dialog.SelectChapterDialog
+import dialog.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
@@ -193,6 +190,9 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         )
 
 
+        Item("合并词库", onClick = {
+            state.mergeVocabulary = true
+        })
         Item("从文档生成词库", onClick = {
             state.generateVocabularyFromDocument = true
         })
@@ -495,6 +495,11 @@ fun MenuDialogs(state: AppState) {
 
     if(state.loadingFileChooserVisible){
         LoadingDialog()
+    }
+    if(state.mergeVocabulary){
+        MergeVocabularyDialog(
+            futureFileChooser = state.futureFileChooser,
+            close = {state.mergeVocabulary = false})
     }
     if (state.generateVocabularyFromDocument) {
         GenerateVocabulary(
