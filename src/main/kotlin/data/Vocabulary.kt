@@ -73,7 +73,7 @@ data class Word(
     var bnc: Int? = 0,
     var frq: Int? = 0,
     var exchange: String = "",
-    var links: MutableList<String> = mutableListOf(),
+    var links: MutableList<ExternalCaption> = mutableListOf(),
     var captions: MutableList<Caption> = mutableListOf()
 ) {
     override fun equals(other: Any?): Boolean {
@@ -109,6 +109,22 @@ data class Caption(var start: String, var end: String, var content: String) {
         return content
     }
 }
+
+/**
+ * @param relateVideoPath 视频地址
+ * @param subtitlesTrackId 字幕轨道 ID
+ * @param subtitlesName 字幕名称，链接字幕词库时设置。在链接字幕窗口，用来删除这个字幕文件的所有字幕
+ * @param start 开始
+ * @param end 结束
+ * @param content 字幕内容
+ */
+@Serializable
+data class ExternalCaption(val relateVideoPath: String,val subtitlesTrackId: Int,var subtitlesName: String,var start: String,var end: String,var content: String){
+    override fun toString(): String {
+        return content
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 fun loadMutableVocabularyFromContext(path: String): MutableVocabulary {
     println("loadVocabulary: $path")

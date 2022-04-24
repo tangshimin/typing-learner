@@ -32,6 +32,7 @@ import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
 import components.play
 import data.Caption
+import data.ExternalCaption
 import data.VocabularyType
 import data.loadVocabulary
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ fun LinkVocabularyDialog(
     /**
      * 准备链接的单词和字幕
      */
-    val prepareLinks = remember { mutableStateMapOf<String, List<String>>() }
+    val prepareLinks = remember { mutableStateMapOf<String, List<ExternalCaption>>() }
 
     /**
      * 视频地址
@@ -130,19 +131,21 @@ fun LinkVocabularyDialog(
                 }
                 state.vocabulary.wordList.forEach { word ->
                     if (wordCaptionsMap.containsKey(word.value.lowercase(Locale.getDefault()))) {
-                        val captions = wordCaptionsMap.get(word.value)
-                        val links = mutableListOf<String>()
+                        val captions = wordCaptionsMap[word.value]
+                        val links = mutableListOf<ExternalCaption>()
                         // 用于预览
                         val previewCaptionsList = mutableListOf<Caption>()
                         // 字幕最多3条，这个 counter 是剩余的数量
                         var counter = 3 - word.links.size
                         if (counter in 1..3) {
-                            captions?.forEachIndexed { index, caption ->
-                                val link =
-                                    "(${it.absolutePath})[${selectedVocabulary.relateVideoPath}][${selectedVocabulary.subtitlesTrackId}][$index]"
+                            captions?.forEachIndexed { _, caption ->
+                                val subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
+                                val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
+                                    caption.start, caption.end, caption.content)
+
                                 if (counter != 0) {
-                                    if (!word.links.contains(link)) {
-                                        links.add(link)
+                                    if (!word.links.contains(externalCaption)) {
+                                        links.add(externalCaption)
                                         previewCaptionsList.add(caption)
                                         counter--
                                     } else {
@@ -153,10 +156,12 @@ fun LinkVocabularyDialog(
                         } else {
 
                             // 字幕已经有3条了，查询是否有一样的
-                            captions?.forEachIndexed { index, _ ->
-                                val link =
-                                    "(${it.absolutePath})[${selectedVocabulary.relateVideoPath}][${selectedVocabulary.subtitlesTrackId}][$index]"
-                                if (word.links.contains(link)) {
+                            captions?.forEachIndexed { _, caption ->
+                                val subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
+                                val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
+                                    caption.start, caption.end, caption.content)
+
+                                if (word.links.contains(externalCaption)) {
                                     linkedCounter++
                                 }
                             }
@@ -214,25 +219,33 @@ fun LinkVocabularyDialog(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxSize().align(Alignment.Center)
                         ) {
-                            val captionPattern: Pattern =
-                                Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-                            val subtitlesMap = mutableMapOf<String, Int>()
+                            // 当前词库已经链接的外部字幕
+                            val externalNameMap = mutableMapOf<String, Int>()
                             state.vocabulary.wordList.forEach { word ->
-                                word.links.forEach { link ->
-                                    val matcher = captionPattern.matcher(link)
-                                    if (matcher.find()) {
-                                        val subtitlesPath = matcher.group(1)
-                                        var counter = subtitlesMap[subtitlesPath]
+                                word.links.forEach { externalCaption ->
+                                    // 视频词库
+                                    if(externalCaption.relateVideoPath.isNotEmpty()){
+                                        var counter = externalNameMap[externalCaption.relateVideoPath]
                                         if (counter == null) {
-                                            subtitlesMap[subtitlesPath] = 1
+                                            externalNameMap[externalCaption.relateVideoPath] = 1
                                         } else {
                                             counter++
-                                            subtitlesMap[subtitlesPath] = counter
+                                            externalNameMap[externalCaption.relateVideoPath] = counter
+                                        }
+                                        // 字幕词库
+                                    }else if (externalCaption.subtitlesName.isNotEmpty()){
+                                        var counter = externalNameMap[externalCaption.subtitlesName]
+                                        if (counter == null) {
+                                            externalNameMap[externalCaption.subtitlesName] = 1
+                                        } else {
+                                            counter++
+                                            externalNameMap[externalCaption.subtitlesName] = counter
                                         }
                                     }
+
                                 }
                             }
-                            if (subtitlesMap.isNotEmpty()) {
+                            if (externalNameMap.isNotEmpty()) {
                                 Column(Modifier.width(IntrinsicSize.Max)) {
 
                                     Row(
@@ -242,7 +255,7 @@ fun LinkVocabularyDialog(
                                     Divider()
                                     Column {
                                         var showConfirmationDialog by remember { mutableStateOf(false) }
-                                        subtitlesMap.forEach { (path, count) ->
+                                        externalNameMap.forEach { (path, count) ->
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 val name = File(path).nameWithoutExtension
                                                 Text(
@@ -261,20 +274,16 @@ fun LinkVocabularyDialog(
                                                 }
                                                 if (showConfirmationDialog) {
                                                     ConfirmationDelete(
-                                                        message = "确定要删除 ${name} 的所有字幕吗?",
+                                                        message = "确定要删除 $name 的所有字幕吗?",
                                                         confirm = {
                                                             state.vocabulary.wordList.forEach { word ->
-                                                                val tempLinks = mutableListOf<String>()
-                                                                word.links.forEach { link ->
-                                                                    val matcher = captionPattern.matcher(link)
-                                                                    if (matcher.find()) {
-                                                                        val subtitlesPath = matcher.group(1)
-                                                                        if (subtitlesPath == path) {
-                                                                            tempLinks.add(link)
-                                                                        }
+                                                                val tempList = mutableListOf<ExternalCaption>()
+                                                                word.links.forEach { externalCaption ->
+                                                                    if(externalCaption.relateVideoPath == path || externalCaption.subtitlesName == path){
+                                                                        tempList.add(externalCaption)
                                                                     }
                                                                 }
-                                                                word.links.removeAll(tempLinks)
+                                                                word.links.removeAll(tempList)
                                                             }
                                                             showConfirmationDialog = false
                                                             state.saveCurrentVocabulary()
@@ -327,6 +336,13 @@ fun LinkVocabularyDialog(
                                     }).start()
                                 }) {
                                     Text("选择文件")
+                                }
+                                Spacer(Modifier.width(20.dp))
+                                OutlinedButton(onClick = {
+                                    clear()
+                                    close()
+                                }) {
+                                    Text("确定")
                                 }
                                 Spacer(Modifier.width(20.dp))
                                 OutlinedButton(onClick = {
