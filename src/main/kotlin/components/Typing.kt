@@ -1217,29 +1217,14 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
  */
 @OptIn(ExperimentalSerializationApi::class)
 fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
-    /**
-     * 字幕链接的模式
-     * (vocabularyPath)[videoPath][subtitleTrackId][index]
-     */
-//    val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-//    val word = state.getCurrentWord().value
-    val externalCaption = state.getCurrentWord().links[index]
-//    val matcher = captionPattern.matcher(item)
-//    if (matcher.find()) {
-//        val vocabularyPath = matcher.group(1)
-//        val relativeVideoPath = matcher.group(2)
-//        val subtitleTrackId = matcher.group(3).toInt()
-//        val subtitleIndex = matcher.group(4).toInt()
-//
-//        // vocabularyPath to captionsMap (word.value to word.captions)
-//        if (!state.captionsMap.containsKey(vocabularyPath)) {
-//            state.captionsMap[vocabularyPath] = loadCaptionsMap(vocabularyPath)
-//        }
-//        val caption = state.captionsMap[vocabularyPath]?.get(word)?.get(subtitleIndex) ?: return null
 
+    return if(index < state.getCurrentWord().links.size){
+        val externalCaption = state.getCurrentWord().links[index]
         val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
-        return Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
-//    } else {
-//        return null
-//    }
+        Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
+    }else{
+        null
+    }
+
+
 }
