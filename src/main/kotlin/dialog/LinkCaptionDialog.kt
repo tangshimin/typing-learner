@@ -32,8 +32,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.EditingCaptions
 import components.play
-import data.Word
-import data.loadVocabulary
+import data.*
 import kotlinx.coroutines.launch
 import state.AppState
 import state.getResourcesFile
@@ -80,8 +79,9 @@ fun LinkCaptionDialog(
                 var subtitleVocabularyPath by remember { mutableStateOf("") }
                 var relateVideoPath by remember { mutableStateOf("") }
                 var subtitlesTrackId by remember { mutableStateOf(0) }
+                var subtitlesName by remember { mutableStateOf("") }
                 var selectedCaptionContent by remember { mutableStateOf("") }
-                var selectedCaptionIndex by remember{ mutableStateOf(0)}
+                var selectedCaption by remember{ mutableStateOf<Caption?>(null)}
                 if(!MaterialTheme.colors.isLight){
                     Row(horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp)){
@@ -131,6 +131,9 @@ fun LinkCaptionDialog(
                                     val vocabulary= loadVocabulary(file.absolutePath)
                                     wordList.addAll(vocabulary.wordList)
                                     relateVideoPath = vocabulary.relateVideoPath
+                                    if(vocabulary.type == VocabularyType.SUBTITLES){
+                                        subtitlesName = vocabulary.name
+                                    }
                                     subtitlesTrackId = vocabulary.subtitlesTrackId
                                     fileChooser.selectedFile = File("")
                                 }
@@ -181,11 +184,11 @@ fun LinkCaptionDialog(
                                             onDismissRequest = {expanded = false},
                                             modifier = Modifier.width(500.dp).height(140.dp)
                                         ){
-                                            subtitleWord.captions.forEachIndexed{ index, caption ->
+                                            subtitleWord.captions.forEachIndexed{ _, caption ->
                                                 DropdownMenuItem(
                                                     onClick = {
                                                         selectedCaptionContent = caption.content
-                                                        selectedCaptionIndex = index
+                                                        selectedCaption = caption
                                                         expanded = false
                                                     },
                                                     modifier = Modifier.width(500.dp).height(40.dp)
@@ -248,12 +251,14 @@ fun LinkCaptionDialog(
 
                                     OutlinedButton(onClick = {
                                         if(subtitleVocabularyPath.isNotEmpty() && selectedCaptionContent.isNotEmpty()){
-                                            val link =
-                                                "(${subtitleVocabularyPath})[${relateVideoPath}][${subtitlesTrackId}][$selectedCaptionIndex]"
-                                            if (word.links.size <3 && !word.links.contains(link)) {
-                                                word.links.add(link)
-                                            }
+                                            if(selectedCaption != null){
+                                                val externalCaption = ExternalCaption(relateVideoPath,subtitlesTrackId,subtitlesName,
+                                                    selectedCaption!!.start, selectedCaption!!.end, selectedCaption!!.content)
 
+                                                if (word.links.size <3 && !word.links.contains(externalCaption)) {
+                                                    word.links.add(externalCaption)
+                                                }
+                                            }
                                             setLinkSize( word.links.size)
                                             state.vocabulary.wordList.removeAt(index)
                                             state.vocabulary.wordList.add(index, word)

@@ -291,7 +291,9 @@ fun EditWord(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
+    kotlinx.serialization.ExperimentalSerializationApi::class
+)
 @Composable
 fun EditingCaptions(
     state: AppState,
@@ -363,27 +365,13 @@ fun EditingCaptions(
                         confirm = { (index, start, end) ->
                             scope.launch{
                                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                    playTriple.first.start = secondsToString(start)
-                                    playTriple.first.end = secondsToString(end)
-                                    val item = word.links[index]
-                                    val captionPattern: Pattern =
-                                        Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-                                    val matcher = captionPattern.matcher(item)
-                                    if (matcher.find()) {
-                                        val vocabularyPath = matcher.group(1)
-                                        val subtitleIndex = matcher.group(4).toInt()
-                                        val subtitleVocabulary = loadVocabulary(vocabularyPath)
-                                        val index = subtitleVocabulary.wordList.indexOf(word)
-                                        var subtitleWord = subtitleVocabulary.wordList[index]
-                                        subtitleWord.captions[subtitleIndex].start = secondsToString(start)
-                                        subtitleWord.captions[subtitleIndex].end = secondsToString(end)
-                                        saveVocabulary(subtitleVocabulary, vocabularyPath)
-                                    }
+                                    word.links[index].start = secondsToString(start)
+                                    word.links[index].end = secondsToString(end)
                                 } else {
                                     word.captions[index].start = secondsToString(start)
                                     word.captions[index].end = secondsToString(end)
-                                   state.saveCurrentVocabulary()
                                 }
+                                state.saveCurrentVocabulary()
                             }
                         },
                         close = { showSettingTimeLineDialog = false }

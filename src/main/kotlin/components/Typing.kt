@@ -875,11 +875,11 @@ fun getPlayTripleMap(state: AppState, word: Word): MutableMap<Int, Triple<Captio
     val playTripleMap = mutableMapOf<Int, Triple<Caption, String, Int>>()
     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
         if (word.links.isNotEmpty()) {
-            word.links.forEachIndexed { index, _ ->
-                val playTriple = getPayTriple(state, index)
-                if (playTriple != null) {
-                    playTripleMap[index] = playTriple
-                }
+            word.links.forEachIndexed { index, externalCaption ->
+                val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
+                val playTriple =
+                    Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
+                playTripleMap[index] = playTriple
             }
         }
     } else {
@@ -1221,24 +1221,25 @@ fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
      * 字幕链接的模式
      * (vocabularyPath)[videoPath][subtitleTrackId][index]
      */
-    val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
-    val word = state.getCurrentWord().value
-    val item = state.getCurrentWord().links[index]
-    val matcher = captionPattern.matcher(item)
-    if (matcher.find()) {
-        val vocabularyPath = matcher.group(1)
-        val relativeVideoPath = matcher.group(2)
-        val subtitleTrackId = matcher.group(3).toInt()
-        val subtitleIndex = matcher.group(4).toInt()
+//    val captionPattern: Pattern = Pattern.compile("\\((.*?)\\)\\[(.*?)\\]\\[([0-9]*?)\\]\\[([0-9]*?)\\]")
+//    val word = state.getCurrentWord().value
+    val externalCaption = state.getCurrentWord().links[index]
+//    val matcher = captionPattern.matcher(item)
+//    if (matcher.find()) {
+//        val vocabularyPath = matcher.group(1)
+//        val relativeVideoPath = matcher.group(2)
+//        val subtitleTrackId = matcher.group(3).toInt()
+//        val subtitleIndex = matcher.group(4).toInt()
+//
+//        // vocabularyPath to captionsMap (word.value to word.captions)
+//        if (!state.captionsMap.containsKey(vocabularyPath)) {
+//            state.captionsMap[vocabularyPath] = loadCaptionsMap(vocabularyPath)
+//        }
+//        val caption = state.captionsMap[vocabularyPath]?.get(word)?.get(subtitleIndex) ?: return null
 
-        // vocabularyPath to captionsMap (word.value to word.captions)
-        if (!state.captionsMap.containsKey(vocabularyPath)) {
-            state.captionsMap[vocabularyPath] = loadCaptionsMap(vocabularyPath)
-        }
-        val caption = state.captionsMap[vocabularyPath]?.get(word)?.get(subtitleIndex) ?: return null
-
-        return Triple(caption, relativeVideoPath, subtitleTrackId)
-    } else {
-        return null
-    }
+        val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
+        return Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
+//    } else {
+//        return null
+//    }
 }
