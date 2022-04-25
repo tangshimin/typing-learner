@@ -510,14 +510,14 @@ fun MenuDialogs(state: AppState) {
             close = {state.mergeVocabulary = false})
     }
     if (state.generateVocabularyFromDocument) {
-        GenerateVocabulary(
+        GenerateVocabularyDialog(
             state = state,
             title = "从文档生成词库",
             type = VocabularyType.DOCUMENT
         )
     }
     if (state.generateVocabularyFromSubtitles) {
-        GenerateVocabulary(
+        GenerateVocabularyDialog(
             state = state,
             title = "从字幕生成词库",
             type = VocabularyType.SUBTITLES
@@ -525,7 +525,7 @@ fun MenuDialogs(state: AppState) {
     }
 
     if (state.generateVocabularyFromMKV) {
-        GenerateVocabulary(
+        GenerateVocabularyDialog(
             state = state,
             title = "从 MKV 生成词库",
             type = VocabularyType.MKV

@@ -1,4 +1,4 @@
-package components
+package dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -18,7 +18,6 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
@@ -28,8 +27,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import components.ConfirmationDelete
+import components.getPlayTripleMap
+import components.play
+import components.secondsToString
 import data.*
-import dialog.LinkCaptionDialog
 import kotlinx.coroutines.launch
 import state.AppState
 import java.awt.Component
@@ -37,7 +39,6 @@ import java.awt.Rectangle
 import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.regex.Pattern
 
 /**
  * 编辑当前单词
@@ -51,7 +52,7 @@ import java.util.regex.Pattern
     ExperimentalFoundationApi::class
 )
 @Composable
-fun EditWord(
+fun EditWordDialog(
     word: Word,
     state: AppState,
     save: (Word) -> Unit,
@@ -626,8 +627,9 @@ fun SettingTimeLine(
                     ) {
                         Spacer(Modifier.width(20.dp))
                         OutlinedButton(onClick = {
-                            if(oldStart != secondsToString(start)||
-                                oldEnd != secondsToString(end)){
+                            if(oldStart != secondsToString(start) ||
+                                oldEnd != secondsToString(end)
+                            ){
                                 confirm(Triple(index, start, end))
                             }
                             close()

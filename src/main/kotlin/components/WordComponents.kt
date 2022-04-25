@@ -30,6 +30,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.*
 import dialog.ChapterFinishedDialog
+import dialog.EditWordDialog
 import kotlinx.coroutines.launch
 import player.AudioButton
 import state.AppState
@@ -347,7 +348,7 @@ fun WordComponents(
                         )
                     }
                     if (showEditWordDialog) {
-                        EditWord(
+                        EditWordDialog(
                             word = word,
                             state = state,
                             save = { newWord ->
