@@ -87,22 +87,7 @@ data class Word(
     }
 }
 
-class MutableWord(word:Word){
-    var value by mutableStateOf(word.value)
-    var usphone by mutableStateOf(word.usphone)
-    var ukphone by mutableStateOf(word.usphone)
-    var definition by mutableStateOf(word.definition)
-    var translation by mutableStateOf(word.translation)
-    var pos by mutableStateOf(word.pos)
-    var collins by mutableStateOf(word.collins)
-    var oxford by mutableStateOf(word.oxford)
-    var tag by mutableStateOf(word.tag)
-    var bnc by mutableStateOf(word.bnc)
-    var frq by mutableStateOf(word.frq)
-    var exchange by mutableStateOf(word.exchange)
-    var links by mutableStateOf(word.links)
-    var captions by mutableStateOf(word.captions)
-}
+
 
 @Serializable
 data class Caption(var start: String, var end: String, var content: String) {
@@ -126,31 +111,6 @@ data class ExternalCaption(val relateVideoPath: String,val subtitlesTrackId: Int
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
-fun loadMutableVocabularyFromContext(path: String): MutableVocabulary {
-    println("loadVocabulary: $path")
-    ResourceLoader.Default.load(path).use { inputStream ->
-        InputStreamReader(inputStream,StandardCharsets.UTF_8).use{ reader ->
-            val string = reader.readText()
-            val vocabulary = Json.decodeFromString<Vocabulary>(string )
-        return MutableVocabulary(vocabulary)
-        }
-    }
-}
-
-fun loadMutableVocabularyFromAbsolutePath(absolutePath: String):MutableVocabulary {
-    val common = File("app/resources/common")
-    // 开发环境
-    return if(common.exists()){
-        val path =  absolutePath.replaceFirst("app/resources","app/resources/common")
-        val vocabulary = Json.decodeFromString<Vocabulary>(File(path).readText())
-        MutableVocabulary(vocabulary)
-    }else{
-        // 打包之后的路径没有 common
-        val vocabulary = Json.decodeFromString<Vocabulary>(File(absolutePath).readText())
-        MutableVocabulary(vocabulary)
-    }
-}
 
 fun loadMutableVocabulary(path: String):MutableVocabulary{
     val file = getResourcesFile(path)
@@ -227,36 +187,6 @@ fun loadVocabulary(path: String): Vocabulary {
 
 }
 
-fun loadCaptionsMap(path: String): HashMap<String, List<Caption>> {
-    val map = HashMap<String, List<Caption>>()
-//    val file = getFile("vocabulary/字幕/${name}.json") ?: return map
-    val file = getResourcesFile(path) ?: return map
-    try{
-        val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
-        vocabulary.wordList.forEach { word ->
-            map[word.value] = word.captions
-        }
-        return map
-    }catch (exception:Exception){
-        println(exception.message)
-        return map
-    }
-
-}
-
-fun getRelativeVideoPath(name: String): String {
-    val file = getResourcesFile("vocabulary/字幕/${name}.json") ?: return ""
-    return Json.decodeFromString<Vocabulary>(
-        file.readText()
-    ).relateVideoPath
-}
-
-fun getTrackId(name: String): Int {
-    val file = getResourcesFile("vocabulary/字幕/${name}.json") ?: return 0
-    return Json.decodeFromString<Vocabulary>(
-        file.readText()
-    ).subtitlesTrackId
-}
 
 fun saveVocabularyToTempDirectory(vocabulary: Vocabulary, directory: String) {
     val format = Json {
