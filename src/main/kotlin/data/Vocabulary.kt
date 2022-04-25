@@ -10,8 +10,9 @@ import kotlinx.serialization.json.Json
 import state.getResourcesFile
 import java.io.File
 import java.io.InputStreamReader
-import java.lang.Exception
 import java.nio.charset.StandardCharsets
+import javax.swing.JOptionPane
+import kotlin.Exception
 
 /**
  * 词库
@@ -154,8 +155,25 @@ fun loadMutableVocabularyFromAbsolutePath(absolutePath: String):MutableVocabular
 fun loadMutableVocabulary(path: String):MutableVocabulary{
     val file = getResourcesFile(path)
     return if (file != null && file.exists()) {
-        val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
-        MutableVocabulary(vocabulary)
+
+        try {
+         val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
+            MutableVocabulary(vocabulary)
+        }catch (exception:Exception){
+            exception.printStackTrace()
+           val vocabulary = Vocabulary(
+                name = "",
+                type = VocabularyType.DOCUMENT,
+                language = "",
+                size = 0,
+                relateVideoPath = "",
+                subtitlesTrackId = 0,
+                wordList = mutableListOf()
+            )
+            JOptionPane.showMessageDialog(null,"词库解析错误：\n地址：$path\n"+exception.message)
+            MutableVocabulary(vocabulary)
+        }
+
     }else{
         val vocabulary = Vocabulary(
             name = "",
@@ -166,6 +184,7 @@ fun loadMutableVocabulary(path: String):MutableVocabulary{
             subtitlesTrackId = 0,
             wordList = mutableListOf()
         )
+        JOptionPane.showMessageDialog(null,"找不到词库：\n$path")
         MutableVocabulary(vocabulary)
     }
 
