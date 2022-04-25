@@ -1,6 +1,5 @@
 package dialog
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
@@ -42,7 +41,6 @@ import state.getResourcesFile
 import java.awt.Rectangle
 import java.io.File
 import java.util.*
-import java.util.regex.Pattern
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
 
@@ -96,7 +94,7 @@ fun LinkVocabularyDialog(
             state.vocabulary.wordList.forEach { word ->
                 val links = prepareLinks[word.value]
                 if (!links.isNullOrEmpty()) {
-                    word.links.addAll(links)
+                    word.externalCaptions.addAll(links)
                 }
             }
             state.saveCurrentVocabulary()
@@ -136,7 +134,7 @@ fun LinkVocabularyDialog(
                         // 用于预览
                         val previewCaptionsList = mutableListOf<Caption>()
                         // 字幕最多3条，这个 counter 是剩余的数量
-                        var counter = 3 - word.links.size
+                        var counter = 3 - word.externalCaptions.size
                         if (counter in 1..3) {
                             captions?.forEachIndexed { _, caption ->
                                 val subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
@@ -144,7 +142,7 @@ fun LinkVocabularyDialog(
                                     caption.start, caption.end, caption.content)
 
                                 if (counter != 0) {
-                                    if (!word.links.contains(externalCaption)) {
+                                    if (!word.externalCaptions.contains(externalCaption)) {
                                         links.add(externalCaption)
                                         previewCaptionsList.add(caption)
                                         counter--
@@ -161,7 +159,7 @@ fun LinkVocabularyDialog(
                                 val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
                                     caption.start, caption.end, caption.content)
 
-                                if (word.links.contains(externalCaption)) {
+                                if (word.externalCaptions.contains(externalCaption)) {
                                     linkedCounter++
                                 }
                             }
@@ -221,7 +219,7 @@ fun LinkVocabularyDialog(
                             // 当前词库已经链接的外部字幕
                             val externalNameMap = mutableMapOf<String, Int>()
                             state.vocabulary.wordList.forEach { word ->
-                                word.links.forEach { externalCaption ->
+                                word.externalCaptions.forEach { externalCaption ->
                                     // 视频词库
                                     if(externalCaption.relateVideoPath.isNotEmpty()){
                                         var counter = externalNameMap[externalCaption.relateVideoPath]
@@ -277,12 +275,12 @@ fun LinkVocabularyDialog(
                                                         confirm = {
                                                             state.vocabulary.wordList.forEach { word ->
                                                                 val tempList = mutableListOf<ExternalCaption>()
-                                                                word.links.forEach { externalCaption ->
+                                                                word.externalCaptions.forEach { externalCaption ->
                                                                     if(externalCaption.relateVideoPath == path || externalCaption.subtitlesName == path){
                                                                         tempList.add(externalCaption)
                                                                     }
                                                                 }
-                                                                word.links.removeAll(tempList)
+                                                                word.externalCaptions.removeAll(tempList)
                                                             }
                                                             showConfirmationDialog = false
                                                             state.saveCurrentVocabulary()

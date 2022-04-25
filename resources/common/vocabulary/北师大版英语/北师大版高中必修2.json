@@ -19,7 +19,7 @@
             "bnc": 422,
             "frq": 624,
             "exchange": "t:likeliest",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -37,7 +37,7 @@
             "bnc": 1101,
             "frq": 1158,
             "exchange": "s:concepts",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -55,7 +55,7 @@
             "bnc": 2961,
             "frq": 2743,
             "exchange": "s:charts/i:charting/d:charted/3:charts/p:charted",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -73,7 +73,7 @@
             "bnc": 1918,
             "frq": 688,
             "exchange": "d:focused/i:focusing/3:focuses/p:focused/s:foci",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -91,7 +91,7 @@
             "bnc": 6911,
             "frq": 4519,
             "exchange": "p:skipped/i:skipping/s:skips/d:skipped/3:skips",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -109,7 +109,7 @@
             "bnc": 4178,
             "frq": 3881,
             "exchange": "s:fists/i:fisting",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -127,7 +127,7 @@
             "bnc": 4386,
             "frq": 4304,
             "exchange": "s:waists/p:waisted",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -145,7 +145,7 @@
             "bnc": 3556,
             "frq": 3556,
             "exchange": "s:nails/d:nailed/i:nailing/p:nailed/3:nails",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -163,7 +163,7 @@
             "bnc": 1714,
             "frq": 3354,
             "exchange": "s:galleries",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -181,7 +181,7 @@
             "bnc": 0,
             "frq": 11760,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -199,7 +199,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -217,7 +217,7 @@
             "bnc": 3499,
             "frq": 4003,
             "exchange": "s:artificials",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -235,7 +235,7 @@
             "bnc": 2643,
             "frq": 2103,
             "exchange": "s:climates",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -253,7 +253,7 @@
             "bnc": 2410,
             "frq": 1110,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -271,7 +271,7 @@
             "bnc": 4100,
             "frq": 3582,
             "exchange": "d:flooded/s:floods/p:flooded/i:flooding/3:floods",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -289,7 +289,7 @@
             "bnc": 6101,
             "frq": 3675,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -307,7 +307,7 @@
             "bnc": 1299,
             "frq": 1032,
             "exchange": "s:realities",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -325,7 +325,7 @@
             "bnc": 3589,
             "frq": 2701,
             "exchange": "s:viruses",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -343,7 +343,7 @@
             "bnc": 754,
             "frq": 963,
             "exchange": "d:affected/i:affecting/3:affects/p:affected/s:affects",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -361,7 +361,7 @@
             "bnc": 1967,
             "frq": 2527,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -379,7 +379,7 @@
             "bnc": 770,
             "frq": 787,
             "exchange": "s:growths",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -397,7 +397,7 @@
             "bnc": 9581,
             "frq": 9792,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -415,7 +415,7 @@
             "bnc": 1125,
             "frq": 828,
             "exchange": "s:crimes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -433,7 +433,7 @@
             "bnc": 25812,
             "frq": 10274,
             "exchange": "s:hackers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -451,7 +451,7 @@
             "bnc": 4396,
             "frq": 2841,
             "exchange": "s:terrorists",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -469,7 +469,7 @@
             "bnc": 913,
             "frq": 791,
             "exchange": "s:attacks/d:attacked/p:attacked/i:attacking/3:attacks",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -487,7 +487,7 @@
             "bnc": 4091,
             "frq": 3727,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -505,7 +505,7 @@
             "bnc": 3197,
             "frq": 2837,
             "exchange": "p:crashed/i:crashing/d:crashed/s:crashes/3:crashes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -523,7 +523,7 @@
             "bnc": 4963,
             "frq": 4141,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -541,7 +541,7 @@
             "bnc": 3187,
             "frq": 2350,
             "exchange": "s:entertainments",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -559,7 +559,7 @@
             "bnc": 1663,
             "frq": 1578,
             "exchange": "p:disappeared/d:disappeared/3:disappears/i:disappearing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -577,7 +577,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -595,7 +595,7 @@
             "bnc": 3189,
             "frq": 3651,
             "exchange": "d:harmed/i:harming/s:harms/3:harms/p:harmed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -613,7 +613,7 @@
             "bnc": 1173,
             "frq": 1689,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -631,7 +631,7 @@
             "bnc": 3111,
             "frq": 2685,
             "exchange": "s:destructions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -649,7 +649,7 @@
             "bnc": 922,
             "frq": 474,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -667,7 +667,7 @@
             "bnc": 1601,
             "frq": 1605,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -685,7 +685,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -703,7 +703,7 @@
             "bnc": 1221,
             "frq": 1176,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -721,7 +721,7 @@
             "bnc": 1102,
             "frq": 882,
             "exchange": "s:networks/i:networking/d:networked/p:networked/3:networks",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -739,7 +739,7 @@
             "bnc": 509,
             "frq": 534,
             "exchange": "s:projects/d:projected/i:projecting/3:projects/p:projected",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -757,7 +757,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -775,7 +775,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -793,7 +793,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -811,7 +811,7 @@
             "bnc": 1852,
             "frq": 1922,
             "exchange": "d:fashioned/s:fashions/p:fashioned/i:fashioning/3:fashions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -829,7 +829,7 @@
             "bnc": 3859,
             "frq": 5118,
             "exchange": "p:fancied/3:fancies/d:fancied/s:fancies/i:fancying/r:fancier",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -847,7 +847,7 @@
             "bnc": 1775,
             "frq": 2507,
             "exchange": "s:suggestions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -865,7 +865,7 @@
             "bnc": 1485,
             "frq": 2029,
             "exchange": "d:rejected/p:rejected/i:rejecting/3:rejects/s:rejects",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -883,7 +883,7 @@
             "bnc": 1092,
             "frq": 2357,
             "exchange": "s:arrangements",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -901,7 +901,7 @@
             "bnc": 855,
             "frq": 1323,
             "exchange": "s:titles/d:titled/i:titling/p:titled/3:titles",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -919,7 +919,7 @@
             "bnc": 4309,
             "frq": 3883,
             "exchange": "s:destinations",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -937,7 +937,7 @@
             "bnc": 3036,
             "frq": 3209,
             "exchange": "d:fleshed/i:fleshing/s:fleshes/p:fleshed/3:fleshes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -955,7 +955,7 @@
             "bnc": 4923,
             "frq": 3798,
             "exchange": "s:exits/i:exiting/p:exited/d:exited/3:exits",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -973,7 +973,7 @@
             "bnc": 1689,
             "frq": 1472,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -991,7 +991,7 @@
             "bnc": 646,
             "frq": 532,
             "exchange": "s:sites/d:sited/i:siting/p:sited/3:sites",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1009,7 +1009,7 @@
             "bnc": 2523,
             "frq": 2273,
             "exchange": "d:packed/s:packs/p:packed/i:packing/3:packs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1027,7 +1027,7 @@
             "bnc": 4987,
             "frq": 4532,
             "exchange": "p:dipped/i:dipping/d:dipped/s:dips/3:dips",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1045,7 +1045,7 @@
             "bnc": 3995,
             "frq": 3360,
             "exchange": "s:toes/p:toed/i:toeing/d:toed/3:toes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1063,7 +1063,7 @@
             "bnc": 7695,
             "frq": 6769,
             "exchange": "s:millionaires",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1081,7 +1081,7 @@
             "bnc": 7138,
             "frq": 6646,
             "exchange": "s:smokers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1099,7 +1099,7 @@
             "bnc": 4425,
             "frq": 4721,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1117,7 +1117,7 @@
             "bnc": 1645,
             "frq": 1779,
             "exchange": "s:guides/d:guided/p:guided/3:guides/i:guiding",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1135,7 +1135,7 @@
             "bnc": 2303,
             "frq": 1682,
             "exchange": "d:located/p:located/i:locating/3:locates",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1153,7 +1153,7 @@
             "bnc": 7563,
             "frq": 12240,
             "exchange": "s:seasides",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1171,7 +1171,7 @@
             "bnc": 41375,
             "frq": 0,
             "exchange": "s:maoris/0:maori/1:s",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1189,7 +1189,7 @@
             "bnc": 1295,
             "frq": 1316,
             "exchange": "d:settled/p:settled/i:settling/3:settles",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1207,7 +1207,7 @@
             "bnc": 1600,
             "frq": 2167,
             "exchange": "s:settlements",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1225,7 +1225,7 @@
             "bnc": 521,
             "frq": 743,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1243,7 +1243,7 @@
             "bnc": 5306,
             "frq": 3531,
             "exchange": "s:suburbs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1261,7 +1261,7 @@
             "bnc": 2336,
             "frq": 1763,
             "exchange": "s:zones/i:zoning/p:zoned/3:zones/d:zoned",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1279,7 +1279,7 @@
             "bnc": 10407,
             "frq": 6321,
             "exchange": "s:volcanos",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1297,7 +1297,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1315,7 +1315,7 @@
             "bnc": 3526,
             "frq": 36866,
             "exchange": "i:harbouring/s:harbours/p:harboured/3:harbours/d:harboured",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1333,7 +1333,7 @@
             "bnc": 311,
             "frq": 485,
             "exchange": "s:views/d:viewed/p:viewed/i:viewing/3:views",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1351,7 +1351,7 @@
             "bnc": 4726,
             "frq": 7752,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1369,7 +1369,7 @@
             "bnc": 1527,
             "frq": 1299,
             "exchange": "s:averages/i:averaging/p:averaged/d:averaged/3:averages",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1387,7 +1387,7 @@
             "bnc": 0,
             "frq": 27516,
             "exchange": "0:surf/1:i/i:surfing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1405,7 +1405,7 @@
             "bnc": 1276,
             "frq": 1370,
             "exchange": "s:regulars",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1423,7 +1423,7 @@
             "bnc": 1705,
             "frq": 1433,
             "exchange": "s:locations",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1441,7 +1441,7 @@
             "bnc": 2282,
             "frq": 2152,
             "exchange": "p:steeled/s:steels/i:steeling/d:steeled/3:steels",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1459,7 +1459,7 @@
             "bnc": 499,
             "frq": 641,
             "exchange": "s:materials",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1477,7 +1477,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1495,7 +1495,7 @@
             "bnc": 34181,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1513,7 +1513,7 @@
             "bnc": 3779,
             "frq": 4075,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1531,7 +1531,7 @@
             "bnc": 6478,
             "frq": 8152,
             "exchange": "s:sceneries",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1549,7 +1549,7 @@
             "bnc": 10574,
             "frq": 6403,
             "exchange": "s:cuisines",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1567,7 +1567,7 @@
             "bnc": 1781,
             "frq": 2811,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1585,7 +1585,7 @@
             "bnc": 5742,
             "frq": 5555,
             "exchange": "s:spiders",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1603,7 +1603,7 @@
             "bnc": 6919,
             "frq": 3706,
             "exchange": "s:webs/i:webbing/p:webbed/3:webs/d:webbed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1621,7 +1621,7 @@
             "bnc": 2958,
             "frq": 1339,
             "exchange": "s:folks",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1639,7 +1639,7 @@
             "bnc": 5759,
             "frq": 3848,
             "exchange": "i:jazzing/p:jazzed/3:jazzes/d:jazzed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1657,7 +1657,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1675,7 +1675,7 @@
             "bnc": 5777,
             "frq": 10557,
             "exchange": "s:discos/i:discoing/f:discos",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1693,7 +1693,7 @@
             "bnc": 4421,
             "frq": 6552,
             "exchange": "s:ballets",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1711,7 +1711,7 @@
             "bnc": 262,
             "frq": 427,
             "exchange": "s:effects/d:effected/i:effecting/p:effected/3:effects",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1729,7 +1729,7 @@
             "bnc": 9539,
             "frq": 8204,
             "exchange": "p:disappointed/d:disappointed/3:disappoints/i:disappointing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1747,7 +1747,7 @@
             "bnc": 2759,
             "frq": 2625,
             "exchange": "s:extraordinaries",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1765,7 +1765,7 @@
             "bnc": 5656,
             "frq": 5282,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1783,7 +1783,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1801,7 +1801,7 @@
             "bnc": 2991,
             "frq": 2215,
             "exchange": "s:albums",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1819,7 +1819,7 @@
             "bnc": 688,
             "frq": 675,
             "exchange": "s:performances",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1837,7 +1837,7 @@
             "bnc": 1138,
             "frq": 953,
             "exchange": "d:performed/i:performing/p:performed/3:performs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1855,7 +1855,7 @@
             "bnc": 590,
             "frq": 2573,
             "exchange": "d:awarded/s:awards/p:awarded/i:awarding/3:awards",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1873,7 +1873,7 @@
             "bnc": 514,
             "frq": 536,
             "exchange": "d:based/p:based/i:basing/3:bases/r:baser",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1891,7 +1891,7 @@
             "bnc": 1388,
             "frq": 1756,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1909,7 +1909,7 @@
             "bnc": 3029,
             "frq": 2050,
             "exchange": "s:creatives",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1927,7 +1927,7 @@
             "bnc": 1326,
             "frq": 1159,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1945,7 +1945,7 @@
             "bnc": 2489,
             "frq": 2362,
             "exchange": "d:angered/p:angered/s:angers/3:angers/i:angering",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1963,7 +1963,7 @@
             "bnc": 136,
             "frq": 191,
             "exchange": "s:systems",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1981,7 +1981,7 @@
             "bnc": 1463,
             "frq": 1074,
             "exchange": "s:audiences",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -1999,7 +1999,7 @@
             "bnc": 859,
             "frq": 983,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2017,7 +2017,7 @@
             "bnc": 4079,
             "frq": 3055,
             "exchange": "d:impressed/p:impressed/i:impressing/3:impresses",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2035,7 +2035,7 @@
             "bnc": 5369,
             "frq": 3962,
             "exchange": "s:performers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2053,7 +2053,7 @@
             "bnc": 1709,
             "frq": 1611,
             "exchange": "s:instruments/f:instruments",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2071,7 +2071,7 @@
             "bnc": 1126,
             "frq": 1530,
             "exchange": "s:males",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2089,7 +2089,7 @@
             "bnc": 1563,
             "frq": 1396,
             "exchange": "s:females",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2107,7 +2107,7 @@
             "bnc": 8787,
             "frq": 6889,
             "exchange": "s:clowns/i:clowning/p:clowned/3:clowns/d:clowned",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2125,7 +2125,7 @@
             "bnc": 3104,
             "frq": 6534,
             "exchange": "s:carriages",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2143,7 +2143,7 @@
             "bnc": 4538,
             "frq": 4074,
             "exchange": "s:treasures/d:treasured/p:treasured/3:treasures/i:treasuring",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2161,7 +2161,7 @@
             "bnc": 1581,
             "frq": 1448,
             "exchange": "d:combined/i:combining/3:combines/p:combined/s:combines",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2179,7 +2179,7 @@
             "bnc": 4312,
             "frq": 2893,
             "exchange": "s:masks/d:masked/3:masks/p:masked/i:masking",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2197,7 +2197,7 @@
             "bnc": 0,
             "frq": 24833,
             "exchange": "0:acrobatic/1:s",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2215,7 +2215,7 @@
             "bnc": 5080,
             "frq": 4152,
             "exchange": "s:costumes/p:costumed/d:costumed/i:costuming/3:costumes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2233,7 +2233,7 @@
             "bnc": 645,
             "frq": 687,
             "exchange": "d:represented/3:represents/i:representing/p:represented",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2251,7 +2251,7 @@
             "bnc": 301,
             "frq": 804,
             "exchange": "s:generals/f:generals",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2269,7 +2269,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2287,7 +2287,7 @@
             "bnc": 10127,
             "frq": 8252,
             "exchange": "s:pianists",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2305,7 +2305,7 @@
             "bnc": 3697,
             "frq": 2936,
             "exchange": "s:musicians",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2323,7 +2323,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2341,7 +2341,7 @@
             "bnc": 5298,
             "frq": 2522,
             "exchange": "p:quit/0:quit/1:pd/i:quitting/d:quit/3:quits",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2359,7 +2359,7 @@
             "bnc": 2694,
             "frq": 2030,
             "exchange": "s:talents",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2377,7 +2377,7 @@
             "bnc": 5136,
             "frq": 4457,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2395,7 +2395,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2413,7 +2413,7 @@
             "bnc": 2061,
             "frq": 1322,
             "exchange": "s:identities",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2431,7 +2431,7 @@
             "bnc": 1992,
             "frq": 1734,
             "exchange": "s:roots/d:rooted/i:rooting/p:rooted/3:roots",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2449,7 +2449,7 @@
             "bnc": 11602,
             "frq": 10565,
             "exchange": "d:rediscovered/p:rediscovered/i:rediscovering/3:rediscovers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2467,7 +2467,7 @@
             "bnc": 2046,
             "frq": 1724,
             "exchange": "s:beauties",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2485,7 +2485,7 @@
             "bnc": 1435,
             "frq": 1684,
             "exchange": "s:appearances",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2503,7 +2503,7 @@
             "bnc": 7191,
             "frq": 5779,
             "exchange": "d:shaved/i:shaving/p:shaved/3:shaves/s:shaves",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2521,7 +2521,7 @@
             "bnc": 15488,
             "frq": 14737,
             "exchange": "s:hairstyles/i:hairstyling",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2539,7 +2539,7 @@
             "bnc": 2693,
             "frq": 2185,
             "exchange": "d:transformed/i:transforming/p:transformed/3:transforms",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2557,7 +2557,7 @@
             "bnc": 15767,
             "frq": 19414,
             "exchange": "i:waltzing/p:waltzed/3:waltzes/d:waltzed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2575,7 +2575,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2593,7 +2593,7 @@
             "bnc": 20611,
             "frq": 10470,
             "exchange": "s:encyclopedias",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2611,7 +2611,7 @@
             "bnc": 3675,
             "frq": 4105,
             "exchange": "s:swords",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2629,7 +2629,7 @@
             "bnc": 10281,
             "frq": 15411,
             "exchange": "s:peacocks/i:peacocking",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2647,7 +2647,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2665,7 +2665,7 @@
             "bnc": 1387,
             "frq": 2268,
             "exchange": "s:ordinaries",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2683,7 +2683,7 @@
             "bnc": 1344,
             "frq": 1026,
             "exchange": "s:generations",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2701,7 +2701,7 @@
             "bnc": 356,
             "frq": 590,
             "exchange": "s:types/d:typed/i:typing/p:typed/3:types",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2719,7 +2719,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2737,7 +2737,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2755,7 +2755,7 @@
             "bnc": 2090,
             "frq": 1726,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2773,7 +2773,7 @@
             "bnc": 4808,
             "frq": 5553,
             "exchange": "s:nobles",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2791,7 +2791,7 @@
             "bnc": 11761,
             "frq": 9032,
             "exchange": "s:ballrooms",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2809,7 +2809,7 @@
             "bnc": 6097,
             "frq": 2069,
             "exchange": "s:immigrants",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2827,7 +2827,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2845,7 +2845,7 @@
             "bnc": 23656,
             "frq": 12132,
             "exchange": "s:tangos/i:tangoing/p:tangoed/3:tangoes/d:tangoed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2863,7 +2863,7 @@
             "bnc": 1269,
             "frq": 1409,
             "exchange": "s:reactions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2881,7 +2881,7 @@
             "bnc": 1054,
             "frq": 1365,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2899,7 +2899,7 @@
             "bnc": 2468,
             "frq": 3233,
             "exchange": "s:permissions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2917,7 +2917,7 @@
             "bnc": 3620,
             "frq": 3993,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2935,7 +2935,7 @@
             "bnc": 3729,
             "frq": 4007,
             "exchange": "s:abstracts/d:abstracted/i:abstracting/3:abstracts/p:abstracted",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2953,7 +2953,7 @@
             "bnc": 1598,
             "frq": 1634,
             "exchange": "r:straighter/s:straights/t:straightest",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2971,7 +2971,7 @@
             "bnc": 20222,
             "frq": 13750,
             "exchange": "r:wavier",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -2989,7 +2989,7 @@
             "bnc": 2828,
             "frq": 2892,
             "exchange": "s:imaginations",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3007,7 +3007,7 @@
             "bnc": 3579,
             "frq": 3322,
             "exchange": "s:painters",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3025,7 +3025,7 @@
             "bnc": 1184,
             "frq": 937,
             "exchange": "s:pains/p:pained/i:paining/3:pains/d:pained",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3043,7 +3043,7 @@
             "bnc": 1426,
             "frq": 2476,
             "exchange": "s:exhibitions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3061,7 +3061,7 @@
             "bnc": 2772,
             "frq": 2959,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3079,7 +3079,7 @@
             "bnc": 3749,
             "frq": 2367,
             "exchange": "s:missiles",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3097,7 +3097,7 @@
             "bnc": 15840,
             "frq": 12988,
             "exchange": "s:manes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3115,7 +3115,7 @@
             "bnc": 3205,
             "frq": 2984,
             "exchange": "s:shades/i:shading/d:shaded/p:shaded/3:shades",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3133,7 +3133,7 @@
             "bnc": 5134,
             "frq": 3696,
             "exchange": "i:sweating/p:sweated/s:sweats/d:sweated/3:sweats/f:sweats",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3151,7 +3151,7 @@
             "bnc": 1508,
             "frq": 1397,
             "exchange": "s:youths",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3169,7 +3169,7 @@
             "bnc": 3450,
             "frq": 3405,
             "exchange": "s:insects",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3187,7 +3187,7 @@
             "bnc": 2147483647,
             "frq": 2147483647,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3205,7 +3205,7 @@
             "bnc": 2268,
             "frq": 2353,
             "exchange": "s:creatures",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3223,7 +3223,7 @@
             "bnc": 1218,
             "frq": 736,
             "exchange": "s:artists",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3241,7 +3241,7 @@
             "bnc": 2236,
             "frq": 2605,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3259,7 +3259,7 @@
             "bnc": 1850,
             "frq": 1835,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3277,7 +3277,7 @@
             "bnc": 14382,
             "frq": 12860,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3295,7 +3295,7 @@
             "bnc": 3599,
             "frq": 1975,
             "exchange": "d:emphasized/p:emphasized/3:emphasizes/i:emphasizing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3313,7 +3313,7 @@
             "bnc": 566,
             "frq": 997,
             "exchange": "s:details/i:detailing/d:detailed/p:detailed/3:details",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3331,7 +3331,7 @@
             "bnc": 3307,
             "frq": 3540,
             "exchange": "s:cloths",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3349,7 +3349,7 @@
             "bnc": 3975,
             "frq": 3493,
             "exchange": "s:folds/d:folded/p:folded/i:folding/3:folds",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3367,7 +3367,7 @@
             "bnc": 4269,
             "frq": 4123,
             "exchange": "s:shallows/r:shallower/t:shallowest/p:shallowed/i:shallowing/3:shallows/d:shallowed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3385,7 +3385,7 @@
             "bnc": 3519,
             "frq": 3244,
             "exchange": "s:shores/i:shoring/d:shored/p:shored/3:shores",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3403,7 +3403,7 @@
             "bnc": 13749,
             "frq": 14627,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3421,7 +3421,7 @@
             "bnc": 4199,
             "frq": 4819,
             "exchange": "s:marbles/i:marbling/p:marbled/3:marbles/d:marbled",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3439,7 +3439,7 @@
             "bnc": 3840,
             "frq": 3310,
             "exchange": "i:concreting/d:concreted/p:concreted/3:concretes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3457,7 +3457,7 @@
             "bnc": 741,
             "frq": 1190,
             "exchange": "s:features/i:featuring/3:features/d:featured/p:featured",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3475,7 +3475,7 @@
             "bnc": 5402,
             "frq": 5799,
             "exchange": "s:balconies/p:balconied",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3493,7 +3493,7 @@
             "bnc": 1879,
             "frq": 2135,
             "exchange": "s:roofs/d:roofed/i:roofing/p:roofed/3:roofs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3511,7 +3511,7 @@
             "bnc": 4519,
             "frq": 3872,
             "exchange": "s:statues",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3529,7 +3529,7 @@
             "bnc": 1765,
             "frq": 5844,
             "exchange": "s:castles/i:castling/p:castled/3:castles/d:castled",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3547,7 +3547,7 @@
             "bnc": 20049,
             "frq": 10626,
             "exchange": "s:skyscrapers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3565,7 +3565,7 @@
             "bnc": 3295,
             "frq": 3980,
             "exchange": "s:angels",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3583,7 +3583,7 @@
             "bnc": 2891,
             "frq": 3365,
             "exchange": "s:architects",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3601,7 +3601,7 @@
             "bnc": 5346,
             "frq": 4197,
             "exchange": "s:ruins/3:ruins/i:ruining/p:ruined/d:ruined",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3619,7 +3619,7 @@
             "bnc": 4438,
             "frq": 29736,
             "exchange": "s:lochs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3637,7 +3637,7 @@
             "bnc": 22549,
             "frq": 0,
             "exchange": "s:fairytales",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3655,7 +3655,7 @@
             "bnc": 7867,
             "frq": 6819,
             "exchange": "s:granites",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3673,7 +3673,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3691,7 +3691,7 @@
             "bnc": 5986,
             "frq": 5837,
             "exchange": "s:cafes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3709,7 +3709,7 @@
             "bnc": 9201,
             "frq": 21936,
             "exchange": "s:phoenixes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3727,7 +3727,7 @@
             "bnc": 35410,
             "frq": 11564,
             "exchange": "s:roosters",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3745,7 +3745,7 @@
             "bnc": 4758,
             "frq": 3692,
             "exchange": "s:bats/p:batted/i:batting/3:bats/d:batted",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3763,7 +3763,7 @@
             "bnc": 6130,
             "frq": 6183,
             "exchange": "s:tombs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3781,7 +3781,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3799,7 +3799,7 @@
             "bnc": 7797,
             "frq": 10552,
             "exchange": "s:dynasties",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3817,7 +3817,7 @@
             "bnc": 1444,
             "frq": 884,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3835,7 +3835,7 @@
             "bnc": 655,
             "frq": 1014,
             "exchange": "s:purposes/i:purposing/p:purposed/3:purposes/d:purposed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3853,7 +3853,7 @@
             "bnc": 676,
             "frq": 1017,
             "exchange": "s:patterns/i:patterning/p:patterned/3:patterns/d:patterned/f:patterns",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3871,7 +3871,7 @@
             "bnc": 805,
             "frq": 786,
             "exchange": "s:characters/i:charactering/p:charactered/3:characters/d:charactered",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3889,7 +3889,7 @@
             "bnc": 3979,
             "frq": 3870,
             "exchange": "s:happinesses",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3907,7 +3907,7 @@
             "bnc": 3448,
             "frq": 3616,
             "exchange": "s:temples",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3925,7 +3925,7 @@
             "bnc": 4716,
             "frq": 3988,
             "exchange": "0:offer/1:i/s:offerings/i:offering",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3943,7 +3943,7 @@
             "bnc": 747,
             "frq": 1080,
             "exchange": "i:relating/d:related/3:relates/p:related",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3961,7 +3961,7 @@
             "bnc": 4762,
             "frq": 34122,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3979,7 +3979,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -3997,7 +3997,7 @@
             "bnc": 2224,
             "frq": 4765,
             "exchange": "s:cottages",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4015,7 +4015,7 @@
             "bnc": 2386,
             "frq": 3433,
             "exchange": "s:rents/i:renting/d:rented/p:rented/3:rents/0:rent/1:d",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4033,7 +4033,7 @@
             "bnc": 2447,
             "frq": 6724,
             "exchange": "s:landlords",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4051,7 +4051,7 @@
             "bnc": 5068,
             "frq": 4993,
             "exchange": "s:worms/p:wormed/i:worming/d:wormed/3:worms",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4069,7 +4069,7 @@
             "bnc": 2438,
             "frq": 2980,
             "exchange": "s:pipes/d:piped/p:piped/i:piping/3:pipes",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4087,7 +4087,7 @@
             "bnc": 4991,
             "frq": 5244,
             "exchange": "s:mercies",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4105,7 +4105,7 @@
             "bnc": 26000,
             "frq": 24741,
             "exchange": "s:washrooms",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4123,7 +4123,7 @@
             "bnc": 3845,
             "frq": 5562,
             "exchange": "r:damper/d:damped/i:damping/p:damped/s:damps/t:dampest/3:damps",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4141,7 +4141,7 @@
             "bnc": 34329,
             "frq": 9766,
             "exchange": "s:bathtubs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4159,7 +4159,7 @@
             "bnc": 5987,
             "frq": 3598,
             "exchange": "s:basements",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4177,7 +4177,7 @@
             "bnc": 8777,
             "frq": 7550,
             "exchange": "d:bathed/p:bathed/3:bathes/i:bathing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4195,7 +4195,7 @@
             "bnc": 3306,
             "frq": 2653,
             "exchange": "s:fences/d:fenced/p:fenced/i:fencing/3:fences",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4213,7 +4213,7 @@
             "bnc": 1725,
             "frq": 2007,
             "exchange": "r:narrower/p:narrowed/d:narrowed/i:narrowing/3:narrows/t:narrowest",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4231,7 +4231,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4249,7 +4249,7 @@
             "bnc": 3113,
             "frq": 3208,
             "exchange": "s:garages/i:garaging/d:garaged/p:garaged/3:garages",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4267,7 +4267,7 @@
             "bnc": 12130,
             "frq": 3934,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4285,7 +4285,7 @@
             "bnc": 3711,
             "frq": 1273,
             "exchange": "s:apartments",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4303,7 +4303,7 @@
             "bnc": 15658,
             "frq": 5383,
             "exchange": "s:subways",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4321,7 +4321,7 @@
             "bnc": 18944,
             "frq": 3116,
             "exchange": "r:downtowner",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4339,7 +4339,7 @@
             "bnc": 3524,
             "frq": 24926,
             "exchange": "s:lorries",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4357,7 +4357,7 @@
             "bnc": 2492,
             "frq": 3622,
             "exchange": "s:curtains/d:curtained/p:curtained/i:curtaining/3:curtains",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4375,7 +4375,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]
@@ -4393,7 +4393,7 @@
             "bnc": 1282,
             "frq": 1666,
             "exchange": "s:conclusions",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
             ]

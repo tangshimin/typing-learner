@@ -178,7 +178,7 @@ fun EditWordDialog(
                             )
                         }
                     }
-                    var linkSize by remember{ mutableStateOf(word.links.size)}
+                    var linkSize by remember{ mutableStateOf(word.externalCaptions.size)}
                     EditingCaptions(
                         state = state,
                         setLinkSize = {linkSize = it},
@@ -244,7 +244,7 @@ fun EditWordDialog(
                                 bnc = 0,
                                 frq = 0,
                                 exchange = "",
-                                links = mutableListOf(),
+                                externalCaptions = mutableListOf(),
                                 captions = mutableListOf()
                             )
                             save(newWord)
@@ -339,8 +339,8 @@ fun EditingCaptions(
                         confirm = { (index, start, end) ->
                             scope.launch{
                                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                    word.links[index].start = secondsToString(start)
-                                    word.links[index].end = secondsToString(end)
+                                    word.externalCaptions[index].start = secondsToString(start)
+                                    word.externalCaptions[index].end = secondsToString(end)
                                 } else {
                                     word.captions[index].start = secondsToString(start)
                                     word.captions[index].end = secondsToString(end)
@@ -386,7 +386,7 @@ fun EditingCaptions(
                             scope.launch {
                                 // 在 EditDialog 界面中点击保存，会保存整个词库
                                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                    word.links.removeAt(index)
+                                    word.externalCaptions.removeAt(index)
                                 } else {
                                     word.captions.removeAt(index)
                                 }

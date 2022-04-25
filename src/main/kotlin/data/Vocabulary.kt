@@ -74,7 +74,7 @@ data class Word(
     var bnc: Int? = 0,
     var frq: Int? = 0,
     var exchange: String = "",
-    var links: MutableList<ExternalCaption> = mutableListOf(),
+    var externalCaptions: MutableList<ExternalCaption> = mutableListOf(),
     var captions: MutableList<Caption> = mutableListOf()
 ) {
     override fun equals(other: Any?): Boolean {
@@ -184,7 +184,6 @@ fun loadVocabulary(path: String): Vocabulary {
         )
     }
 
-
 }
 
 
@@ -214,25 +213,13 @@ fun saveVocabulary(vocabulary: Vocabulary, path: String) {
 }
 
 fun main() {
-//    convertWord(File("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary"))
-    val vocabulary = loadOldVocabulary("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary\\4000 Essential English Words.json")
-    vocabulary.wordList.forEach {word ->
-        word.links.clear()
-    }
-
-    val format = Json {
-        prettyPrint = true
-        encodeDefaults = true
-    }
-    Thread(Runnable {
-        val json = format.encodeToString(vocabulary)
-        val file = getResourcesFile("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary\\4000 Essential English Words.json")
-        file?.writeText(json)
-    }).start()
-
+    
 }
 
-
+/**
+ * 主要用于批量转换词库，
+ * 调用方式：convertWord(File("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary"))
+ */
 fun convertWord(dir: File) {
 
     dir.listFiles().forEach { file ->
@@ -241,45 +228,37 @@ fun convertWord(dir: File) {
             convertWord(file)
         } else {
 
-            val vocabulary = loadVocabulary(file.absolutePath)
-//            var newList = mutableListOf<Word>()
+            val oldVocabulary = Json.decodeFromString<OldVocabulary>(file.readText())
+            var newList = mutableListOf<Word>()
 
-//            for (word in oldVocabulary.wordList) {
-//                val word = Word(
-//                    value = oldWord.value,
-//                    usphone = oldWord.usphone,
-//                    ukphone = oldWord.ukphone,
-//                    definition = oldWord.definition,
-//                    translation = oldWord.translation,
-//                    pos = oldWord.pos,
-//                    collins = oldWord.collins,
-//                    oxford = oldWord.oxford,
-//                    tag = oldWord.tag,
-//                    bnc = oldWord.bnc,
-//                    frq = oldWord.frq,
-//                    exchange = oldWord.exchange,
-//                    links = oldWord.links,
-//                    captions = oldWord.captions
-//                )
-//                newList.add(word)
-//            }
-
-
-//            val vocabulary = Vocabulary(
-//                name = file.nameWithoutExtension,
-//                language = oldVocabulary.language,
-//                size = oldVocabulary.size,
-//                wordList = oldVocabulary.wordList
-//            )
-
-            vocabulary.wordList.forEach { word ->
-                word.translation = word.translation.replace("\r\n","\n")
-//                if(vocabulary.type != VocabularyType.DOCUMENT){
-//                    word.captions.forEachIndexed { index, _ ->
-//                        word.captions[index].content = word.captions[index].content.replace("\r\n","\n")
-//                    }
-//                }
+            for (oldWord in oldVocabulary.wordList) {
+                val word = Word(
+                    value = oldWord.value,
+                    usphone = oldWord.usphone,
+                    ukphone = oldWord.ukphone,
+                    definition = oldWord.definition,
+                    translation = oldWord.translation,
+                    pos = oldWord.pos,
+                    collins = oldWord.collins,
+                    oxford = oldWord.oxford,
+                    tag = oldWord.tag,
+                    bnc = oldWord.bnc,
+                    frq = oldWord.frq,
+                    exchange = oldWord.exchange,
+                    externalCaptions = oldWord.links,
+                    captions = oldWord.captions
+                )
+                newList.add(word)
             }
+
+
+            val vocabulary = Vocabulary(
+                name = file.nameWithoutExtension,
+                language = oldVocabulary.language,
+                size = oldVocabulary.size,
+                wordList = newList
+            )
+
             val directory = file.parent.split("\\").last()
             saveVocabularyToTempDirectory(vocabulary, directory)
         }
@@ -300,7 +279,7 @@ data class OldWord(
     var bnc: Int? = 0,
     var frq: Int? = 0,
     var exchange: String = "",
-    var links: MutableList<String> = mutableListOf(),
+    var links: MutableList<ExternalCaption> = mutableListOf(),
     var captions: MutableList<Caption> = mutableListOf()
 )
 
