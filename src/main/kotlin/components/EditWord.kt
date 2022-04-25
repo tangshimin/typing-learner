@@ -60,7 +60,6 @@ fun EditWord(
     Dialog(
         title = "编辑单词",
         onCloseRequest = { close() },
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -70,12 +69,7 @@ fun EditWord(
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         ) {
-            /**
-             * 协程构建器
-             */
-            val scope = rememberCoroutineScope()
 
             var mutableWord by remember { mutableStateOf(word) }
 
@@ -93,28 +87,7 @@ fun EditWord(
                     )
                     val border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
                     val modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                    if (!MaterialTheme.colors.isLight) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("编辑单词", modifier = Modifier.align(Alignment.Center))
-                            var isHover by remember { mutableStateOf(false) }
-                            IconButton(
-                                onClick = { close() },
-                                modifier = Modifier
-                                    .onPointerEvent(PointerEventType.Enter) { isHover = true }
-                                    .onPointerEvent(PointerEventType.Exit) { isHover = false }
-                                    .background(if (isHover) Color(196, 43, 28) else Color.Transparent)
-                                    .align(Alignment.CenterEnd)) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = "",
-                                    tint = MaterialTheme.colors.onBackground,
-                                )
-                            }
-                        }
-                    }
-
+                    Divider()
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = modifier
@@ -479,7 +452,6 @@ fun SettingTimeLine(
     Dialog(
         title = "调整时间轴",
         onCloseRequest = { close() },
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -697,14 +669,6 @@ fun SettingTimeLine(
                         OutlinedButton(onClick = { close() },modifier = Modifier.padding(start = 20.dp)) {
                             Text("取消")
                         }
-                    }
-                }
-                if(!MaterialTheme.colors.isLight){
-                    Row(horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(top = 10.dp,bottom = 10.dp)
-                            .align(Alignment.TopCenter)){
-                        Text("调整时间轴")
                     }
                 }
             }
