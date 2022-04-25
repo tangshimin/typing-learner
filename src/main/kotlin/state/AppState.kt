@@ -3,6 +3,7 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
+import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
 import data.Caption
 import data.Word
@@ -23,6 +24,7 @@ import java.util.concurrent.FutureTask
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import javax.swing.JFrame
+import javax.swing.JOptionPane
 
 @ExperimentalSerializationApi
 @Serializable
@@ -202,6 +204,11 @@ class AppState {
     var videoPlayerComponent = createMediaPlayerComponent()
 
     /**
+     * 文件选择器，如果不提前加载反应会很慢
+     */
+    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.isDarkTheme)
+
+    /**
      * 词库
      */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
@@ -298,20 +305,27 @@ class AppState {
     var speed = MutableSpeedState()
 
 
-    /**
-     * 文件选择器，如果不提前加载反应会很慢
-     */
-    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.isDarkTheme)
+
 
     /**
      * 载入应用程序设置信息
      */
     private fun loadTypingState(): MutableTypingState {
-        if (settings.exists()) {
-            val typingState = Json.decodeFromString<TypingState>(settings.readText())
-            return MutableTypingState(typingState)
+        return if (settings.exists()) {
+            try{
+                val typingState = Json.decodeFromString<TypingState>(settings.readText())
+                MutableTypingState(typingState)
+            }catch (exception:Exception){
+                FlatLightLaf.setup();
+                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$settings")
+                MutableTypingState(TypingState())
+            }
+
+        }else{
+            FlatLightLaf.setup();
+            JOptionPane.showMessageDialog(null,"找不到设置文件，将使用默认设置。\n地址：$settings")
+            MutableTypingState(TypingState())
         }
-        return MutableTypingState(TypingState())
     }
 
 
