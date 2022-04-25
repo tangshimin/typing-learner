@@ -69,17 +69,11 @@ fun main() = application {
             placement = WindowPlacement.Maximized,
             size = DpSize(1030.dp, 862.dp),
         )
-        var title = if (state.isDictation) {
-            if (state.isReviewWrongList) {
-                "复习错误单词 - ${state.dictationIndex + 1}"
-            } else "默写模式 - ${state.dictationIndex + 1}"
-        } else {
-            "${state.typing.index + 1}"
-        }
-        title = "${state.typing.vocabularyName} - $title"
+
+        val title = computeTitle(state)
         if (isOpen) {
             Window(
-                title = title ,
+                title = title,
                 icon = painterResource("logo/logo.svg"),
                 state = windowState,
                 onCloseRequest = {
@@ -150,6 +144,20 @@ fun main() = application {
 
 }
 
+private fun computeTitle(state: AppState):String {
+    return  if(state.vocabulary.wordList.isNotEmpty()){
+        val suffix = if (state.isDictation) {
+            if (state.isReviewWrongList) {
+                "复习错误单词 - ${state.dictationIndex + 1}"
+            } else "默写模式 - ${state.dictationIndex + 1}"
+        } else {
+            "${state.typing.index + 1}"
+        }
+        "${state.typing.vocabularyName} - $suffix"
+    }else{
+        "请选择词库"
+    }
+}
 /**
  * 菜单栏
  */
