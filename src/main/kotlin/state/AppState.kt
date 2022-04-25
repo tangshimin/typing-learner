@@ -505,7 +505,7 @@ class AppState {
         Thread(Runnable {
             val json = format.encodeToString(vocabulary.serializeVocabulary)
             val file = getResourcesFile(typing.vocabularyPath)
-            file?.writeText(json)
+            file.writeText(json)
         }).start()
     }
 
@@ -561,18 +561,11 @@ fun getSettingsFile(): File {
  * 获得资源文件
  * @param path 文件路径
  */
-fun getResourcesFile(path: String): File? {
-    var file: File? = null
-    try {
-        file = if (File(path).isAbsolute) {
-            File(path)
-        } else {
-            composeAppResource(path)
-        }
-    } catch (exception: FileNotFoundException) {
-        exception.printStackTrace()
-    } catch (exception: Exception) {
-        exception.printStackTrace()
+fun getResourcesFile(path: String): File {
+    var file = if (File(path).isAbsolute) {
+        File(path)
+    } else {
+        composeAppResource(path)
     }
     return file
 }

@@ -412,7 +412,12 @@ data class RecentItem(val time:String,val name:String,val path:String){
 private fun readRecentList():List<RecentItem>{
     val recentListFile = getRecentListFile()
     return if(recentListFile.exists()){
-        Json.decodeFromString(recentListFile.readText())
+        return try {
+            Json.decodeFromString(recentListFile.readText())
+        }catch (exception:Exception){
+            listOf()
+        }
+
     }else{
         listOf()
     }
@@ -443,6 +448,22 @@ fun saveToRecentList(name:String, path: String) {
         val json = format.encodeToString(recentList)
         recentListFile.writeText(json)
     }).start()
+}
+fun removeInvalidRecentItem(recentItem: RecentItem){
+    Thread(Runnable {
+        var list = readRecentList().sortedByDescending { it.time }
+        var recentList = mutableListOf<RecentItem>()
+        recentList.addAll(list)
+        recentList.remove(recentItem)
+        val format = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+        val json = format.encodeToString(recentList)
+        val recentListFile = getRecentListFile()
+        recentListFile.writeText(json)
+    }).start()
+
 }
 private fun getRecentListFile():File{
     val homeDir = File(System.getProperty("user.home"))
@@ -479,18 +500,40 @@ fun Summary(
 ) {
 
     Column(Modifier.fillMaxWidth()) {
+        Divider()
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().height(40.dp).padding(start = 10.dp)
         ) {
             val summary = computeSummary(list, summaryVocabulary)
-            Text(
-                "共 ${list.size} 词  牛津5000核心词：${summary[0]} 词  四级：${summary[1]} 词  六级：${summary[2]} 词  GRE：${summary[3]} 词",
-                color = MaterialTheme.colors.onBackground
-            )
+            Text(text = "共 ${list.size} 词  ",color = MaterialTheme.colors.onBackground)
+            Text(text = "牛津5000核心词：", color = MaterialTheme.colors.onBackground)
+            if(summaryVocabulary["oxford"]?.isEmpty() == true){
+               Text(text = "词库缺失 ",color = Color.Red)
+            }else{
+                Text("${summary[0]} 词  ",color = MaterialTheme.colors.onBackground)
+            }
+            Text(text = "四级：",color = MaterialTheme.colors.onBackground)
+            if(summaryVocabulary["cet4"]?.isEmpty() == true){
+               Text(text = "词库缺失 ",color = Color.Red)
+            }else{
+                Text("${summary[1]} 词  ",color = MaterialTheme.colors.onBackground)
+            }
+            Text(text = "六级：",color = MaterialTheme.colors.onBackground)
+            if(summaryVocabulary["cet6"]?.isEmpty() == true){
+               Text(text = "词库缺失 ",color = Color.Red)
+            }else{
+                Text("${summary[2]} 词  ",color = MaterialTheme.colors.onBackground)
+            }
+            Text(text = "GRE: ",color = MaterialTheme.colors.onBackground)
+            if(summaryVocabulary["gre"]?.isEmpty() == true){
+               Text(text = "词库缺失 ",color = Color.Red)
+            }else{
+                Text("${summary[3]} 词",color = MaterialTheme.colors.onBackground)
+            }
+
         }
-        Divider()
     }
 
 
@@ -524,7 +567,6 @@ private fun computeSummary(
 
     return listOf(oxfordCount, cet4Count, cet6Count, greCount)
 }
-
 /**
  * 载入摘要词库
  */
@@ -767,21 +809,30 @@ fun VocabularyFilter(
                                     Column {
                                         recentList = recentList.sortedByDescending { it.time }
                                         recentList.forEach { recentItem ->
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier.fillMaxWidth().height(40.dp)
-                                                    .clickable {
-                                                        expanded = false
-                                                        selectedFileListAdd(File(recentItem.path))
-                                                    }
-                                            ){
-                                                Text(text = recentItem.name,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    maxLines = 1,
-                                                    color = MaterialTheme.colors.onBackground,
-                                                    modifier = Modifier.padding(start = 10.dp,end = 10.dp))
+                                            val recentFile = File(recentItem.path)
+                                            if(recentFile.exists()){
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.fillMaxWidth().height(40.dp)
+                                                        .clickable {
+                                                            expanded = false
+                                                            selectedFileListAdd(recentFile)
+                                                        }
+                                                ){
+                                                    Text(text = recentItem.name,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        maxLines = 1,
+                                                        color = MaterialTheme.colors.onBackground,
+                                                        modifier = Modifier.padding(start = 10.dp,end = 10.dp))
+
+                                                }
+
+                                            }else{
+                                                // 文件可能被删除了
+                                                removeInvalidRecentItem(recentItem)
 
                                             }
+
                                     }
 
                                     }
@@ -1309,7 +1360,7 @@ fun filterDocumentWords(
     val lemmaList = ArrayList<Word>()
 
     /**
-     * 准备批量查询的原型词词典
+     * 准备批量查询的原型词映射
      */
     val queryMap = HashMap<String,MutableList<Caption>>()
     documentWords.forEach { word ->
@@ -1351,13 +1402,15 @@ fun filterSelectVocabulary(
 
     var list = ArrayList(filteredDocumentList)
     selectedFileList.forEach { file ->
-        val vocabulary = loadVocabulary(file.absolutePath)
-        list.removeAll(vocabulary.wordList)
+        if(file.exists()){
+            val vocabulary = loadVocabulary(file.absolutePath)
+            list.removeAll(vocabulary.wordList)
+        }else{
+            JOptionPane.showMessageDialog(null,"找不到词库：\n${file.absolutePath}")
+        }
+
     }
-//    recentNamePathMap.values.forEach { pathName ->
-//        val vocabulary = loadVocabulary(pathName)
-//        list.removeAll(vocabulary.wordList)
-//    }
+
     return list
 }
 

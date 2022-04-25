@@ -85,7 +85,7 @@ fun AboutDialog(close:()->Unit) {
                     }
                      1 -> {
                          val file = getResourcesFile("LICENSE")
-                         if (file != null) {
+                         if (file.exists()) {
                              val license = file.readText()
                              Box(Modifier.fillMaxWidth().height(550.dp)){
                                  val stateVertical = rememberScrollState(0)
@@ -105,7 +105,7 @@ fun AboutDialog(close:()->Unit) {
                      }
                      2 -> {
                          val file = getResourcesFile("3rd.txt")
-                         if (file != null) {
+                         if (file.exists()) {
                              val thirdParty = file.readText()
                              SelectionContainer {
                                  Text(thirdParty,modifier =Modifier.padding(10.dp))

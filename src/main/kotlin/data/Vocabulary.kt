@@ -154,7 +154,7 @@ fun loadMutableVocabularyFromAbsolutePath(absolutePath: String):MutableVocabular
 
 fun loadMutableVocabulary(path: String):MutableVocabulary{
     val file = getResourcesFile(path)
-    return if (file != null && file.exists()) {
+    return if (file.exists()) {
 
         try {
          val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
@@ -196,7 +196,35 @@ fun loadMutableVocabulary(path: String):MutableVocabulary{
 @OptIn(ExperimentalComposeUiApi::class)
 fun loadVocabulary(path: String): Vocabulary {
     val file = getResourcesFile(path)
-    return Json.decodeFromString(file?.readText() ?: "TODO(还没实现)")
+    if(file.exists()){
+        return try{
+            Json.decodeFromString(file.readText())
+        } catch (exception: Exception) {
+            JOptionPane.showMessageDialog(null,"词库解析错误：\n地址：$path\n"+exception.message)
+            Vocabulary(
+                name = "",
+                type = VocabularyType.DOCUMENT,
+                language = "",
+                size = 0,
+                relateVideoPath = "",
+                subtitlesTrackId = 0,
+                wordList = mutableListOf()
+            )
+        }
+    }else{
+
+        return Vocabulary(
+            name = "",
+            type = VocabularyType.DOCUMENT,
+            language = "",
+            size = 0,
+            relateVideoPath = "",
+            subtitlesTrackId = 0,
+            wordList = mutableListOf()
+        )
+    }
+
+
 }
 
 fun loadCaptionsMap(path: String): HashMap<String, List<Caption>> {
@@ -251,7 +279,7 @@ fun saveVocabulary(vocabulary: Vocabulary, path: String) {
     Thread(Runnable {
         val json = format.encodeToString(vocabulary)
         val file = getResourcesFile(path)
-        file?.writeText(json)
+        file.writeText(json)
     }).start()
 }
 
