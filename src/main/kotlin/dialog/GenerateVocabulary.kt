@@ -418,7 +418,7 @@ private fun readRecentList():List<RecentItem>{
     }
 }
 
-private fun saveToRecentList(name:String, path: String) {
+fun saveToRecentList(name:String, path: String) {
 
     Thread(Runnable {
         val format = Json {

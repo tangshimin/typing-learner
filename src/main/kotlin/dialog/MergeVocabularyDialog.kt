@@ -1,8 +1,6 @@
 package dialog
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,22 +11,18 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import data.loadVocabulary
+import data.*
 import java.io.File
-import java.util.*
 import java.util.concurrent.FutureTask
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
-import kotlin.concurrent.schedule
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -53,26 +47,78 @@ fun MergeVocabularyDialog(
 
             Box{
                 var merging by remember { mutableStateOf(false) }
-
                 Column (verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()){
+                    var mergeEnabled by remember{ mutableStateOf(false)}
                     var selectedFileList = remember { mutableStateListOf<File>() }
-                    var done by remember{ mutableStateOf(false)}
+                    var newVocabulary by remember { mutableStateOf<Vocabulary?>(null) }
+                    var isOutOfRange by remember { mutableStateOf(false) }
+                    var size by remember{ mutableStateOf(0)}
+                    var fileName by remember{ mutableStateOf("")}
+                    val updateSize :(Int)->Unit = {
+                        size = it
+                    }
+                    val updateFileName :(String) -> Unit = {
+                        fileName = it
+                    }
                     if(!merging){
-                        selectedFileList.forEach { file ->
-                            Row(horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()){
-                                Text(text = file.nameWithoutExtension,
-                                    modifier = Modifier.width(420.dp))
-                                IconButton(onClick = {
-                                    selectedFileList.remove(file)
-                                }){
-                                    Icon( Icons.Filled.Close, contentDescription = "",tint = MaterialTheme.colors.primary)
+                        val height = if(selectedFileList.size<9) (selectedFileList.size * 48+10).dp else 450.dp
+                        Box(Modifier.fillMaxWidth().height(height)){
+                            val stateVertical = rememberScrollState(0)
+                            Column (verticalArrangement = Arrangement.Top,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                                    .fillMaxSize()
+                                    .verticalScroll(stateVertical)){
+                                selectedFileList.forEach { file ->
+                                    Row(horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()){
+                                        Text(text = file.nameWithoutExtension,
+                                            modifier = Modifier.width(420.dp))
+                                        IconButton(onClick = {
+                                            updateSize(0)
+                                            selectedFileList.remove(file)
+                                            mergeEnabled = selectedFileList.size>1
+                                        }){
+                                            Icon( Icons.Filled.Close, contentDescription = "",tint = MaterialTheme.colors.primary)
+                                        }
+                                    }
+                                    Divider(Modifier.width(468.dp))
                                 }
                             }
-                            Divider(Modifier.width(468.dp))
+                            if(selectedFileList.size>=9){
+                                VerticalScrollbar(
+                                    style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                    modifier = Modifier.align(Alignment.CenterEnd)
+                                        .fillMaxHeight(),
+                                    adapter = rememberScrollbarAdapter(stateVertical)
+                                )
+                            }
+
+                        }
+
+                    }
+                    if(isOutOfRange){
+                        Text(text = "词库数量不能超过100个",
+                            color = Color.Red,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+                    }
+
+                    if(merging){
+                        Row(horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()){
+                            Text(text = "正在读取 $fileName")
+                        }
+                    }
+
+                    if(size>0){
+                        Row(horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp,top = 10.dp)){
+                            Text(text = "总计：")
+                            Text(text = "$size",color = MaterialTheme.colors.primary)
                         }
                     }
 
@@ -90,10 +136,19 @@ fun MergeVocabularyDialog(
                                 fileChooser.addChoosableFileFilter(fileFilter)
                                 fileChooser.selectedFile = null
                                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                                    fileChooser.selectedFiles.forEach { file ->
-                                        if (!selectedFileList.contains(file)) {
-                                            selectedFileList.add(file)
+                                    if(fileChooser.selectedFiles.size<101){
+                                        isOutOfRange = false
+                                        fileChooser.selectedFiles.forEach { file ->
+                                            if (!selectedFileList.contains(file)) {
+                                                selectedFileList.add(file)
+                                            }
                                         }
+                                    }else{
+                                        isOutOfRange = true
+                                    }
+                                    mergeEnabled = fileChooser.selectedFiles.isNotEmpty()
+                                    if(fileChooser.selectedFiles.isNotEmpty()){
+                                        updateSize(0)
                                     }
                                 }
                                 fileChooser.selectedFile = null
@@ -105,25 +160,105 @@ fun MergeVocabularyDialog(
                         }
 
                         OutlinedButton(
-                            enabled = selectedFileList.size>1,
+                            enabled = mergeEnabled,
                             onClick = {
                                 Thread(Runnable {
                                     merging = true
-
+                                    newVocabulary = Vocabulary(
+                                        name = "",
+                                        type = VocabularyType.DOCUMENT,
+                                        language = "english",
+                                        size = 0,
+                                        relateVideoPath = "",
+                                        subtitlesTrackId = 0,
+                                        wordList = mutableListOf()
+                                    )
+                                    val wordList = mutableListOf<Word>()
                                     selectedFileList.forEach { file ->
+                                        updateFileName(file.nameWithoutExtension)
                                         val vocabulary = loadVocabulary(file.absolutePath)
+                                        vocabulary.wordList.forEach { word ->
+                                            val index = wordList.indexOf(word)
+                                            // wordList 没有这个单词
+                                            if (index == -1) {
+                                                // 如果是视频词库或字幕词库，需要把字幕变成外部字幕
+                                                if(word.captions.isNotEmpty()){
+                                                    word.captions.forEach { caption ->
+                                                        // 创建一条外部字幕
+                                                        val externalCaption = ExternalCaption(
+                                                            relateVideoPath = vocabulary.relateVideoPath,
+                                                            subtitlesTrackId = vocabulary.subtitlesTrackId,
+                                                            subtitlesName = vocabulary.name,
+                                                            start = caption.start,
+                                                            end = caption.end,
+                                                            content = caption.content
+                                                        )
+                                                        word.links.add(externalCaption)
+                                                    }
+                                                    word.captions.clear()
+                                                }
+                                                wordList.add(word)
+                                                // wordList 有这个单词
+                                            }else{
+                                                val oldWord = wordList[index]
+                                                // 如果单词有外部字幕，同时已经加入到列表的单词的外部字幕没有超过3个就导入
+                                                if(word.links.isNotEmpty()){
+                                                    word.links.forEach { externalCaption ->
+                                                        if(oldWord.links.size<3){
+                                                            oldWord.links.add(externalCaption)
+                                                        }
+                                                    }
+                                                // 如果单词是视频或字幕词库中的单词
+                                                }else if(word.captions.isNotEmpty()){
+                                                    word.captions.forEach { caption ->
+                                                        // 创建一条外部字幕
+                                                        val externalCaption = ExternalCaption(
+                                                            relateVideoPath = vocabulary.relateVideoPath,
+                                                            subtitlesTrackId = vocabulary.subtitlesTrackId,
+                                                            subtitlesName = vocabulary.name,
+                                                            start = caption.start,
+                                                            end = caption.end,
+                                                            content = caption.content
+                                                        )
+                                                        if(oldWord.links.size<3){
+                                                            oldWord.links.add(externalCaption)
+                                                        }
+                                                    }
+                                                }
 
+                                            }
+                                        }
+                                        updateSize(wordList.size)
                                     }
-
+                                    newVocabulary!!.wordList = wordList
+                                    newVocabulary!!.size = wordList.size
                                     merging = false
+                                    mergeEnabled = false
                                 }).start()
                             },modifier = Modifier.padding(end = 10.dp)){
                             Text("合并词库")
                         }
                         OutlinedButton(
-                            enabled = done,
+                            enabled = !merging && size>0,
                             onClick = {
                                 Thread(Runnable {
+                                    val fileChooser = futureFileChooser.get()
+                                    fileChooser.dialogType = JFileChooser.SAVE_DIALOG
+                                    fileChooser.dialogTitle = "保存词库"
+                                    val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
+                                    fileChooser.selectedFile = File("$myDocuments${File.separator}*.json")
+                                    val userSelection = fileChooser.showSaveDialog(window)
+                                    if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                        val fileToSave = fileChooser.selectedFile
+                                        if(newVocabulary != null){
+                                            newVocabulary!!.name = fileToSave.nameWithoutExtension
+                                            saveVocabulary(newVocabulary!!, fileToSave.absolutePath)
+                                            saveToRecentList(fileToSave.nameWithoutExtension, fileToSave.absolutePath)
+                                        }
+                                        newVocabulary = null
+                                        fileChooser.selectedFile = null
+                                        close()
+                                    }
 
                                 }).start()
                             }){
@@ -134,7 +269,7 @@ fun MergeVocabularyDialog(
                 }
 
                 if(merging){
-                    CircularProgressIndicator(Modifier.align(Alignment.Center).padding(bottom = 100.dp))
+                    CircularProgressIndicator(Modifier.align(Alignment.Center).padding(bottom = 120.dp))
                 }
             }
 

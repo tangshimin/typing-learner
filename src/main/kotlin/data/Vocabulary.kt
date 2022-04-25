@@ -21,7 +21,7 @@ data class Vocabulary(
     var name: String = "",
     val type: VocabularyType = VocabularyType.DOCUMENT,
     val language: String,
-    val size: Int,
+    var size: Int,
     val relateVideoPath: String = "",
     val subtitlesTrackId: Int = 0,
     var wordList: MutableList<Word> = mutableListOf(),
@@ -238,7 +238,20 @@ fun saveVocabulary(vocabulary: Vocabulary, path: String) {
 
 fun main() {
 //    convertWord(File("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary"))
+    val vocabulary = loadOldVocabulary("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary\\4000 Essential English Words.json")
+    vocabulary.wordList.forEach {word ->
+        word.links.clear()
+    }
 
+    val format = Json {
+        prettyPrint = true
+        encodeDefaults = true
+    }
+    Thread(Runnable {
+        val json = format.encodeToString(vocabulary)
+        val file = getResourcesFile("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary\\4000 Essential English Words.json")
+        file?.writeText(json)
+    }).start()
 
 }
 
@@ -304,25 +317,25 @@ data class OldWord(
     var definition: String = "",
     var translation: String = "",
     var pos: String = "",
-    var collins: String = "",
-    var oxford: String = "",
+    var collins: Int = 0,
+    var oxford: Boolean = false,
     var tag: String = "",
-    var bnc: Int? = Int.MAX_VALUE,
-    var frq: Int? = Int.MAX_VALUE,
+    var bnc: Int? = 0,
+    var frq: Int? = 0,
     var exchange: String = "",
-    var links: List<String> = listOf(),
-    var captions: List<Caption> = listOf()
+    var links: MutableList<String> = mutableListOf(),
+    var captions: MutableList<Caption> = mutableListOf()
 )
 
 @Serializable
 data class OldVocabulary(
     var name: String = "",
-    val type: String = "document",
+    val type: VocabularyType = VocabularyType.DOCUMENT,
     val language: String,
-    val size: Int,
+    var size: Int,
     val relateVideoPath: String = "",
     val subtitlesTrackId: Int = 0,
-    var wordList: MutableList<Word> = mutableListOf(),
+    var wordList: MutableList<OldWord> = mutableListOf(),
 )
 
 fun loadOldVocabulary(pathname: String): OldVocabulary {
