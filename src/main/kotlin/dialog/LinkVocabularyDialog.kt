@@ -199,7 +199,7 @@ fun LinkVocabularyDialog(
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(600.dp, 600.dp)
+            size = DpSize(600.dp, 650.dp)
         ),
     ) {
 
