@@ -1,5 +1,6 @@
 package dialog
 
+import LoadingDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -176,12 +177,10 @@ fun GenerateVocabulary(
                          */
                         var replaceToLemma by remember { mutableStateOf(false) }
 
-
                         Divider()
                         Row(Modifier.fillMaxWidth()){
                             Column (Modifier.width(540.dp).fillMaxHeight()){
                                 BasicFilter(
-                                    type = type,
                                     notBncFilter = notBncFilter,
                                     setNotBncFilter = {
                                         notBncFilter = it
@@ -206,11 +205,12 @@ fun GenerateVocabulary(
                                     selectedFileListRemove = {
                                         selectedFileList.remove(it)
                                     }
+
                                 )
                             }
                             Divider(Modifier.width(1.dp).fillMaxHeight())
                             Column(
-                                Modifier.width(635.dp).fillMaxHeight().background(MaterialTheme.colors.background)
+                                Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
                             ) {
                                 /**
                                  * 这个 flag 有三个状态：""、"start"、"end"
@@ -307,16 +307,18 @@ fun GenerateVocabulary(
                                         previewList.clear()
                                         val filteredList = filterSelectVocabulary(
                                             selectedFileList = selectedFileList,
-//                                            recentNamePathMap = recentNamePathMap,
                                             filteredDocumentList = filteredDocumentList
                                         )
                                         previewList.addAll(filteredList)
-
-                                        PreviewWords(previewList, summaryVocabulary,
+                                        PreviewWords(
+                                            type = type,
+                                            previewList = previewList,
+                                            summaryVocabulary = summaryVocabulary,
                                             removeWord = {
                                                 previewList.remove(it)
                                             })
                                     }
+
                                 }
 
                             }
@@ -495,16 +497,17 @@ private fun getWordLemma(word: Word): String? {
 
 @Composable
 fun Summary(
+    type :VocabularyType,
     list: List<Word>,
     summaryVocabulary: Map<String, List<String>>
 ) {
 
     Column(Modifier.fillMaxWidth()) {
-        Divider()
+        val height = if(type == DOCUMENT) 61.dp else 40.dp
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().height(40.dp).padding(start = 10.dp)
+            modifier = Modifier.fillMaxWidth().height(height).padding(start = 10.dp)
         ) {
             val summary = computeSummary(list, summaryVocabulary)
             Text(text = "共 ${list.size} 词  ",color = MaterialTheme.colors.onBackground)
@@ -534,6 +537,7 @@ fun Summary(
             }
 
         }
+        Divider()
     }
 
 
@@ -594,7 +598,6 @@ private fun loadSummaryVocabulary(): Map<String, List<String>> {
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun BasicFilter(
-    type :VocabularyType,
     notBncFilter: Boolean,
     setNotBncFilter: (Boolean) -> Unit,
     notFrqFilter: Boolean,
@@ -607,7 +610,7 @@ fun BasicFilter(
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().height(if(type == DOCUMENT) 48.dp else 34.dp)
+            modifier = Modifier.fillMaxWidth().height(48.dp)
         ) {
             Text("过滤词库", color = MaterialTheme.colors.onBackground, fontFamily = FontFamily.Default)
         }
@@ -737,6 +740,7 @@ fun BasicFilter(
 fun VocabularyFilter(
     futureFileChooser: FutureTask<JFileChooser>,
     selectedFileList: List<File>,
+//    setIsFiltering:(Boolean) -> Unit,
     selectedFileListAdd: (File) -> Unit,
     selectedFileListRemove: (File) -> Unit,
 ) {
@@ -1114,13 +1118,13 @@ fun SelectFile(
                 Text("打开",fontSize = 12.sp)
             }
 
-            if (type != MKV && filePath.isNotEmpty()) {
-                Spacer(Modifier.width(10.dp))
-                OutlinedButton(onClick = {
+            Spacer(Modifier.width(10.dp))
+            OutlinedButton(
+                enabled = type != MKV && filePath.isNotEmpty(),
+                onClick = {
                     analysis(filePath,selectedTrackId)
                 }) {
-                    Text("分析", fontSize = 12.sp)
-                }
+                Text("分析", fontSize = 12.sp)
             }
         }
 
@@ -1130,7 +1134,7 @@ fun SelectFile(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Max)
-                    .padding(start = 10.dp)){
+                    .padding(start = 10.dp,bottom = 14.dp)){
                 if (trackList.isNotEmpty()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -1219,7 +1223,7 @@ fun SelectFile(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Max)
-                .padding(start = 10.dp)
+                .padding(start = 10.dp,bottom = 14.dp)
         ){
                 Text("选择对应的视频(可选)",color = MaterialTheme.colors.onBackground)
                 BasicTextField(
@@ -1255,7 +1259,8 @@ fun SelectFile(
                 }
             }
         }
-        if(filePath.isNotEmpty()) Divider()
+        Divider()
+//        if(filePath.isNotEmpty()) Divider()
     }
 }
 
@@ -1396,7 +1401,6 @@ fun filterDocumentWords(
 
 fun filterSelectVocabulary(
     selectedFileList: List<File>,
-//    recentNamePathMap: Map<String,String>,
     filteredDocumentList: List<Word>
 ): List<Word> {
 
@@ -1410,7 +1414,6 @@ fun filterSelectVocabulary(
         }
 
     }
-
     return list
 }
 
@@ -1420,12 +1423,13 @@ fun filterSelectVocabulary(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PreviewWords(
+    type :VocabularyType,
     previewList: List<Word>,
     summaryVocabulary: Map<String, List<String>>,
     removeWord: (Word) -> Unit
 ) {
     Column (Modifier.fillMaxSize()){
-        Summary(previewList, summaryVocabulary)
+        Summary(type,previewList, summaryVocabulary)
         val listState = rememberLazyListState()
         Box(Modifier.fillMaxWidth()) {
             LazyVerticalGrid(
