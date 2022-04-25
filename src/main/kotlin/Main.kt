@@ -144,6 +144,7 @@ fun main() = application {
 
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 private fun computeTitle(state: AppState):String {
     return  if(state.vocabulary.wordList.isNotEmpty()){
         val suffix = if (state.isDictation) {
