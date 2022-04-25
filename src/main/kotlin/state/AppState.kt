@@ -5,7 +5,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
-import data.Caption
 import data.Word
 import data.loadMutableVocabulary
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -16,7 +15,6 @@ import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
 import java.io.File
-import java.io.FileNotFoundException
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -160,7 +158,7 @@ class MutableTypingState(typingState: TypingState) {
 /**
  * 速度组件可观察的状态
  */
-class MutableSpeedState() {
+class MutableSpeedState {
     var isStart by mutableStateOf(false)
     var inputCount by mutableStateOf(0)
     var correctCount by mutableStateOf(0F)
@@ -212,12 +210,6 @@ class AppState {
      * 词库
      */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
-
-    /**
-     * 链接的视频或字幕词库 Map
-     * vocabularyPath to captionsMap (word.value to word.captions)
-     */
-    var captionsMap = mutableMapOf<String, HashMap<String, List<Caption>>>()
 
     /**
      * 是否是默写模式
@@ -316,13 +308,13 @@ class AppState {
                 val typingState = Json.decodeFromString<TypingState>(settings.readText())
                 MutableTypingState(typingState)
             }catch (exception:Exception){
-                FlatLightLaf.setup();
+                FlatLightLaf.setup()
                 JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$settings")
                 MutableTypingState(TypingState())
             }
 
         }else{
-            FlatLightLaf.setup();
+            FlatLightLaf.setup()
             JOptionPane.showMessageDialog(null,"找不到设置文件，将使用默认设置。\n地址：$settings")
             MutableTypingState(TypingState())
         }
@@ -562,7 +554,7 @@ fun getSettingsFile(): File {
  * @param path 文件路径
  */
 fun getResourcesFile(path: String): File {
-    var file = if (File(path).isAbsolute) {
+    val file = if (File(path).isAbsolute) {
         File(path)
     } else {
         composeAppResource(path)
