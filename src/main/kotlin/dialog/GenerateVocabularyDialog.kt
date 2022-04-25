@@ -1,6 +1,5 @@
 package dialog
 
-import LoadingDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -8,7 +7,8 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -94,7 +94,7 @@ import javax.swing.tree.TreePath
 )
 @ExperimentalComposeUiApi
 @Composable
-fun GenerateVocabulary(
+fun GenerateVocabularyDialog(
     state: AppState,
     title: String,
     type: VocabularyType
