@@ -39,7 +39,6 @@ import state.AppState
 fun SelectChapterDialog(state: AppState) {
     Dialog(title = "选择章节",
         onCloseRequest = { state.openSelectChapter = false},
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -68,46 +67,20 @@ fun SelectChapter(
     Surface (
         elevation = 5.dp,
         shape = RectangleShape,
-        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
     ){
 
         Box(
             modifier = Modifier
                 .size(930.dp, 785.dp) .background(color = MaterialTheme.colors.background)
         ) {
-            Column (modifier = Modifier.align(Alignment.TopCenter).onGloballyPositioned { layoutCoordinates ->
-                println("size: ${layoutCoordinates.size}")
-            }){
-                if(!MaterialTheme.colors.isLight){
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(44.dp)
-                    ) {
-                        Text("选择章节",
-                            modifier = Modifier.align(Alignment.Center).padding(top = 5.dp,bottom = 5.dp),
-                            color = MaterialTheme.colors.onBackground)
-                        var isHover by remember { mutableStateOf(false) }
-                        IconButton(
-                            onClick = { state.openSelectChapter = false},
-                            modifier = Modifier
-                                .onPointerEvent(PointerEventType.Enter) { isHover = true }
-                                .onPointerEvent(PointerEventType.Exit) { isHover = false }
-                                .background(if (isHover) Color(196, 43, 28) else Color.Transparent)
-                                .align(Alignment.CenterEnd)) {
-                            Icon(
-                                Icons.Filled.Close,
-                                contentDescription = "",
-                                tint = MaterialTheme.colors.onBackground,
-                            )
-                        }
-                    }
-                    Divider()
-                }
+            Column (modifier = Modifier.align(Alignment.TopCenter)){
+                Divider()
                 Row(horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 5.dp,bottom = 5.dp)){
-                    Text("${state.vocabulary.name}  ${state.vocabulary.size}个单词",
-                        modifier = Modifier.padding(top = 5.dp,bottom = 5.dp),
-                        color = MaterialTheme.colors.onBackground)
+                    Text("${state.vocabulary.name}  ", color = MaterialTheme.colors.onBackground)
+                    Text("${state.vocabulary.size}", color = MaterialTheme.colors.primary)
+                    Text(" 个单词", color = MaterialTheme.colors.onBackground)
                 }
                 Divider()
             }
@@ -122,16 +95,13 @@ fun SelectChapter(
                 )
             }
             Footer(
-                modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned { coordinate ->
-                    println(coordinate.size)
-                },
+                modifier = Modifier.align(Alignment.BottomCenter),
                 confirm = {
                     if (chapter == 0) state.typing.chapter = 1
                     state.typing.chapter = chapter
                     state.typing.index = (chapter - 1) * 20
                     state.openSelectChapter = false
                     state.saveTypingState()
-
                 },
                 exit = {
                     state.openSelectChapter = false

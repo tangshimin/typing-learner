@@ -60,7 +60,6 @@ fun LinkCaptionDialog(
         title = "链接字幕",
         icon = painterResource("logo/logo.svg"),
         onCloseRequest = {close()},
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -70,7 +69,6 @@ fun LinkCaptionDialog(
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         ) {
             Box(modifier = Modifier.fillMaxSize()){
 
@@ -82,12 +80,6 @@ fun LinkCaptionDialog(
                 var subtitlesName by remember { mutableStateOf("") }
                 var selectedCaptionContent by remember { mutableStateOf("") }
                 var selectedCaption by remember{ mutableStateOf<Caption?>(null)}
-                if(!MaterialTheme.colors.isLight){
-                    Row(horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)){
-                        Text("链接字幕")
-                    }
-                }
                 Column (Modifier.width(IntrinsicSize.Max).align(Alignment.Center)){
                     EditingCaptions(
                         state = state,

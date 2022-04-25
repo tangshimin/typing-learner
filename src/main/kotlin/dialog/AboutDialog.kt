@@ -29,7 +29,6 @@ fun AboutDialog(close:()->Unit) {
         title = "关于",
         icon = painterResource("logo/logo.svg"),
         onCloseRequest = {close()},
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -39,10 +38,10 @@ fun AboutDialog(close:()->Unit) {
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         ) {
             Column (horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()){
+                Divider()
                 var state by remember{ mutableStateOf(0) }
                 TabRow(selectedTabIndex = state,
                 backgroundColor = Color.Transparent

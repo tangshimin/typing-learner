@@ -192,17 +192,16 @@ fun LinkVocabularyDialog(
     }
 
     Dialog(
-        title = "导入字幕",
+        title = "链接字幕",
         icon = painterResource("logo/logo.svg"),
         onCloseRequest = {
             clear()
             close()
         },
-        undecorated = !MaterialTheme.colors.isLight,
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(600.dp, (if (MaterialTheme.colors.isLight) 640 else 600).dp)
+            size = DpSize(600.dp, 600.dp)
         ),
     ) {
 
@@ -210,9 +209,9 @@ fun LinkVocabularyDialog(
             Surface(
                 elevation = 5.dp,
                 shape = RectangleShape,
-                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
             ) {
                 Box(Modifier.fillMaxSize()) {
+                    Divider(Modifier.align(Alignment.TopCenter))
                     if (previewWords.isEmpty()) {
                         Column(
                             verticalArrangement = Arrangement.Center,
