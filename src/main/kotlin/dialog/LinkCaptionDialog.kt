@@ -245,11 +245,11 @@ fun LinkCaptionDialog(
                                                 val externalCaption = ExternalCaption(relateVideoPath,subtitlesTrackId,subtitlesName,
                                                     selectedCaption!!.start, selectedCaption!!.end, selectedCaption!!.content)
 
-                                                if (word.links.size <3 && !word.links.contains(externalCaption)) {
-                                                    word.links.add(externalCaption)
+                                                if (word.externalCaptions.size <3 && !word.externalCaptions.contains(externalCaption)) {
+                                                    word.externalCaptions.add(externalCaption)
                                                 }
                                             }
-                                            setLinkSize( word.links.size)
+                                            setLinkSize( word.externalCaptions.size)
                                             state.vocabulary.wordList.removeAt(index)
                                             state.vocabulary.wordList.add(index, word)
                                         }

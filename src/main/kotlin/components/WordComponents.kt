@@ -356,7 +356,7 @@ fun WordComponents(
                                     val current = state.getCurrentWord()
                                     val index = state.typing.index
                                     newWord.captions = current.captions
-                                    newWord.links = current.links
+                                    newWord.externalCaptions = current.externalCaptions
                                     state.vocabulary.wordList.removeAt(index)
                                     state.vocabulary.wordList.add(index, newWord)
                                     state.saveCurrentVocabulary()

@@ -32,10 +32,8 @@ import androidx.compose.ui.window.WindowState
 import data.Caption
 import data.VocabularyType
 import data.Word
-import data.loadCaptionsMap
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.isMacOS
 import player.mediaPlayer
 import state.AppState
 import theme.DarkColorScheme
@@ -48,7 +46,6 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.regex.Pattern
 import javax.swing.JFrame
 import kotlin.concurrent.schedule
 
@@ -856,7 +853,7 @@ fun Captions(
 
             }
         }
-        if (!isPlaying && (word.captions.isNotEmpty() || word.links.isNotEmpty()))
+        if (!isPlaying && (word.captions.isNotEmpty() || word.externalCaptions.isNotEmpty()))
             Divider(Modifier.padding(start = 50.dp))
     }
 }
@@ -874,8 +871,8 @@ fun getPlayTripleMap(state: AppState, word: Word): MutableMap<Int, Triple<Captio
 
     val playTripleMap = mutableMapOf<Int, Triple<Caption, String, Int>>()
     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-        if (word.links.isNotEmpty()) {
-            word.links.forEachIndexed { index, externalCaption ->
+        if (word.externalCaptions.isNotEmpty()) {
+            word.externalCaptions.forEachIndexed { index, externalCaption ->
                 val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
                 val playTriple =
                     Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
@@ -1218,8 +1215,8 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
 @OptIn(ExperimentalSerializationApi::class)
 fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
 
-    return if(index < state.getCurrentWord().links.size){
-        val externalCaption = state.getCurrentWord().links[index]
+    return if(index < state.getCurrentWord().externalCaptions.size){
+        val externalCaption = state.getCurrentWord().externalCaptions[index]
         val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
         Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
     }else{

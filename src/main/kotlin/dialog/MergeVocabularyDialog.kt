@@ -193,7 +193,7 @@ fun MergeVocabularyDialog(
                                                             end = caption.end,
                                                             content = caption.content
                                                         )
-                                                        word.links.add(externalCaption)
+                                                        word.externalCaptions.add(externalCaption)
                                                     }
                                                     word.captions.clear()
                                                 }
@@ -202,10 +202,10 @@ fun MergeVocabularyDialog(
                                             }else{
                                                 val oldWord = wordList[index]
                                                 // 如果单词有外部字幕，同时已经加入到列表的单词的外部字幕没有超过3个就导入
-                                                if(word.links.isNotEmpty()){
-                                                    word.links.forEach { externalCaption ->
-                                                        if(oldWord.links.size<3){
-                                                            oldWord.links.add(externalCaption)
+                                                if(word.externalCaptions.isNotEmpty()){
+                                                    word.externalCaptions.forEach { externalCaption ->
+                                                        if(oldWord.externalCaptions.size<3){
+                                                            oldWord.externalCaptions.add(externalCaption)
                                                         }
                                                     }
                                                 // 如果单词是视频或字幕词库中的单词
@@ -220,8 +220,8 @@ fun MergeVocabularyDialog(
                                                             end = caption.end,
                                                             content = caption.content
                                                         )
-                                                        if(oldWord.links.size<3){
-                                                            oldWord.links.add(externalCaption)
+                                                        if(oldWord.externalCaptions.size<3){
+                                                            oldWord.externalCaptions.add(externalCaption)
                                                         }
                                                     }
                                                 }

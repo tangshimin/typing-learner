@@ -1,10 +1,10 @@
 {
     "name": "Sintel.2010.1080p",
-    "type": "MKV",
+    "type": "DOCUMENT",
     "language": "english",
     "size": 72,
-    "relateVideoPath": "D:\\sintel\\Sintel.2010.1080p.mkv",
-    "subtitlesTrackId": 1,
+    "relateVideoPath": "",
+    "subtitlesTrackId": 0,
     "wordList": [
         {
             "value": "shed",
@@ -19,7 +19,7 @@
             "bnc": 4479,
             "frq": 4356,
             "exchange": "s:sheds/d:shed/0:shed/1:dp/i:shedding/p:shed/3:sheds",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -42,7 +42,7 @@
             "bnc": 14003,
             "frq": 20260,
             "exchange": "0:search/1:i/i:searching/s:searchings",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -65,7 +65,7 @@
             "bnc": 4000,
             "frq": 3148,
             "exchange": "s:blades/p:bladed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -88,7 +88,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "0:bring/1:3",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -111,7 +111,7 @@
             "bnc": 80,
             "frq": 105,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -134,7 +134,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "1:d/0:be/s:beens",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -157,7 +157,7 @@
             "bnc": 280,
             "frq": 291,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -180,7 +180,7 @@
             "bnc": 3421,
             "frq": 2775,
             "exchange": "s:innocents",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -203,7 +203,7 @@
             "bnc": 66,
             "frq": 69,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -226,7 +226,7 @@
             "bnc": 4842,
             "frq": 5085,
             "exchange": "s:dragons",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -254,7 +254,7 @@
             "bnc": 103,
             "frq": 429,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -277,7 +277,7 @@
             "bnc": 6427,
             "frq": 4067,
             "exchange": "s:quests/i:questing/p:quested/d:quested/3:quests",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -300,7 +300,7 @@
             "bnc": 73,
             "frq": 110,
             "exchange": "t:best/r:better",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -323,7 +323,7 @@
             "bnc": 0,
             "frq": 68,
             "exchange": "s:hims",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -333,7 +333,6 @@
                 }
             ]
         },
-
         {
             "value": "these",
             "usphone": "",
@@ -347,7 +346,7 @@
             "bnc": 76,
             "frq": 82,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -370,7 +369,7 @@
             "bnc": 89,
             "frq": 73,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -393,7 +392,7 @@
             "bnc": 70,
             "frq": 101,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -416,7 +415,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "1:3/0:have",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -444,7 +443,7 @@
             "bnc": 5802,
             "frq": 3030,
             "exchange": "s:hunters",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -467,7 +466,7 @@
             "bnc": 3901,
             "frq": 1429,
             "exchange": "s:heys",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -490,7 +489,7 @@
             "bnc": 15,
             "frq": 14,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -523,7 +522,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "0:gatekeeper/1:s",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -546,7 +545,7 @@
             "bnc": 112,
             "frq": 126,
             "exchange": "s:stills/i:stilling/p:stilled/3:stills/d:stilled",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -574,7 +573,7 @@
             "bnc": 1116,
             "frq": 680,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -597,7 +596,7 @@
             "bnc": 216,
             "frq": 209,
             "exchange": "s:nights",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -620,7 +619,7 @@
             "bnc": 23,
             "frq": 20,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -643,7 +642,7 @@
             "bnc": 0,
             "frq": 9505,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -666,7 +665,7 @@
             "bnc": 65,
             "frq": 70,
             "exchange": "p:came/i:coming/3:comes/d:come/0:come/1:d",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -694,7 +693,7 @@
             "bnc": 9,
             "frq": 10,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -717,7 +716,7 @@
             "bnc": 9551,
             "frq": 5839,
             "exchange": "0:fail/1:dp/p:failed/d:failed",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -745,7 +744,7 @@
             "bnc": 40631,
             "frq": 0,
             "exchange": "1:d/0:do",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -768,7 +767,7 @@
             "bnc": 9560,
             "frq": 10008,
             "exchange": "0:flow/1:i/i:flowing/s:flowings",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -791,7 +790,7 @@
             "bnc": 33,
             "frq": 33,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -819,7 +818,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -842,7 +841,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "1:s3/0:scale",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -875,7 +874,7 @@
             "bnc": 49,
             "frq": 47,
             "exchange": "p:knew/d:known/3:knows/i:knowing",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -898,7 +897,7 @@
             "bnc": 1163,
             "frq": 1169,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -921,7 +920,7 @@
             "bnc": 164,
             "frq": 146,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -944,7 +943,7 @@
             "bnc": 2137,
             "frq": 2126,
             "exchange": "r:luckier/t:luckiest",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -967,7 +966,7 @@
             "bnc": 12,
             "frq": 13,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1000,7 +999,7 @@
             "bnc": 1609,
             "frq": 1457,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1023,7 +1022,7 @@
             "bnc": 5993,
             "frq": 5377,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1046,7 +1045,7 @@
             "bnc": 217,
             "frq": 254,
             "exchange": "r:longer/t:longest/p:longed/i:longing/d:longed/3:longs",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1069,7 +1068,7 @@
             "bnc": 346,
             "frq": 379,
             "exchange": "p:remembered/d:remembered/i:remembering/3:remembers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1092,7 +1091,7 @@
             "bnc": 35,
             "frq": 37,
             "exchange": "s:cans/i:/p:could/3:can/d:",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1115,7 +1114,7 @@
             "bnc": 1297,
             "frq": 1097,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1143,7 +1142,7 @@
             "bnc": 47,
             "frq": 67,
             "exchange": "d:seen/p:saw/i:seeing/3:sees",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1166,7 +1165,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "s:ares",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1194,7 +1193,7 @@
             "bnc": 3660,
             "frq": 4030,
             "exchange": "s:fools/d:fooled/i:fooling/p:fooled/3:fools",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1217,7 +1216,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1245,7 +1244,7 @@
             "bnc": 3,
             "frq": 4,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1268,7 +1267,7 @@
             "bnc": 41,
             "frq": 39,
             "exchange": "d:got/p:got/i:getting/3:gets",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1291,7 +1290,7 @@
             "bnc": 966,
             "frq": 857,
             "exchange": "r:darker/t:darkest",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1314,7 +1313,7 @@
             "bnc": 8,
             "frq": 8,
             "exchange": "i:having/p:had/3:has/d:had",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1337,7 +1336,7 @@
             "bnc": 472,
             "frq": 566,
             "exchange": "s:lands/p:landed/d:landed/i:landing/3:lands",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1360,7 +1359,7 @@
             "bnc": 20308,
             "frq": 18790,
             "exchange": "s:kindreds",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1383,7 +1382,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1406,7 +1405,7 @@
             "bnc": 48,
             "frq": 55,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1434,7 +1433,7 @@
             "bnc": 2167,
             "frq": 3337,
             "exchange": "t:dearest/r:dearer/s:dears",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1457,7 +1456,7 @@
             "bnc": 302,
             "frq": 268,
             "exchange": "p:sat/i:sitting/3:sits/d:sat",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1480,7 +1479,7 @@
             "bnc": 17,
             "frq": 17,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1508,7 +1507,7 @@
             "bnc": 5,
             "frq": 5,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1541,7 +1540,7 @@
             "bnc": 13693,
             "frq": 10843,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1564,7 +1563,7 @@
             "bnc": 1189,
             "frq": 1180,
             "exchange": "s:spirits/d:spirited/p:spirited/i:spiriting/3:spirits/f:spirits",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1587,7 +1586,7 @@
             "bnc": 980,
             "frq": 692,
             "exchange": "s:bloods/d:blooded/i:blooding/p:blooded/3:bloods",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1610,7 +1609,7 @@
             "bnc": 2939,
             "frq": 3005,
             "exchange": "0:close/1:r/s:closers",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1633,7 +1632,7 @@
             "bnc": 1,
             "frq": 1,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1661,7 +1660,7 @@
             "bnc": 38,
             "frq": 34,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1684,7 +1683,7 @@
             "bnc": 537,
             "frq": 419,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1712,7 +1711,7 @@
             "bnc": 0,
             "frq": 0,
             "exchange": "0:land/1:s3",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1735,7 +1734,7 @@
             "bnc": 768,
             "frq": 498,
             "exchange": "p:thanked/i:thanking/d:thanked/3:thanks",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
@@ -1758,7 +1757,7 @@
             "bnc": 7,
             "frq": 7,
             "exchange": "",
-            "links": [
+            "externalCaptions": [
             ],
             "captions": [
                 {
