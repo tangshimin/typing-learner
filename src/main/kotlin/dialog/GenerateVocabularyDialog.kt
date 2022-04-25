@@ -998,7 +998,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
     return curDir
 }
 
-@OptIn(ExperimentalSerializationApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalSerializationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SelectFile(
     state: AppState,
@@ -1060,7 +1060,6 @@ fun SelectFile(
             )
 
             OutlinedButton(onClick = {
-//                state.loadingFileChooserVisible = true
                 Thread(Runnable {
                     val fileChooser = state.futureFileChooser.get()
                     fileChooser.dialogTitle = chooseText
@@ -1083,7 +1082,6 @@ fun SelectFile(
                                     val list = mutableListOf<Pair<Int, String>>()
                                     mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
                                         if(index != 0){
-//                                            list[index-1] = trackDescription.description()
                                             list.add(Pair(index -1, trackDescription.description()))
                                         }
                                     }
@@ -1111,7 +1109,6 @@ fun SelectFile(
                         fileChooser.selectedFile = File("")
                     }
                     fileChooser.removeChoosableFileFilter(fileFilter)
-//                    state.loadingFileChooserVisible = false
                 }).start()
 
             }) {
@@ -1260,88 +1257,9 @@ fun SelectFile(
             }
         }
         Divider()
-//        if(filePath.isNotEmpty()) Divider()
     }
 }
 
-fun getSubtitleTrackMap(pathName: String): Map<Int, String> {
-    val map = HashMap<Int, String>()
-    var reader: EBMLReader? = null
-    try {
-        reader = EBMLReader(pathName)
-
-        // Check to see if this is a valid MKV file
-        // The header contains information for where all the segments are located
-        if (!reader.readHeader()) {
-            println("This is not an mkv file!")
-            return mapOf()
-        }
-
-        // Read the tracks. This contains the details of video, audio and subtitles
-        // in this file
-        reader.readTracks()
-
-        // Check if there are any subtitles in this file
-        val numSubtitles: Int = reader.subtitles.size
-        if (numSubtitles == 0) {
-            return mapOf()
-        }
-
-        reader.subtitles.forEachIndexed { index, subtitles ->
-            if (subtitles.name == "English") {
-                map[index] = "English"
-            } else if (!subtitles.name.isNullOrEmpty() && subtitles.name.contains(Regex("Forced"))) {
-                if (subtitles.language == "en") {
-                    map[index] = "English Forced"
-                }
-                when (subtitles.languageIetf) {
-                    "en" -> {
-                        map[index] = "English Forced"
-                    }
-                    "en-US" -> {
-                        map[index] = "English(United States) Forced"
-                    }
-                    "en-GB" -> {
-                        map[index] = "English(Great Britain) Forced"
-                    }
-                }
-            } else if (!subtitles.name.isNullOrEmpty() && subtitles.name.contains(Regex("SDH"))) {
-                if (subtitles.language == "en") {
-                    map[index] = "English SDH"
-                }
-                when (subtitles.languageIetf) {
-                    "en" -> {
-                        map[index] = "English SDH"
-                    }
-                    "en-US" -> {
-                        map[index] = "English(United States) SDH"
-                    }
-                    "en-GB" -> {
-                        map[index] = "English(Great Britain) SDH"
-                    }
-                }
-
-            } else if (subtitles.languageIetf == "en") {
-                map[index] = "English"
-            } else if (subtitles.languageIetf == "en-US") {
-                map[index] = "English(United States)"
-            } else if (subtitles.languageIetf == "en-GB") {
-                map[index] = "English(Great Britain)"
-            }
-        }
-
-    } catch (e: IOException) {
-        e.printStackTrace()
-    } finally {
-        try {
-            // Remember to close this!
-            reader?.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-    return map
-}
 
 fun filterDocumentWords(
     documentWords: List<Word>,
@@ -1570,7 +1488,6 @@ fun readPDF(
     }
 
     val set: MutableSet<String> = HashSet()
-//    val modelFile = getFile("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin")
     ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { inputStream ->
         val model = TokenizerModel(inputStream)
         addProgress(0.35F)
@@ -1593,8 +1510,7 @@ fun readPDF(
             }
             set.add(lowercase)
         }
-//        FileInputStream("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { modelIn ->
-//        }
+
     }
 
     addProgress(0.15F)
