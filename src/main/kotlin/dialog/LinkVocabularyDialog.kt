@@ -79,15 +79,19 @@ fun LinkVocabularyDialog(
     var relateVideoPath by remember { mutableStateOf("") }
 
     /**
+     * 字幕名称
+     */
+    var subtitlesName by remember{ mutableStateOf("")}
+
+    /**
      * 字幕轨道 ID
      */
     var subtitlesTrackId by remember { mutableStateOf(0) }
     var vocabularyType by remember { mutableStateOf(VocabularyType.DOCUMENT) }
-    var vocabularyTypeWrong by remember { mutableStateOf(false) }
+    var vocabularyWrong by remember { mutableStateOf(false) }
     var extractCaptionResultInfo by remember { mutableStateOf("") }
-
     /**
-     * 点击【导入】后执行的回调函数
+     * 点击【链接】后执行的回调函数
      */
     val import: () -> Unit = {
         if (prepareLinks.isNotEmpty()) {
@@ -105,9 +109,10 @@ fun LinkVocabularyDialog(
         linkCounter = 0
         prepareLinks.clear()
         relateVideoPath = ""
+        subtitlesName = ""
         extractCaptionResultInfo = ""
         subtitlesTrackId = 0
-        vocabularyTypeWrong = false
+        vocabularyWrong = false
         vocabularyType = VocabularyType.DOCUMENT
 
     }
@@ -120,6 +125,7 @@ fun LinkVocabularyDialog(
             val selectedVocabulary = loadVocabulary(it.absolutePath)
             if (selectedVocabulary.type != VocabularyType.DOCUMENT) {
                 relateVideoPath = selectedVocabulary.relateVideoPath
+                subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
                 subtitlesTrackId = selectedVocabulary.subtitlesTrackId
                 vocabularyType = selectedVocabulary.type
                 var linkedCounter = 0
@@ -137,7 +143,7 @@ fun LinkVocabularyDialog(
                         var counter = 3 - word.externalCaptions.size
                         if (counter in 1..3) {
                             captions?.forEachIndexed { _, caption ->
-                                val subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
+
                                 val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
                                     caption.start, caption.end, caption.content)
 
@@ -155,7 +161,6 @@ fun LinkVocabularyDialog(
 
                             // 字幕已经有3条了，查询是否有一样的
                             captions?.forEachIndexed { _, caption ->
-                                val subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
                                 val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
                                     caption.start, caption.end, caption.content)
 
@@ -173,18 +178,19 @@ fun LinkVocabularyDialog(
                     }
                 }
                 // previewWords isEmpty 有两种情况：
-                // 1. 已经导入了一次。
+                // 1. 已经链接了一次。
                 // 2. 没有匹配的字幕
                 if (previewWords.isEmpty()) {
                     extractCaptionResultInfo = if (linkedCounter == 0) {
                         "没有匹配的字幕，请重新选择"
                     } else {
-                        "${selectedVocabulary.name} 有${linkedCounter}条相同的字幕已经导入，请重新选择"
+                        "${selectedVocabulary.name} 有${linkedCounter}条相同的字幕已经链接，请重新选择"
                     }
+                    vocabularyWrong = true
                 }
 
             } else {
-                vocabularyTypeWrong = true
+                vocabularyWrong = true
             }
         }).start()
     }
@@ -248,7 +254,7 @@ fun LinkVocabularyDialog(
                                     Row(
                                         horizontalArrangement = Arrangement.Center,
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                                    ) { Text("已导入列表") }
+                                    ) { Text("已链接列表") }
                                     Divider()
                                     Column {
                                         var showConfirmationDialog by remember { mutableStateOf(false) }
@@ -282,6 +288,9 @@ fun LinkVocabularyDialog(
                                                                 }
                                                                 word.externalCaptions.removeAll(tempList)
                                                             }
+                                                            if(relateVideoPath == path || subtitlesName == path){
+                                                                vocabularyWrong = false
+                                                            }
                                                             showConfirmationDialog = false
                                                             state.saveCurrentVocabulary()
                                                         },
@@ -296,25 +305,30 @@ fun LinkVocabularyDialog(
                                     Divider()
                                 }
                             }
-                            if (vocabularyTypeWrong) {
-                                Text(
-                                    "词库的类型错误，请选择从 SRT 或 MKV 生成的词库文件",
-                                    color = Color.Red,
-                                    modifier = Modifier.width(360.dp).padding(top = 20.dp, bottom = 20.dp)
-                                )
+                            if (vocabularyWrong) {
+                                if (extractCaptionResultInfo.isNotEmpty()) {
+                                    Text(
+                                        text = extractCaptionResultInfo,
+                                        color = Color.Red,
+                                        modifier = Modifier.width(360.dp).padding(top = 20.dp, bottom = 20.dp)
+                                    )
+                                }
+                                if(vocabularyType == VocabularyType.DOCUMENT){
+                                    Text(
+                                        "词库的类型错误，请选择从 SRT 或 MKV 生成的词库文件",
+                                        color = Color.Red,
+                                        modifier = Modifier.width(360.dp).padding(top = 20.dp, bottom = 20.dp)
+                                    )
+                                }
+
                             }
-                            if (extractCaptionResultInfo.isNotEmpty()) {
-                                Text(
-                                    text = extractCaptionResultInfo,
-                                    color = Color.Red,
-                                    modifier = Modifier.width(360.dp).padding(top = 20.dp, bottom = 20.dp)
-                                )
-                            }
+
                             Row(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 OutlinedButton(onClick = {
+                                    vocabularyWrong = false
                                     state.loadingFileChooserVisible = true
                                     Thread(Runnable {
                                         val fileChooser =  state.futureFileChooser.get()
@@ -454,7 +468,7 @@ fun LinkVocabularyDialog(
                                     import()
                                     clear()
                                 }) {
-                                    Text("导入")
+                                    Text("链接")
                                 }
                                 Spacer(Modifier.width(20.dp))
                                 OutlinedButton(onClick = { clear() }) {
