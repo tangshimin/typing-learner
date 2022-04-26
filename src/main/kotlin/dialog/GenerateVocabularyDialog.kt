@@ -102,28 +102,35 @@ fun GenerateVocabularyDialog(
     Dialog(
         title = title,
         onCloseRequest = {
-            onCloseRequest(state, type)
+            onCloseRequest(state, title)
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
             size = DpSize(1190.dp, 785.dp)
         ),
     ) {
-        val fileFilter = when (type) {
-            DOCUMENT -> FileNameExtensionFilter(
+        val fileFilter = when (title) {
+            "过滤词库" -> FileNameExtensionFilter(
+                "词库",
+                "json",)
+            "从文档生成词库" -> FileNameExtensionFilter(
                 "支持的文件扩展(*.pdf、*.txt)",
                 "pdf",
                 "txt",
             )
-            SUBTITLES -> FileNameExtensionFilter(
+            "从字幕生成词库" -> FileNameExtensionFilter(
                 "SRT 和 ASS 格式的字幕文件",
                 "srt","ass",
             )
-            MKV -> FileNameExtensionFilter(
-                "mkv 格式的视频文件",
-                "mkv",
-            )
+
+            "从 MKV 视频生成词库" -> FileNameExtensionFilter(
+                    "mkv 格式的视频文件",
+            "mkv",
+                )
+            else -> null
         }
+
+
             /**
              * 选择的文件名
              */
@@ -143,7 +150,12 @@ fun GenerateVocabularyDialog(
              * 字幕的轨道 ID
              */
             var selectedTrackId by remember { mutableStateOf(0) }
-            val contentPanel = ComposePanel()
+
+            /**
+             * 需要过滤的词库的类型
+             */
+            var filteringType by remember { mutableStateOf(DOCUMENT) }
+        val contentPanel = ComposePanel()
             contentPanel.setContent {
                 MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                     Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
@@ -232,6 +244,7 @@ fun GenerateVocabularyDialog(
                                 SelectFile(
                                     state = state,
                                     type = type,
+                                    title = title,
                                     isSelectedASS = isSelectedASS,
                                     setIsSelectedASS = {isSelectedASS = it},
                                     fileFilter = fileFilter,
@@ -254,9 +267,19 @@ fun GenerateVocabularyDialog(
 
                                             val words = when (type) {
                                                 DOCUMENT -> {
-                                                    readPDF(pathName = pathName,
-                                                        addProgress = { progress += it },
-                                                        setProgressText = { progressText = it })
+                                                    if(title == "过滤词库"){
+                                                        val vocabulary =  loadVocabulary(pathName)
+                                                        filteringType = vocabulary.type
+                                                        relateVideoPath = vocabulary.relateVideoPath
+                                                        selectedTrackId = vocabulary.subtitlesTrackId
+                                                        vocabulary.wordList.toSet()
+
+                                                    }else{
+                                                        readDocument(pathName = pathName,
+                                                            addProgress = { progress += it },
+                                                            setProgressText = { progressText = it })
+                                                    }
+
                                                 }
                                                 SUBTITLES -> {
                                                     readSRT(
@@ -356,10 +379,9 @@ fun GenerateVocabularyDialog(
                                 val userSelection = fileChooser.showSaveDialog(window)
                                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                                     val fileToSave = fileChooser.selectedFile
-                                    println(fileToSave.absolutePath)
                                     val vocabulary = Vocabulary(
                                         name = fileToSave.nameWithoutExtension,
-                                        type = type,
+                                        type = if(title == "过滤词库") filteringType else type,
                                         language = "english",
                                         size = previewList.size,
                                         relateVideoPath = relateVideoPath,
@@ -368,14 +390,14 @@ fun GenerateVocabularyDialog(
                                     )
                                     saveVocabulary(vocabulary, fileToSave.absolutePath)
                                     saveToRecentList(vocabulary.name,fileToSave.absolutePath)
-                                    onCloseRequest(state, type)
+                                    onCloseRequest(state, title)
                                 }
                             }) {
                             Text("保存")
                         }
                         Spacer(Modifier.width(10.dp))
                         OutlinedButton(onClick = {
-                            onCloseRequest(state, type)
+                            onCloseRequest(state, title)
                         }) {
                             Text("取消")
                         }
@@ -478,11 +500,12 @@ private fun getRecentListFile():File{
 
 
 @OptIn(ExperimentalSerializationApi::class)
-private fun onCloseRequest(state: AppState, type: VocabularyType) {
-    when (type) {
-        DOCUMENT -> state.generateVocabularyFromDocument = false
-        SUBTITLES -> state.generateVocabularyFromSubtitles = false
-        MKV -> state.generateVocabularyFromMKV = false
+private fun onCloseRequest(state: AppState, title: String) {
+    when (title) {
+        "过滤词库" -> state.filterVocabulary = false
+        "从文档生成词库" -> state.generateVocabularyFromDocument = false
+        "从字幕生成词库" -> state.generateVocabularyFromSubtitles = false
+        "从 MKV 视频生成词库" -> state.generateVocabularyFromMKV = false
     }
 
 }
@@ -1003,6 +1026,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
 fun SelectFile(
     state: AppState,
     type: VocabularyType,
+    title: String,
     isSelectedASS:Boolean,
     setIsSelectedASS:(Boolean) ->Unit,
     relateVideoPath:String,
@@ -1011,7 +1035,7 @@ fun SelectFile(
     setTrackList:(List<Pair<Int,String>>) ->Unit,
     selectedTrackId:Int,
     setSelectedTrackId:(Int) -> Unit,
-    fileFilter: FileNameExtensionFilter,
+    fileFilter: FileNameExtensionFilter?,
     setSelectFileName: (String) -> Unit,
     analysis: (String,Int) -> Unit
 ) {
@@ -1028,11 +1052,15 @@ fun SelectFile(
                 .height(IntrinsicSize.Max)
                 .padding(start = 10.dp)
         ) {
-            val chooseText = when (type) {
-                DOCUMENT -> "选择文档"
-                SUBTITLES -> "选择字幕"
-                MKV -> "选择 MKV 文件"
+            val chooseText = when (title) {
+                "过滤词库" -> "选择词库"
+                "从文档生成词库" -> "选择文档"
+                "从字幕生成词库" -> "选择字幕"
+                "从 MKV 视频生成词库" -> "选择 MKV 文件"
+                else -> ""
             }
+
+
             Text(chooseText, color = MaterialTheme.colors.onBackground)
             if(type == SUBTITLES || type == DOCUMENT) {
                 Spacer(Modifier.width(95.dp))
@@ -1064,10 +1092,10 @@ fun SelectFile(
                     val fileChooser = state.futureFileChooser.get()
                     fileChooser.dialogTitle = chooseText
                     fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                    fileChooser.currentDirectory =   FileSystemView.getFileSystemView().defaultDirectory
                     fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
                     fileChooser.isAcceptAllFileFilterUsed = false
                     fileChooser.addChoosableFileFilter(fileFilter)
-                    fileChooser.selectedFile = null
                     if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         val file = fileChooser.selectedFile
                         filePath = file.absolutePath
@@ -1116,12 +1144,13 @@ fun SelectFile(
             }
 
             Spacer(Modifier.width(10.dp))
-            OutlinedButton(
-                enabled = type != MKV && filePath.isNotEmpty(),
-                onClick = {
-                    analysis(filePath,selectedTrackId)
-                }) {
-                Text("分析", fontSize = 12.sp)
+            if(type != MKV && filePath.isNotEmpty()){
+                OutlinedButton(
+                    onClick = {
+                        analysis(filePath,selectedTrackId)
+                    }) {
+                    Text("分析", fontSize = 12.sp)
+                }
             }
         }
 
@@ -1466,7 +1495,7 @@ fun PreviewWords(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Throws(IOException::class)
-fun readPDF(
+fun readDocument(
     pathName: String,
     addProgress: (Float) -> Unit,
     setProgressText: (String) -> Unit

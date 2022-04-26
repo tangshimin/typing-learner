@@ -276,6 +276,10 @@ class AppState {
      */
     var mergeVocabulary by mutableStateOf(false)
     /**
+     * 是否显示【过滤词库】窗口
+     */
+    var filterVocabulary by mutableStateOf(false)
+    /**
      * 是否显示【从文档生成词库】窗口
      */
     var generateVocabularyFromDocument by mutableStateOf(false)
