@@ -166,7 +166,7 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("选择词库(O)", mnemonic = 'O',onClick = {
+        Item("选择内置词库(O)", mnemonic = 'O',onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
                 val fileChooser =  state.futureFileChooser.get()
@@ -198,13 +198,42 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         }, shortcut = KeyShortcut(Key.O, ctrl = true)
         )
 
+        if(state.recentList.isNotEmpty()){
+            Menu("选择最近生成的词库(R)", mnemonic = 'R'){
+                state.recentList.forEach { recentItem ->
+                    val recentFile = File(recentItem.path)
+                    if(recentFile.exists()){
+                        Item(text = recentItem.name,onClick = {
+                            state.vocabulary = loadMutableVocabulary(recentItem.path)
+                            state.typing.vocabularyName = recentItem.name
+                            state.typing.vocabularyPath = recentItem.path
+                            if (state.isDictation) {
+                                state.exitDictationMode()
+                                state.resetChapterTime()
+                            }
+                            state.typing.chapter = 1
+                            state.typing.index = 0
+                            state.wordCorrectTime = 0
+                            state.wordWrongTime = 0
+                            state.saveTypingState()
+                            state.loadingFileChooserVisible = false
+                        })
+                    }else{
+                        state.removeInvalidRecentItem(recentItem)
+                    }
 
+                }
+            }
+        }
+
+        Separator()
         Item("合并词库(M)", mnemonic = 'M',onClick = {
             state.mergeVocabulary = true
         })
         Item("过滤词库(F)", mnemonic = 'F',onClick = {
             state.filterVocabulary = true
         })
+        Separator()
         Item("从文档生成词库(D)", mnemonic = 'D',onClick = {
             state.generateVocabularyFromDocument = true
         })
@@ -511,6 +540,8 @@ fun MenuDialogs(state: AppState) {
     if(state.mergeVocabulary){
         MergeVocabularyDialog(
             futureFileChooser = state.futureFileChooser,
+            saveToRecentList = {name,path ->
+                state.saveToRecentList(name,path)},
             close = {state.mergeVocabulary = false})
     }
     if(state.filterVocabulary){

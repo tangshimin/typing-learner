@@ -28,6 +28,7 @@ import javax.swing.filechooser.FileSystemView
 @Composable
 fun MergeVocabularyDialog(
     futureFileChooser: FutureTask<JFileChooser>,
+    saveToRecentList:(String,String) -> Unit,
     close: () -> Unit){
     Dialog(
         title = "合并词库",

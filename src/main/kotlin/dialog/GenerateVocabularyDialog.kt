@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -216,8 +217,11 @@ fun GenerateVocabularyDialog(
                                     },
                                     selectedFileListRemove = {
                                         selectedFileList.remove(it)
+                                    },
+                                    recentList = state.recentList,
+                                    removeInvalidRecentItem = {
+                                        state.removeInvalidRecentItem(it)
                                     }
-
                                 )
                             }
                             Divider(Modifier.width(1.dp).fillMaxHeight())
@@ -389,7 +393,7 @@ fun GenerateVocabularyDialog(
                                         wordList = previewList
                                     )
                                     saveVocabulary(vocabulary, fileToSave.absolutePath)
-                                    saveToRecentList(vocabulary.name,fileToSave.absolutePath)
+                                    state.saveToRecentList(vocabulary.name,fileToSave.absolutePath)
                                     onCloseRequest(state, title)
                                 }
                             }) {
@@ -433,71 +437,6 @@ data class RecentItem(val time:String,val name:String,val path:String){
     }
 
 }
-private fun readRecentList():List<RecentItem>{
-    val recentListFile = getRecentListFile()
-    return if(recentListFile.exists()){
-        return try {
-            Json.decodeFromString(recentListFile.readText())
-        }catch (exception:Exception){
-            listOf()
-        }
-
-    }else{
-        listOf()
-    }
-}
-
-fun saveToRecentList(name:String, path: String) {
-
-    Thread(Runnable {
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
-        }
-        val recentListFile = getRecentListFile()
-        var list = readRecentList().sortedByDescending { it.time }
-        var recentList = mutableListOf<RecentItem>()
-        recentList.addAll(list)
-        val item = RecentItem(LocalDateTime.now().toString(),name,path)
-        if (!recentList.contains(item)) {
-            if(recentList.size==30){
-                recentList.removeAt(29)
-            }
-            recentList.add(0,item)
-        }else{
-            recentList.remove(item)
-            recentList.add(0,item)
-        }
-
-        val json = format.encodeToString(recentList)
-        recentListFile.writeText(json)
-    }).start()
-}
-fun removeInvalidRecentItem(recentItem: RecentItem){
-    Thread(Runnable {
-        var list = readRecentList().sortedByDescending { it.time }
-        var recentList = mutableListOf<RecentItem>()
-        recentList.addAll(list)
-        recentList.remove(recentItem)
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
-        }
-        val json = format.encodeToString(recentList)
-        val recentListFile = getRecentListFile()
-        recentListFile.writeText(json)
-    }).start()
-
-}
-private fun getRecentListFile():File{
-    val homeDir = File(System.getProperty("user.home"))
-    val applicationDir = File(homeDir, ".qwerty-learner")
-    if (!applicationDir.exists()) {
-        applicationDir.mkdir()
-    }
-   return  File(applicationDir,"recentList.json")
-}
-
 
 @OptIn(ExperimentalSerializationApi::class)
 private fun onCloseRequest(state: AppState, title: String) {
@@ -763,9 +702,10 @@ fun BasicFilter(
 fun VocabularyFilter(
     futureFileChooser: FutureTask<JFileChooser>,
     selectedFileList: List<File>,
-//    setIsFiltering:(Boolean) -> Unit,
     selectedFileListAdd: (File) -> Unit,
     selectedFileListRemove: (File) -> Unit,
+    recentList: List<RecentItem>,
+    removeInvalidRecentItem:(RecentItem) -> Unit,
 ) {
     Row(Modifier.fillMaxWidth().background(MaterialTheme.colors.background)) {
             var selectedPath: TreePath? = null
@@ -810,7 +750,7 @@ fun VocabularyFilter(
             scrollPane.border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
             Column (Modifier.width(270.dp).fillMaxHeight().background(MaterialTheme.colors.background)){
-                var recentList = readRecentList()
+
                 if (recentList.isNotEmpty()) {
                     var expanded by remember { mutableStateOf(false) }
                     Box(Modifier.width(270.dp).height(IntrinsicSize.Max).padding(top = 10.dp)){
@@ -834,7 +774,6 @@ fun VocabularyFilter(
                                 val stateVertical = rememberScrollState(0)
                                 Box(Modifier.fillMaxSize().verticalScroll(stateVertical)) {
                                     Column {
-                                        recentList = recentList.sortedByDescending { it.time }
                                         recentList.forEach { recentItem ->
                                             val recentFile = File(recentItem.path)
                                             if(recentFile.exists()){
