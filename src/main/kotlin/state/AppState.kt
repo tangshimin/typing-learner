@@ -1,12 +1,14 @@
 package state
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
 import data.Word
 import data.loadMutableVocabulary
+import dialog.RecentItem
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -15,6 +17,7 @@ import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
 import java.io.File
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -211,6 +214,10 @@ class AppState {
      */
     var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
 
+    /**
+     * 最近生成的词库列表
+     */
+    var recentList = readRecentList()
     /**
      * 是否是默写模式
      */
@@ -505,6 +512,72 @@ class AppState {
         }).start()
     }
 
+    /**
+     * 读取最近生成的词库列表
+     */
+    private fun readRecentList(): MutableList<RecentItem> {
+        val recentListFile = getRecentListFile()
+        var list =  if(recentListFile.exists()){
+             try {
+                Json.decodeFromString<List<RecentItem>>(recentListFile.readText())
+            }catch (exception:Exception){
+                listOf()
+            }
+
+        }else{
+            listOf()
+        }
+        list = list.sortedByDescending { it.time }
+        val mutableStateList = mutableStateListOf<RecentItem>()
+        mutableStateList.addAll(list)
+        return mutableStateList
+    }
+    private fun getRecentListFile():File{
+        val homeDir = File(System.getProperty("user.home"))
+        val applicationDir = File(homeDir, ".qwerty-learner")
+        if (!applicationDir.exists()) {
+            applicationDir.mkdir()
+        }
+        return  File(applicationDir,"recentList.json")
+    }
+
+    fun saveToRecentList(name:String, path: String) {
+
+        Thread(Runnable {
+            val item = RecentItem(LocalDateTime.now().toString(),name,path)
+            if (!recentList.contains(item)) {
+                if(recentList.size==30){
+                    recentList.removeAt(29)
+                }
+                recentList.add(0,item)
+            }else{
+                recentList.remove(item)
+                recentList.add(0,item)
+            }
+
+            val format = Json {
+                prettyPrint = true
+                encodeDefaults = true
+            }
+            val json = format.encodeToString(recentList)
+            val recentListFile = getRecentListFile()
+            recentListFile.writeText(json)
+        }).start()
+
+    }
+    fun removeInvalidRecentItem(recentItem: RecentItem){
+        Thread(Runnable {
+            recentList.remove(recentItem)
+            val format = Json {
+                prettyPrint = true
+                encodeDefaults = true
+            }
+            val json = format.encodeToString(recentList)
+            val recentListFile = getRecentListFile()
+            recentListFile.writeText(json)
+        }).start()
+
+    }
 }
 
 @OptIn(ExperimentalSerializationApi::class)
