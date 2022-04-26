@@ -166,7 +166,7 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("选择词库", onClick = {
+        Item("选择词库(O)", mnemonic = 'O',onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
                 val fileChooser =  state.futureFileChooser.get()
@@ -199,19 +199,19 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         )
 
 
-        Item("合并词库", onClick = {
+        Item("合并词库(M)", mnemonic = 'M',onClick = {
             state.mergeVocabulary = true
         })
-        Item("过滤词库", onClick = {
+        Item("过滤词库(F)", mnemonic = 'F',onClick = {
             state.filterVocabulary = true
         })
-        Item("从文档生成词库", onClick = {
+        Item("从文档生成词库(D)", mnemonic = 'D',onClick = {
             state.generateVocabularyFromDocument = true
         })
-        Item("从字幕生成词库", onClick = {
+        Item("从字幕生成词库(S)", mnemonic = 'S',onClick = {
             state.generateVocabularyFromSubtitles = true
         })
-        Item("从 MKV 视频生成词库", onClick = {
+        Item("从 MKV 视频生成词库(V)", mnemonic = 'V',onClick = {
             state.generateVocabularyFromMKV = true
         })
     }
@@ -228,14 +228,14 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         //如果当前词库类型为文档就启用
         val enableLinkVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT
         Item(
-            "链接字幕词库",
+            "链接字幕词库(L)",mnemonic = 'L',
             enabled = enableLinkVocabulary,
             onClick = { showLinkVocabulary = true },
         )
     }
     Menu("章节(C)", mnemonic = 'C') {
         Item(
-            "选择章节",
+            "选择章节(C)",mnemonic = 'C',
             onClick = {
                 state.openSelectChapter = true
             },
