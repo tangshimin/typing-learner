@@ -166,7 +166,7 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("选择内置词库(O)", mnemonic = 'O',onClick = {
+        Item("选择词库(O)", mnemonic = 'O',onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
                 val fileChooser =  state.futureFileChooser.get()
