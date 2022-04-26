@@ -202,13 +202,16 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         Item("合并词库", onClick = {
             state.mergeVocabulary = true
         })
+        Item("过滤词库", onClick = {
+            state.filterVocabulary = true
+        })
         Item("从文档生成词库", onClick = {
             state.generateVocabularyFromDocument = true
         })
         Item("从字幕生成词库", onClick = {
             state.generateVocabularyFromSubtitles = true
         })
-        Item("从 MKV 生成词库", onClick = {
+        Item("从 MKV 视频生成词库", onClick = {
             state.generateVocabularyFromMKV = true
         })
     }
@@ -510,6 +513,13 @@ fun MenuDialogs(state: AppState) {
             futureFileChooser = state.futureFileChooser,
             close = {state.mergeVocabulary = false})
     }
+    if(state.filterVocabulary){
+        GenerateVocabularyDialog(
+            state = state,
+            title = "过滤词库",
+            type = VocabularyType.DOCUMENT
+        )
+    }
     if (state.generateVocabularyFromDocument) {
         GenerateVocabularyDialog(
             state = state,
@@ -528,7 +538,7 @@ fun MenuDialogs(state: AppState) {
     if (state.generateVocabularyFromMKV) {
         GenerateVocabularyDialog(
             state = state,
-            title = "从 MKV 生成词库",
+            title = "从 MKV 视频生成词库",
             type = VocabularyType.MKV
         )
     }
