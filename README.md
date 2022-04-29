@@ -6,6 +6,8 @@
 
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
 
+### [下载地址](https://github.com/tangshimin/qwerty-learner-desktop/releases/tag/v1.0.0-beta2)
+
 ### 主要新增功能如下：
 
 1. 可以用[电影](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)生成词库，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
