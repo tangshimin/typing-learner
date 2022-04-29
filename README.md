@@ -1,8 +1,6 @@
 # qwerty-learner-desktop
 
-感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
-
-感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)， qwerty leaner desktop 的所有的本地词典数据都来源于 ECDICT。现在程序使用的是一个基础版有76万词条，完整版的数据实在太大，导入到 H2 数据库之后有500M,后续可能会增加一个功能，加载那个350万词条的数据库。
+基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) ，用 kotlin + compose desktop 写的桌面版。
 
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
 
@@ -45,3 +43,8 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 ### 开发环境
 - jdk 17
 - VLC 视频播放器
+
+### 致谢
+感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
+
+感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
