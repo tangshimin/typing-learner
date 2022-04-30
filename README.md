@@ -2,10 +2,9 @@
 
 基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) ，用 kotlin + compose desktop 写的桌面版。
 
-demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)
-
-
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
+
+demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
 ### [下载地址](https://github.com/tangshimin/qwerty-learner-desktop/releases/tag/v1.0.0-beta2)
 
