@@ -35,17 +35,12 @@ import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
 import state.rememberAppState
-import subtitleFile.FormatSRT
-import subtitleFile.TimedTextObject
 import theme.DarkColorScheme
 import theme.LightColorScheme
 import java.awt.Component
 import java.awt.EventQueue
 import java.awt.Rectangle
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
-import java.util.*
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
 
@@ -59,7 +54,7 @@ import javax.swing.filechooser.FileSystemView
 fun main() = application {
     var isOpen by remember { mutableStateOf(true) }
     val state = rememberAppState()
-    UpdateFlatLaf(state.typing.isDarkTheme, state)
+    UpdateFlatLaf(state.global.isDarkTheme, state)
 
 
     val defaultSelectionColor = Color(0xFF4286F4)
@@ -91,14 +86,14 @@ fun main() = application {
                 },
             ) {
 
-                MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
+                MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
                     WindowMenuBar(state)
                     MenuDialogs(state)
                     // 视频播放器的位置，大小
                     val videoBounds = computeVideoBounds(windowState,state.openSettings)
                     var captionList = remember{ mutableStateListOf<Caption>()}
                     val focusManager = LocalFocusManager.current
-                    when(state.typing.type){
+                    when(state.global.type){
                         WORD -> {
                             Box(Modifier.background(
                                 MaterialTheme.colors.background
@@ -135,7 +130,7 @@ fun main() = application {
                                         )
                                         val speedAlignment = Alignment.TopEnd
                                         Speed(
-                                            speedVisible = state.typing.speedVisible,
+                                            speedVisible = state.typingWord.speedVisible,
                                             speed = state.speed,
                                             modifier = Modifier
                                                 .width(IntrinsicSize.Max)
@@ -152,68 +147,105 @@ fun main() = application {
                             }
                         }
                         SUBTITLES -> {
-                            if(state.typing.subtitlesPath.isNotEmpty()){
-
+                            val scope = rememberCoroutineScope()
+                            var typingSubtitles = state.typingSubtitles
+                            if (typingSubtitles.subtitlesPath.isNotEmpty()) {
                                 parseSubtitles(
-                                    subtitlesPath = state.typing.subtitlesPath,
-                                    setMaxLength = { state.typing.sentenceMaxLength = it},
+                                    subtitlesPath = typingSubtitles.subtitlesPath,
+                                    setMaxLength = {
+                                        scope.launch {
+                                            typingSubtitles.sentenceMaxLength = it
+                                            state.saveTypingSubtitlesState()
+                                        }
+                                    },
                                     setCaptionList = {
                                         captionList.clear()
                                         captionList.addAll(it)
                                     }
                                 )
                             }
-                            val scope = rememberCoroutineScope()
 
-
-                            /**
-                             * 播放按键音效
-                             */
+                            /** 播放按键音效 */
                             val playKeySound = {
-                                if (state.typing.isPlayKeystrokeSound) {
-                                    playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
+                                if (state.global.isPlayKeystrokeSound) {
+                                    playSound("audio/keystroke.wav", state.global.keystrokeVolume)
                                 }
                             }
 
                             Subtitles(
-                                videoPath = state.typing.videoPath,
-                                trackId = state.typing.subtitlesTrackID,
-                                currentIndex = state.typing.captionIndex,
+                                videoPath = typingSubtitles.videoPath,
+                                trackId = typingSubtitles.subtitlesTrackID,
+                                currentIndex = typingSubtitles.captionIndex,
                                 setCurrentIndex = {
-                                    state.typing.captionIndex = it
                                     scope.launch {
-                                        state.saveTypingState()
+                                        typingSubtitles.captionIndex = it
+                                        state.saveTypingSubtitlesState()
                                     }
                                 },
-                                firstVisibleItemIndex =  state.typing.firstVisibleItemIndex,
-                                setFirstVisibleItemIndex = { state.typing.firstVisibleItemIndex = it},
+                                firstVisibleItemIndex = typingSubtitles.firstVisibleItemIndex,
+                                setFirstVisibleItemIndex = { typingSubtitles.firstVisibleItemIndex = it },
                                 captionList = captionList,
-                                maxLength = state.typing.sentenceMaxLength,
-                                back = { state.typing.type = WORD },
+                                maxLength = typingSubtitles.sentenceMaxLength,
+                                back = { state.global.type = WORD },
                                 isOpenSettings = state.openSettings,
-                                setIsOpenSettings = {state.openSettings = it},
+                                setIsOpenSettings = { state.openSettings = it },
                                 window = window,
                                 playerWindow = state.videoPlayerWindow,
-                                videoVolume = state.typing.videoVolume,
+                                videoVolume = state.global.videoVolume,
                                 mediaPlayerComponent = state.videoPlayerComponent,
-                                playKeySound = {playKeySound()},
-                                setTrackId = { state.typing.subtitlesTrackID = it },
-                                setTrackDescription = { state.typing.trackDescription = it},
-                                trackSize = state.typing.subtitlesTrackSize,
-                                setTrackSize = {state.typing.subtitlesTrackSize = it},
-                                setVideoPath = { state.typing.videoPath = it },
+                                playKeySound = { playKeySound() },
+                                setTrackId = {
+                                    scope.launch {
+                                        typingSubtitles.subtitlesTrackID = it
+                                        state.saveTypingSubtitlesState()
+                                    }
+                                },
+                                setTrackDescription = {
+                                    scope.launch {
+                                        typingSubtitles.trackDescription = it
+                                        state.saveTypingSubtitlesState()
+                                    }
+                                },
+                                trackSize = typingSubtitles.subtitlesTrackSize,
+                                setTrackSize = {
+                                    scope.launch {
+                                        typingSubtitles.subtitlesTrackSize = it
+                                        state.saveTypingSubtitlesState()
+                                    }
+                                },
+                                setVideoPath = {
+                                    scope.launch {
+                                        typingSubtitles.videoPath = it
+                                        state.saveTypingSubtitlesState()
+                                    }
+
+                                },
                                 setSubtitlesPath = {
-                                    state.typing.subtitlesPath = it
-                                    state.typing.firstVisibleItemIndex = 0
-                                    state.typing.captionIndex = 0
-                                    focusManager.clearFocus()
+                                    scope.launch {
+                                        typingSubtitles.subtitlesPath = it
+                                        typingSubtitles.firstVisibleItemIndex = 0
+                                        typingSubtitles.captionIndex = 0
+                                        focusManager.clearFocus()
+                                        state.saveTypingSubtitlesState()
+                                    }
+
                                 },
                                 futureFileChooser = state.futureFileChooser,
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                isDarkTheme = state.typing.isDarkTheme,
-                                setIsDarkTheme = {state.typing.isDarkTheme = it},
-                                isPlayKeystrokeSound = state.typing.isPlayKeystrokeSound,
-                                setIsPlayKeystrokeSound = {state.typing.isPlayKeystrokeSound = it}
+                                isDarkTheme = state.global.isDarkTheme,
+                                setIsDarkTheme = {
+                                    scope.launch {
+                                        state.global.isDarkTheme = it
+                                        state.saveGlobalState()
+                                    }
+                                },
+                                isPlayKeystrokeSound = state.global.isPlayKeystrokeSound,
+                                setIsPlayKeystrokeSound = {
+                                    scope.launch {
+                                        state.global.isPlayKeystrokeSound = it
+                                        state.saveGlobalState()
+                                    }
+                                }
                             )
                         }
                         ANKI ->{}
@@ -231,7 +263,7 @@ fun main() = application {
 
 @OptIn(ExperimentalSerializationApi::class)
 private fun computeTitle(state: AppState):String {
-    when (state.typing.type) {
+    when (state.global.type) {
         WORD -> {
             return  if(state.vocabulary.wordList.isNotEmpty()){
                 val suffix = if (state.isDictation) {
@@ -239,16 +271,16 @@ private fun computeTitle(state: AppState):String {
                         "复习错误单词 - ${state.dictationIndex + 1}"
                     } else "默写模式 - ${state.dictationIndex + 1}"
                 } else {
-                    "${state.typing.index + 1}"
+                    "${state.typingWord.index + 1}"
                 }
-                "${state.typing.vocabularyName} - $suffix"
+                "${state.typingWord.vocabularyName} - $suffix"
             }else{
                 "请选择词库"
             }
         }
         SUBTITLES -> {
-            val fileName =  File(state.typing.videoPath).nameWithoutExtension
-            return fileName + " - " + state.typing.trackDescription
+            val fileName =  File(state.typingSubtitles.videoPath).nameWithoutExtension
+            return fileName + " - " + state.typingSubtitles.trackDescription
         }
         else -> {
             return "Anki"
@@ -275,17 +307,17 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     val file = fileChooser.selectedFile
                     state.vocabulary = loadMutableVocabulary(file.absolutePath)
-                    state.typing.vocabularyName = file.nameWithoutExtension
-                    state.typing.vocabularyPath = file.absolutePath
+                    state.typingWord.vocabularyName = file.nameWithoutExtension
+                    state.typingWord.vocabularyPath = file.absolutePath
                     if (state.isDictation) {
                         state.exitDictationMode()
                         state.resetChapterTime()
                     }
-                    state.typing.chapter = 1
-                    state.typing.index = 0
+                    state.typingWord.chapter = 1
+                    state.typingWord.index = 0
                     state.wordCorrectTime = 0
                     state.wordWrongTime = 0
-                    state.saveTypingState()
+                    state.saveTypingWordState()
                     state.loadingFileChooserVisible = false
                 } else {
                     state.loadingFileChooserVisible = false
@@ -301,17 +333,17 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     if(recentFile.exists()){
                         Item(text = recentItem.name,onClick = {
                             state.vocabulary = loadMutableVocabulary(recentItem.path)
-                            state.typing.vocabularyName = recentItem.name
-                            state.typing.vocabularyPath = recentItem.path
+                            state.typingWord.vocabularyName = recentItem.name
+                            state.typingWord.vocabularyPath = recentItem.path
                             if (state.isDictation) {
                                 state.exitDictationMode()
                                 state.resetChapterTime()
                             }
-                            state.typing.chapter = 1
-                            state.typing.index = 0
+                            state.typingWord.chapter = 1
+                            state.typingWord.index = 0
                             state.wordCorrectTime = 0
                             state.wordWrongTime = 0
-                            state.saveTypingState()
+                            state.saveTypingWordState()
                             state.loadingFileChooserVisible = false
                         })
                     }else{
@@ -344,7 +376,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         Item(
             "抄写字幕(T)",mnemonic = 'T',
             onClick = {
-                state.typing.type = SUBTITLES
+                state.global.type = SUBTITLES
             },
         )
         var showLinkVocabulary by remember { mutableStateOf(false) }
@@ -477,31 +509,31 @@ fun globalShortcuts(
 ): Boolean {
     return when {
         (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
-            state.typing.isAuto = !state.typing.isAuto
+            state.typingWord.isAuto = !state.typingWord.isAuto
             true
         }
         (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
-            state.typing.isDarkTheme = !state.typing.isDarkTheme
+            state.global.isDarkTheme = !state.global.isDarkTheme
             true
         }
         (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
-            state.typing.phoneticVisible = !state.typing.phoneticVisible
+            state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
             true
         }
         (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
-            state.typing.morphologyVisible = !state.typing.morphologyVisible
+            state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
             true
         }
         (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
-            state.typing.definitionVisible = !state.typing.definitionVisible
+            state.typingWord.definitionVisible = !state.typingWord.definitionVisible
             true
         }
         (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
-            state.typing.translationVisible = !state.typing.translationVisible
+            state.typingWord.translationVisible = !state.typingWord.translationVisible
             true
         }
         (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
-            state.typing.wordVisible = !state.typing.wordVisible
+            state.typingWord.wordVisible = !state.typingWord.wordVisible
             true
         }
 
@@ -509,8 +541,8 @@ fun globalShortcuts(
             val word = state.getCurrentWord()
             playAudio(
                 word = word.value,
-                volume = state.typing.audioVolume,
-                pronunciation = state.typing.pronunciation,
+                volume = state.global.audioVolume,
+                pronunciation = state.typingWord.pronunciation,
                 mediaPlayerComponent = audioPlayerComponent,
                 changePlayerState = {},
                 setIsAutoPlay = {}
@@ -552,16 +584,16 @@ fun globalShortcuts(
             true
         }
         (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
-            state.typing.subtitlesVisible = !state.typing.subtitlesVisible
+            state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
             true
         }
 
         (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
-            state.typing.isPlayKeystrokeSound = !state.typing.isPlayKeystrokeSound
+            state.global.isPlayKeystrokeSound = !state.global.isPlayKeystrokeSound
             true
         }
         (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
-            state.typing.isPlaySoundTips = !state.typing.isPlaySoundTips
+            state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
             true
         }
         (it.isCtrlPressed && it.key == Key.One && it.type == KeyEventType.KeyUp) -> {
@@ -569,7 +601,7 @@ fun globalShortcuts(
             true
         }
         (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
-            state.typing.speedVisible = !state.typing.speedVisible
+            state.typingWord.speedVisible = !state.typingWord.speedVisible
             true
         }
         (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
@@ -610,7 +642,7 @@ private fun shortcutPlay(
                         play(
                             window = state.videoPlayerWindow,
                             setIsPlaying = { state.isPlaying = it },
-                            state.typing.videoVolume,
+                            state.global.videoVolume,
                             playTriple,
                             mediaPlayerComponent,
                             videoBounds

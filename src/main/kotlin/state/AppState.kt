@@ -26,184 +26,52 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
+
+/** 全局的数据类 */
 @ExperimentalSerializationApi
 @Serializable
-data class TypingState(
+data class GlobalData(
     val type: TypingType = TypingType.WORD,
     val isDarkTheme: Boolean = true,
-    val wordVisible: Boolean = true,
-    val phoneticVisible: Boolean = true,
-    val morphologyVisible: Boolean = true,
-    val definitionVisible: Boolean = true,
-    val translationVisible: Boolean = true,
-    val subtitlesVisible: Boolean = false,
-    val speedVisible: Boolean = false,
-    val isPlayKeystrokeSound: Boolean = true,
-    val keystrokeVolume: Float = 0.75F,
-    val isPlaySoundTips: Boolean = true,
-    val soundTipsVolume: Float = 0.6F,
     val audioVolume: Float = 0.8F,
     val videoVolume: Float = 0.8F,
-    val pronunciation: String = "us",
-    val isAuto: Boolean = false,
-    val index: Int = 0,
-    var vocabularyName: String = "四级",
-    var vocabularyPath: String = "vocabulary/大学英语/四级.json",
-    val videoPath: String = "",
-    val subtitlesPath:String = "",
-    val subtitlesTrackID: Int = 0,
-    val trackDescription: String = "",
-    val subtitlesTrackSize: Int = 0,
-    val captionIndex: Int = 0,
-    val firstVisibleItemIndex:Int = 0,
-    var sentenceMaxLength :Int = 0
+    val keystrokeVolume: Float = 0.75F,
+    val isPlayKeystrokeSound: Boolean = true,
 )
 
-/**
- * 把持久化的状态变成可观察的状态
- */
+/** 全局的可观察状态 */
 @OptIn(ExperimentalSerializationApi::class)
-class MutableTypingState(typingState: TypingState) {
-
+class GlobalState(globalData :GlobalData){
     /**
      * 练习的类型
      */
-    var type by mutableStateOf(typingState.type)
+    var type by mutableStateOf(globalData.type)
 
     /**
      * 是否是深色模式
      */
-    var isDarkTheme by mutableStateOf(typingState.isDarkTheme)
+    var isDarkTheme by mutableStateOf(globalData.isDarkTheme)
 
     /**
-     * 单词组件的可见性
+     * 单词发音的音量
      */
-    var wordVisible by mutableStateOf(typingState.wordVisible)
+    var audioVolume by mutableStateOf(globalData.audioVolume)
 
     /**
-     * 音标组件的可见性
+     * 视频播放的音量
      */
-    var phoneticVisible by mutableStateOf(typingState.phoneticVisible)
-
-    /**
-     * 词型组件的可见性
-     */
-    var morphologyVisible by mutableStateOf(typingState.morphologyVisible)
-
-    /**
-     * 定义组件的可见性
-     */
-    var definitionVisible by mutableStateOf(typingState.definitionVisible)
-
-    /**
-     * 翻译组件的可见性
-     */
-    var translationVisible by mutableStateOf(typingState.translationVisible)
-
-    /**
-     * 字幕组件的可见性
-     */
-    var subtitlesVisible by mutableStateOf(typingState.subtitlesVisible)
-
-    /**
-     * 速度组件的可见性
-     */
-    var speedVisible by mutableStateOf(typingState.speedVisible)
-
-    /**
-     * 是否播放按键音效
-     */
-    var isPlayKeystrokeSound by mutableStateOf(typingState.isPlayKeystrokeSound)
+    var videoVolume by mutableStateOf(globalData.videoVolume)
 
     /**
      * 按键音效音量
      */
-    var keystrokeVolume by mutableStateOf(typingState.keystrokeVolume)
+    var keystrokeVolume by mutableStateOf(globalData.keystrokeVolume)
 
     /**
-     * 是否播放提示音
+     * 是否播放按键音效
      */
-    var isPlaySoundTips by mutableStateOf(typingState.isPlaySoundTips)
-
-    /**
-     * 提示音音量
-     */
-    var soundTipsVolume by mutableStateOf(typingState.soundTipsVolume)
-
-    /**
-     * 单词发音
-     */
-    var audioVolume by mutableStateOf(typingState.audioVolume)
-
-    /**
-     * 视频播放
-     */
-    var videoVolume by mutableStateOf(typingState.videoVolume)
-
-    /**
-     * 选择发音，有英音、美音、日语
-     */
-    var pronunciation by mutableStateOf(typingState.pronunciation)
-
-    /**
-     * 是否是自动切换
-     */
-    var isAuto by mutableStateOf(typingState.isAuto)
-
-    /**
-     * 当前单词的索引，从0开始，在标题栏显示的时候 +1
-     */
-    var index by mutableStateOf(typingState.index)
-
-    /**
-     * 当前单词的章节，从1开始
-     */
-    var chapter by mutableStateOf((typingState.index / 20) + 1)
-
-    /**
-     * 词库的名称
-     */
-    var vocabularyName by mutableStateOf(typingState.vocabularyName)
-
-    /**
-     * 词库的路径
-     */
-    var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
-
-    /**
-     * 抄写字幕时的 MKV 视频文件的路径
-     */
-    var videoPath by mutableStateOf(typingState.videoPath)
-    /**
-     * 抄写字幕时的字幕文件的路径
-     */
-    var subtitlesPath by mutableStateOf(typingState.subtitlesPath)
-    /**
-     * 抄写字幕时的字幕的轨道 ID
-     */
-    var subtitlesTrackID by mutableStateOf(typingState.subtitlesTrackID)
-    /**
-     * 选择的字幕名称
-     */
-    var trackDescription by mutableStateOf(typingState.trackDescription)
-    /**
-     * 字幕轨道的数量
-     */
-    var subtitlesTrackSize by mutableStateOf(typingState.subtitlesTrackSize)
-    /**
-     * 抄写字幕的索引
-     */
-    var captionIndex by mutableStateOf(typingState.captionIndex)
-    /**
-     * 抄写字幕时屏幕顶部的行索引
-     */
-    var firstVisibleItemIndex by mutableStateOf(typingState.firstVisibleItemIndex)
-    /**
-     * 字幕的最大长度，用来计算字幕的宽度
-     */
-    var sentenceMaxLength by mutableStateOf(typingState.sentenceMaxLength)
+    var isPlayKeystrokeSound by mutableStateOf(globalData.isPlayKeystrokeSound)
 }
-
 
 /**
  * 速度组件可观察的状态
@@ -222,14 +90,19 @@ class MutableSpeedState {
 @ExperimentalSerializationApi
 class AppState {
     /**
-     * 应用程序的配置文件
+     * 应用程序的全局状态
      */
-    private val settings = getSettingsFile()
+    var global:GlobalState = loadGlobalState()
 
     /**
-     * 配置文件保存的状态
+     * 记忆单词的配置文件保存的状态
      */
-    var typing: MutableTypingState = loadTypingState()
+    var typingWord: TypingWordState = loadTypingWordState()
+
+    /**
+     * 抄写字幕的可观察的状态
+     */
+    var typingSubtitles: TypingSubtitlesState = loadTypingSubtitlesState()
 
     /**
      * 当前单词的正确次数
@@ -254,12 +127,12 @@ class AppState {
     /**
      * 文件选择器，如果不提前加载反应会很慢
      */
-    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(typing.isDarkTheme)
+    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(global.isDarkTheme)
 
     /**
      * 词库
      */
-    var vocabulary = loadMutableVocabulary(typing.vocabularyPath)
+    var vocabulary = loadMutableVocabulary(typingWord.vocabularyPath)
 
     /**
      * 最近生成的词库列表
@@ -303,7 +176,7 @@ class AppState {
     /**
      * 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复
      */
-    private var typingStateMap: MutableMap<String, Boolean> = mutableMapOf()
+    private var typingWordStateMap: MutableMap<String, Boolean> = mutableMapOf()
 
     /**
      * 是否正在播放视频
@@ -355,26 +228,60 @@ class AppState {
     var speed = MutableSpeedState()
 
 
+    private fun loadGlobalState():GlobalState{
+
+       val globalSettings = getGlobalSettingsFile()
+        return if(globalSettings.exists()){
+            try {
+                val globalData = Json.decodeFromString<GlobalData>(globalSettings.readText())
+                GlobalState(globalData)
+            }catch (exception:Exception){
+                FlatLightLaf.setup()
+                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$globalSettings")
+                GlobalState(GlobalData())
+            }
+        }else{
+            GlobalState(GlobalData())
+        }
+    }
 
 
     /**
      * 载入应用程序设置信息
      */
-    private fun loadTypingState(): MutableTypingState {
-        return if (settings.exists()) {
+    private fun loadTypingWordState(): TypingWordState {
+        val typingWordSettings =  getWordSettingsFile()
+        return if (typingWordSettings.exists()) {
             try{
-                val typingState = Json.decodeFromString<TypingState>(settings.readText())
-                MutableTypingState(typingState)
+                val typingWordData = Json.decodeFromString<TypingWordData>(typingWordSettings.readText())
+                TypingWordState(typingWordData)
             }catch (exception:Exception){
                 FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$settings")
-                MutableTypingState(TypingState())
+                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$typingWordSettings")
+                TypingWordState(TypingWordData())
             }
 
         }else{
-            FlatLightLaf.setup()
-//            JOptionPane.showMessageDialog(null,"找不到设置文件，将使用默认设置。\n地址：$settings")
-            MutableTypingState(TypingState())
+            TypingWordState(TypingWordData())
+        }
+    }
+
+    /**
+     * 载入抄写字幕的配置信息
+     */
+    private fun loadTypingSubtitlesState():TypingSubtitlesState{
+        val typingSubtitlesSetting = getSubtitlesSettingsFile()
+        return if(typingSubtitlesSetting.exists()){
+            try{
+                val typingSubtitlesData = Json.decodeFromString<TypingSubtitlesData>(typingSubtitlesSetting.readText())
+                TypingSubtitlesState(typingSubtitlesData)
+            }catch (exception:Exception){
+                FlatLightLaf.setup()
+                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
+                TypingSubtitlesState(TypingSubtitlesData())
+            }
+        }else{
+            TypingSubtitlesState(TypingSubtitlesData())
         }
     }
 
@@ -395,49 +302,74 @@ class AppState {
         return window
     }
 
-    /**
-     * 保存应用程序设置信息
-     */
-    @OptIn(ExperimentalComposeUiApi::class)
-    fun saveTypingState() {
+    /** 保存全局的设置信息 */
+    fun saveGlobalState() {
+        val globalData = GlobalData(
+            global.type,
+            global.isDarkTheme,
+            global.audioVolume,
+            global.videoVolume,
+            global.keystrokeVolume,
+            global.isPlayKeystrokeSound,
+        )
         val format = Json {
             prettyPrint = true
             encodeDefaults = true
         }
-        val typingState = TypingState(
-            typing.type,
-            typing.isDarkTheme,
-            typing.wordVisible,
-            typing.phoneticVisible,
-            typing.morphologyVisible,
-            typing.definitionVisible,
-            typing.translationVisible,
-            typing.subtitlesVisible,
-            typing.speedVisible,
-            typing.isPlayKeystrokeSound,
-            typing.keystrokeVolume,
-            typing.isPlaySoundTips,
-            typing.soundTipsVolume,
-            typing.audioVolume,
-            typing.videoVolume,
-            typing.pronunciation,
-            typing.isAuto,
-            typing.index,
-            typing.vocabularyName,
-            typing.vocabularyPath,
-            typing.videoPath,
-            typing.subtitlesPath,
-            typing.subtitlesTrackID,
-            typing.trackDescription,
-            typing.subtitlesTrackSize,
-            typing.captionIndex,
-            typing.firstVisibleItemIndex,
-            typing.sentenceMaxLength,
+        val json = format.encodeToString(globalData)
+        val settings = getGlobalSettingsFile()
+        settings.writeText(json)
+    }
+    /**
+     * 保存记忆单词的设置信息
+     */
+    @OptIn(ExperimentalComposeUiApi::class)
+    fun saveTypingWordState() {
+        val typingWordData = TypingWordData(
+            typingWord.wordVisible,
+            typingWord.phoneticVisible,
+            typingWord.morphologyVisible,
+            typingWord.definitionVisible,
+            typingWord.translationVisible,
+            typingWord.subtitlesVisible,
+            typingWord.speedVisible,
+            typingWord.isPlaySoundTips,
+            typingWord.soundTipsVolume,
+            typingWord.pronunciation,
+            typingWord.isAuto,
+            typingWord.index,
+            typingWord.vocabularyName,
+            typingWord.vocabularyPath,
         )
-        val json = format.encodeToString(typingState)
+        val format = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+        val json = format.encodeToString(typingWordData)
+        val settings =  getWordSettingsFile()
         settings.writeText(json)
     }
 
+    /** 保存抄写字幕的配置信息 */
+    fun saveTypingSubtitlesState() {
+        val typingSubtitlesData = TypingSubtitlesData(
+            typingSubtitles.videoPath,
+            typingSubtitles.subtitlesPath,
+            typingSubtitles.subtitlesTrackID,
+            typingSubtitles.trackDescription,
+            typingSubtitles.subtitlesTrackSize,
+            typingSubtitles.captionIndex,
+            typingSubtitles.firstVisibleItemIndex,
+            typingSubtitles.sentenceMaxLength,
+        )
+        val format = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+         val json = format.encodeToString(typingSubtitlesData)
+        val typingSubtitlesSetting = getSubtitlesSettingsFile()
+         typingSubtitlesSetting.writeText(json)
+    }
     /**
      * 获得当前单词
      */
@@ -445,7 +377,7 @@ class AppState {
         if (isDictation) {
             return dictationWords[dictationIndex]
         }
-        return getWord(typing.index)
+        return getWord(typingWord.index)
     }
 
     /**
@@ -456,8 +388,8 @@ class AppState {
         return if (index in 0..size) {
             vocabulary.wordList[index]
         } else {
-            typing.index = 0
-            saveTypingState()
+            typingWord.index = 0
+            saveTypingWordState()
             vocabulary.wordList[0]
         }
 
@@ -476,8 +408,8 @@ class AppState {
     - start = 3 * 20 -20, end = 3 * 20 - 1
      */
     fun generateDictationWords(currentWord: String): List<Word> {
-        val start = typing.chapter * 20 - 20
-        val end = typing.chapter * 20
+        val start = typingWord.chapter * 20 - 20
+        val end = typingWord.chapter * 20
         println("Dictation words size: ${vocabulary.wordList.subList(start, end).shuffled().size}")
         var list = vocabulary.wordList.subList(start, end).shuffled()
         // 如果打乱顺序的列表的第一个单词，和当前章节的最后一个词相等，就不会触发重组
@@ -496,21 +428,21 @@ class AppState {
         dictationWords = generateDictationWords(currentWord)
         dictationIndex = 0
         // 先保存状态
-        typingStateMap["isAuto"] = typing.isAuto
-        typingStateMap["wordVisible"] = typing.wordVisible
-        typingStateMap["phoneticVisible"] = typing.phoneticVisible
-        typingStateMap["definitionVisible"] = typing.definitionVisible
-        typingStateMap["morphologyVisible"] = typing.morphologyVisible
-        typingStateMap["translationVisible"] = typing.translationVisible
-        typingStateMap["subtitlesVisible"] = typing.subtitlesVisible
+        typingWordStateMap["isAuto"] = typingWord.isAuto
+        typingWordStateMap["wordVisible"] = typingWord.wordVisible
+        typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
+        typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
+        typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
+        typingWordStateMap["translationVisible"] = typingWord.translationVisible
+        typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
         // 再改变状态
-        typing.isAuto = true
-        typing.wordVisible = false
-        typing.phoneticVisible = false
-        typing.definitionVisible = false
-        typing.morphologyVisible = false
-        typing.translationVisible = false
-        typing.subtitlesVisible = false
+        typingWord.isAuto = true
+        typingWord.wordVisible = false
+        typingWord.phoneticVisible = false
+        typingWord.definitionVisible = false
+        typingWord.morphologyVisible = false
+        typingWord.translationVisible = false
+        typingWord.subtitlesVisible = false
 
         isDictation = true
     }
@@ -520,13 +452,13 @@ class AppState {
      */
     fun exitDictationMode() {
         // 恢复状态
-        typing.isAuto = typingStateMap["isAuto"]!!
-        typing.wordVisible = typingStateMap["wordVisible"]!!
-        typing.phoneticVisible = typingStateMap["phoneticVisible"]!!
-        typing.definitionVisible = typingStateMap["definitionVisible"]!!
-        typing.morphologyVisible = typingStateMap["morphologyVisible"]!!
-        typing.translationVisible = typingStateMap["translationVisible"]!!
-        typing.subtitlesVisible = typingStateMap["subtitlesVisible"]!!
+        typingWord.isAuto = typingWordStateMap["isAuto"]!!
+        typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
+        typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
+        typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
+        typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
+        typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
+        typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
 
         isDictation = false
         isReviewWrongList = false
@@ -563,7 +495,7 @@ class AppState {
         }
         Thread(Runnable {
             val json = format.encodeToString(vocabulary.serializeVocabulary)
-            val file = getResourcesFile(typing.vocabularyPath)
+            val file = getResourcesFile(typingWord.vocabularyPath)
             file.writeText(json)
         }).start()
     }
@@ -674,12 +606,21 @@ fun getSettingsDirectory():File{
     }
     return applicationDir
 }
-/**
- * 用户的配置文件
- */
-fun getSettingsFile(): File {
+/** 获取全局的配置文件 */
+private fun getGlobalSettingsFile(): File {
     val settingsDir = getSettingsDirectory()
-    return File(settingsDir, "setting.json")
+    return File(settingsDir, "AppSettings.json")
+}
+/** 获取记忆单词的配置文件 */
+private fun getWordSettingsFile(): File {
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "TypingWordSettings.json")
+}
+
+/** 获取抄写字幕的配置文件 */
+private fun getSubtitlesSettingsFile(): File {
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "TypingSubtitlesSettings.json")
 }
 
 /**

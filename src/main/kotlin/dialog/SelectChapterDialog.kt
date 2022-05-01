@@ -7,17 +7,11 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -47,9 +41,9 @@ fun SelectChapterDialog(state: AppState) {
     ) {
         SelectChapter(
             state = state,
-            chapter = state.typing.chapter,
+            chapter = state.typingWord.chapter,
             onChapterChanged = {
-                state.typing.chapter = it
+                state.typingWord.chapter = it
             },
         )
     }
@@ -97,11 +91,11 @@ fun SelectChapter(
             Footer(
                 modifier = Modifier.align(Alignment.BottomCenter),
                 confirm = {
-                    if (chapter == 0) state.typing.chapter = 1
-                    state.typing.chapter = chapter
-                    state.typing.index = (chapter - 1) * 20
+                    if (chapter == 0) state.typingWord.chapter = 1
+                    state.typingWord.chapter = chapter
+                    state.typingWord.index = (chapter - 1) * 20
                     state.openSelectChapter = false
-                    state.saveTypingState()
+                    state.saveTypingWordState()
                 },
                 exit = {
                     state.openSelectChapter = false
