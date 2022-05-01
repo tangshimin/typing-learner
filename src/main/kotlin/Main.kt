@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -27,17 +28,24 @@ import data.Caption
 import data.VocabularyType
 import data.loadMutableVocabulary
 import dialog.*
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
+import state.TypingType.*
 import state.getResourcesFile
 import state.rememberAppState
+import subtitleFile.FormatSRT
+import subtitleFile.TimedTextObject
 import theme.DarkColorScheme
 import theme.LightColorScheme
 import java.awt.Component
 import java.awt.EventQueue
 import java.awt.Rectangle
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
+import java.util.*
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
 
@@ -82,60 +90,135 @@ fun main() = application {
                     state.videoPlayerComponent.mediaPlayer().release()
                 },
             ) {
+
                 MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
                     WindowMenuBar(state)
                     MenuDialogs(state)
                     // 视频播放器的位置，大小
                     val videoBounds = computeVideoBounds(windowState,state.openSettings)
-                    Box(Modifier.background(
-                        MaterialTheme.colors.background
-                    ).onPreviewKeyEvent {
-                        globalShortcuts(
-                            it,
-                            state,
-                            state.videoPlayerComponent,
-                            audioPlayerComponent,
-                            videoBounds,
-                        )
-                    }
-                    ) {
-
-                        Row {
-                            TypingSidebar(state)
-                            if (state.openSettings) {
-                                val topPadding = if(isMacOS()) 30.dp else 0.dp
-                                Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
+                    var captionList = remember{ mutableStateListOf<Caption>()}
+                    val focusManager = LocalFocusManager.current
+                    when(state.typing.type){
+                        WORD -> {
+                            Box(Modifier.background(
+                                MaterialTheme.colors.background
+                            ).onPreviewKeyEvent {
+                                globalShortcuts(
+                                    it,
+                                    state,
+                                    state.videoPlayerComponent,
+                                    audioPlayerComponent,
+                                    videoBounds,
+                                )
                             }
-                            Box(Modifier.fillMaxSize()) {
-                                val endPadding = 0.dp
-                                if(isMacOS()){
-                                    Text(text = title, color = MaterialTheme.colors.onBackground,
-                                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
-                                    window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
-                                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
-                                    window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
+                            ) {
+                                Row {
+                                    TypingSidebar(state)
+                                    if (state.openSettings) {
+                                        val topPadding = if(isMacOS()) 30.dp else 0.dp
+                                        Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
+                                    }
+                                    Box(Modifier.fillMaxSize()) {
+                                        val endPadding = 0.dp
+                                        if(isMacOS()){
+                                            Text(text = title, color = MaterialTheme.colors.onBackground,
+                                                modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
+                                            window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
+                                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
+                                            window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
+                                        }
+                                        Typing(
+                                            state = state,
+                                            videoBounds = videoBounds,
+                                            modifier = Modifier.align(Alignment.Center)
+                                                .padding(end = endPadding)
+                                        )
+                                        val speedAlignment = Alignment.TopEnd
+                                        Speed(
+                                            speedVisible = state.typing.speedVisible,
+                                            speed = state.speed,
+                                            modifier = Modifier
+                                                .width(IntrinsicSize.Max)
+                                                .align(speedAlignment)
+                                                .padding(end = endPadding)
+                                        )
+                                    }
                                 }
-                                Typing(
-                                    state = state,
-                                    videoBounds = videoBounds,
-                                    modifier = Modifier.align(Alignment.Center)
-                                        .padding(end = endPadding)
+                                Settings(
+                                    isOpen = state.openSettings,
+                                    setIsOpen = {state.openSettings = it},
+                                    modifier = Modifier.align(Alignment.TopStart)
                                 )
-                                val speedAlignment = Alignment.TopEnd
-                                Speed(
-                                   speedVisible = state.typing.speedVisible,
-                                    speed = state.speed,
-                                    modifier = Modifier
-                                        .width(IntrinsicSize.Max)
-                                        .align(speedAlignment)
-                                        .padding(end = endPadding)
-                                )
-
-
                             }
                         }
-                        Settings(state, modifier = Modifier.align(Alignment.TopStart))
+                        SUBTITLES -> {
+                            if(state.typing.subtitlesPath.isNotEmpty()){
+
+                                parseSubtitles(
+                                    subtitlesPath = state.typing.subtitlesPath,
+                                    setMaxLength = { state.typing.sentenceMaxLength = it},
+                                    setCaptionList = {
+                                        captionList.clear()
+                                        captionList.addAll(it)
+                                    }
+                                )
+                            }
+                            val scope = rememberCoroutineScope()
+
+
+                            /**
+                             * 播放按键音效
+                             */
+                            val playKeySound = {
+                                if (state.typing.isPlayKeystrokeSound) {
+                                    playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
+                                }
+                            }
+
+                            Subtitles(
+                                videoPath = state.typing.videoPath,
+                                trackId = state.typing.subtitlesTrackID,
+                                currentIndex = state.typing.captionIndex,
+                                setCurrentIndex = {
+                                    state.typing.captionIndex = it
+                                    scope.launch {
+                                        state.saveTypingState()
+                                    }
+                                },
+                                firstVisibleItemIndex =  state.typing.firstVisibleItemIndex,
+                                setFirstVisibleItemIndex = { state.typing.firstVisibleItemIndex = it},
+                                captionList = captionList,
+                                maxLength = state.typing.sentenceMaxLength,
+                                back = { state.typing.type = WORD },
+                                isOpenSettings = state.openSettings,
+                                setIsOpenSettings = {state.openSettings = it},
+                                window = window,
+                                playerWindow = state.videoPlayerWindow,
+                                videoVolume = state.typing.videoVolume,
+                                mediaPlayerComponent = state.videoPlayerComponent,
+                                playKeySound = {playKeySound()},
+                                setTrackId = { state.typing.subtitlesTrackID = it },
+                                setTrackDescription = { state.typing.trackDescription = it},
+                                trackSize = state.typing.subtitlesTrackSize,
+                                setTrackSize = {state.typing.subtitlesTrackSize = it},
+                                setVideoPath = { state.typing.videoPath = it },
+                                setSubtitlesPath = {
+                                    state.typing.subtitlesPath = it
+                                    state.typing.firstVisibleItemIndex = 0
+                                    state.typing.captionIndex = 0
+                                    focusManager.clearFocus()
+                                },
+                                futureFileChooser = state.futureFileChooser,
+                                closeLoadingDialog = { state.loadingFileChooserVisible = false },
+                                isDarkTheme = state.typing.isDarkTheme,
+                                setIsDarkTheme = {state.typing.isDarkTheme = it},
+                                isPlayKeystrokeSound = state.typing.isPlayKeystrokeSound,
+                                setIsPlayKeystrokeSound = {state.typing.isPlayKeystrokeSound = it}
+                            )
+                        }
+                        ANKI ->{}
                     }
+
                 }
             }
 
@@ -144,20 +227,34 @@ fun main() = application {
 
 }
 
+
+
 @OptIn(ExperimentalSerializationApi::class)
 private fun computeTitle(state: AppState):String {
-    return  if(state.vocabulary.wordList.isNotEmpty()){
-        val suffix = if (state.isDictation) {
-            if (state.isReviewWrongList) {
-                "复习错误单词 - ${state.dictationIndex + 1}"
-            } else "默写模式 - ${state.dictationIndex + 1}"
-        } else {
-            "${state.typing.index + 1}"
+    when (state.typing.type) {
+        WORD -> {
+            return  if(state.vocabulary.wordList.isNotEmpty()){
+                val suffix = if (state.isDictation) {
+                    if (state.isReviewWrongList) {
+                        "复习错误单词 - ${state.dictationIndex + 1}"
+                    } else "默写模式 - ${state.dictationIndex + 1}"
+                } else {
+                    "${state.typing.index + 1}"
+                }
+                "${state.typing.vocabularyName} - $suffix"
+            }else{
+                "请选择词库"
+            }
         }
-        "${state.typing.vocabularyName} - $suffix"
-    }else{
-        "请选择词库"
+        SUBTITLES -> {
+            val fileName =  File(state.typing.videoPath).nameWithoutExtension
+            return fileName + " - " + state.typing.trackDescription
+        }
+        else -> {
+            return "Anki"
+        }
     }
+
 }
 /**
  * 菜单栏
@@ -166,7 +263,7 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("选择内置词库(O)", mnemonic = 'O',onClick = {
+        Item("选择词库(O)", mnemonic = 'O',onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
                 val fileChooser =  state.futureFileChooser.get()
@@ -195,8 +292,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 }
             }).start()
 
-        }, shortcut = KeyShortcut(Key.O, ctrl = true)
-        )
+        })
 
         if(state.recentList.isNotEmpty()){
             Menu("选择最近生成的词库(R)", mnemonic = 'R'){
@@ -245,6 +341,12 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         })
     }
     Menu("字幕(S)",mnemonic = 'S'){
+        Item(
+            "抄写字幕(T)",mnemonic = 'T',
+            onClick = {
+                state.typing.type = SUBTITLES
+            },
+        )
         var showLinkVocabulary by remember { mutableStateOf(false) }
         if (showLinkVocabulary) {
             LinkVocabularyDialog(
@@ -290,25 +392,26 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     ExperimentalSerializationApi::class
 )
 @Composable
-fun Settings(state: AppState, modifier: Modifier) {
+fun Settings(
+    isOpen:Boolean,
+    setIsOpen:(Boolean) -> Unit,
+    modifier: Modifier
+) {
     Box(modifier = modifier) {
         val topPadding = if(isMacOS()) 30.dp else 0.dp
         Column (Modifier.width(IntrinsicSize.Max).padding(top = topPadding)){
-            if(isMacOS()  && state.openSettings ) Divider(Modifier.fillMaxWidth())
+            if(isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .width(if (state.openSettings) 217.dp else 48.dp)
-                    //.padding(top = topPadding)
+                    .width(if (isOpen) 217.dp else 48.dp)
                     .shadow(
                         elevation =  0.dp,
-                        shape = if (state.openSettings) RectangleShape else RoundedCornerShape(50)
+                        shape = if (isOpen) RectangleShape else RoundedCornerShape(50)
                     )
                     .background(MaterialTheme.colors.background)
-                    .clickable {
-                        state.openSettings = !state.openSettings
-                    }) {
+                    .clickable { setIsOpen(!isOpen) }) {
 
                 TooltipArea(
                     tooltip = {
@@ -330,20 +433,20 @@ fun Settings(state: AppState, modifier: Modifier) {
                 ) {
 
                     Icon(
-                        if (state.openSettings) Icons.Filled.ArrowBack else Icons.Filled.Tune,
+                        if (isOpen) Icons.Filled.ArrowBack else Icons.Filled.Tune,
                         contentDescription = "Localized description",
                         tint = MaterialTheme.colors.primary,
-                        modifier = Modifier.clickable { state.openSettings = !state.openSettings }
+                        modifier = Modifier.clickable { setIsOpen(!isOpen) }
                             .size(48.dp, 48.dp).padding(13.dp)
                     )
 
                 }
 
-                if (state.openSettings) {
+                if (isOpen) {
                     Divider(Modifier.height(48.dp).width(1.dp))
                 }
             }
-            if(isMacOS()  && state.openSettings ) Divider(Modifier.fillMaxWidth())
+            if(isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
         }
     }
 }

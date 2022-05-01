@@ -1,7 +1,6 @@
 package state
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
@@ -30,6 +29,7 @@ import javax.swing.JOptionPane
 @ExperimentalSerializationApi
 @Serializable
 data class TypingState(
+    val type: TypingType = TypingType.WORD,
     val isDarkTheme: Boolean = true,
     val wordVisible: Boolean = true,
     val phoneticVisible: Boolean = true,
@@ -48,7 +48,15 @@ data class TypingState(
     val isAuto: Boolean = false,
     val index: Int = 0,
     var vocabularyName: String = "四级",
-    var vocabularyPath: String = "vocabulary/大学英语/四级.json"
+    var vocabularyPath: String = "vocabulary/大学英语/四级.json",
+    val videoPath: String = "",
+    val subtitlesPath:String = "",
+    val subtitlesTrackID: Int = 0,
+    val trackDescription: String = "",
+    val subtitlesTrackSize: Int = 0,
+    val captionIndex: Int = 0,
+    val firstVisibleItemIndex:Int = 0,
+    var sentenceMaxLength :Int = 0
 )
 
 /**
@@ -56,6 +64,12 @@ data class TypingState(
  */
 @OptIn(ExperimentalSerializationApi::class)
 class MutableTypingState(typingState: TypingState) {
+
+    /**
+     * 练习的类型
+     */
+    var type by mutableStateOf(typingState.type)
+
     /**
      * 是否是深色模式
      */
@@ -155,6 +169,39 @@ class MutableTypingState(typingState: TypingState) {
      * 词库的路径
      */
     var vocabularyPath by mutableStateOf(typingState.vocabularyPath)
+
+    /**
+     * 抄写字幕时的 MKV 视频文件的路径
+     */
+    var videoPath by mutableStateOf(typingState.videoPath)
+    /**
+     * 抄写字幕时的字幕文件的路径
+     */
+    var subtitlesPath by mutableStateOf(typingState.subtitlesPath)
+    /**
+     * 抄写字幕时的字幕的轨道 ID
+     */
+    var subtitlesTrackID by mutableStateOf(typingState.subtitlesTrackID)
+    /**
+     * 选择的字幕名称
+     */
+    var trackDescription by mutableStateOf(typingState.trackDescription)
+    /**
+     * 字幕轨道的数量
+     */
+    var subtitlesTrackSize by mutableStateOf(typingState.subtitlesTrackSize)
+    /**
+     * 抄写字幕的索引
+     */
+    var captionIndex by mutableStateOf(typingState.captionIndex)
+    /**
+     * 抄写字幕时屏幕顶部的行索引
+     */
+    var firstVisibleItemIndex by mutableStateOf(typingState.firstVisibleItemIndex)
+    /**
+     * 字幕的最大长度，用来计算字幕的宽度
+     */
+    var sentenceMaxLength by mutableStateOf(typingState.sentenceMaxLength)
 }
 
 
@@ -326,7 +373,7 @@ class AppState {
 
         }else{
             FlatLightLaf.setup()
-            JOptionPane.showMessageDialog(null,"找不到设置文件，将使用默认设置。\n地址：$settings")
+//            JOptionPane.showMessageDialog(null,"找不到设置文件，将使用默认设置。\n地址：$settings")
             MutableTypingState(TypingState())
         }
     }
@@ -358,6 +405,7 @@ class AppState {
             encodeDefaults = true
         }
         val typingState = TypingState(
+            typing.type,
             typing.isDarkTheme,
             typing.wordVisible,
             typing.phoneticVisible,
@@ -376,7 +424,15 @@ class AppState {
             typing.isAuto,
             typing.index,
             typing.vocabularyName,
-            typing.vocabularyPath
+            typing.vocabularyPath,
+            typing.videoPath,
+            typing.subtitlesPath,
+            typing.subtitlesTrackID,
+            typing.trackDescription,
+            typing.subtitlesTrackSize,
+            typing.captionIndex,
+            typing.firstVisibleItemIndex,
+            typing.sentenceMaxLength,
         )
         val json = format.encodeToString(typingState)
         settings.writeText(json)
@@ -533,12 +589,8 @@ class AppState {
         return mutableStateList
     }
     private fun getRecentListFile():File{
-        val homeDir = File(System.getProperty("user.home"))
-        val applicationDir = File(homeDir, ".qwerty-learner")
-        if (!applicationDir.exists()) {
-            applicationDir.mkdir()
-        }
-        return  File(applicationDir,"recentList.json")
+        val settingsDir =getSettingsDirectory()
+        return  File(settingsDir,"recentList.json")
     }
 
     fun saveToRecentList(name:String, path: String) {
@@ -614,16 +666,20 @@ fun composeAppResource(path: String): File {
     }
 }
 
-/**
- * 用户的配置文件
- */
-fun getSettingsFile(): File {
+fun getSettingsDirectory():File{
     val homeDir = File(System.getProperty("user.home"))
     val applicationDir = File(homeDir, ".qwerty-learner")
     if (!applicationDir.exists()) {
         applicationDir.mkdir()
     }
-    return File(applicationDir, "setting.json")
+    return applicationDir
+}
+/**
+ * 用户的配置文件
+ */
+fun getSettingsFile(): File {
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "setting.json")
 }
 
 /**

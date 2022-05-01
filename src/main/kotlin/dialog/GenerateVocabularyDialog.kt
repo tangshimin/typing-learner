@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -38,14 +37,12 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import com.matthewn4444.ebml.EBMLReader
 import com.matthewn4444.ebml.subtitles.SSASubtitles
+import components.parseTrackList
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import opennlp.tools.tokenize.Tokenizer
 import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
@@ -71,7 +68,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.text.Collator
-import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.FutureTask
 import java.util.regex.Pattern
@@ -1042,35 +1038,12 @@ fun SelectFile(
                         if(type == MKV) {
                             isReading = true
                             setRelateVideoPath(file.absolutePath)
-                            val window = state.videoPlayerWindow
-                            val  mediaPlayerComponent= state.videoPlayerComponent
-                            mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-                                override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                                    val list = mutableListOf<Pair<Int, String>>()
-                                    mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
-                                        if(index != 0){
-                                            list.add(Pair(index -1, trackDescription.description()))
-                                        }
-                                    }
-                                    mediaPlayer.controls().pause()
-                                    window.isAlwaysOnTop = true
-                                    window.title = "视频播放窗口"
-                                    window.isVisible = false
-                                    setTrackList(list)
-                                    isReading = false
-                                    mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
-                                }
-                            })
-                            window.title = "正在读取字幕列表"
-                            window.isAlwaysOnTop = false
-                            window.toBack()
-                            window.size = Dimension(10,10)
-                            window.location = Point(0,0)
-                            window.layout = null
-                            window.contentPane.add(mediaPlayerComponent)
-                            window.isVisible = true
-                            // 打开了一个 ASS 字幕为默认轨道的 MKV 文件，再打开另一个 MKV 文件会可能出现 `Invalid memory access` 错误
-                            mediaPlayerComponent.mediaPlayer().media().play(filePath)
+                            parseTrackList(
+                                state.videoPlayerComponent,
+                                state.videoPlayerWindow,
+                                file.absolutePath,
+                                setTrackList = { setTrackList(it) },
+                            )
                         }
                         setSelectFileName(file.nameWithoutExtension)
                         fileChooser.selectedFile = File("")
@@ -1702,7 +1675,7 @@ private fun readMKV(
 /**
  * 替换一些特殊字符
  */
-private fun replaceSpecialCharacter(captionContent: String): String {
+ fun replaceSpecialCharacter(captionContent: String): String {
     var content = captionContent
     if (content.startsWith("-")) content = content.substring(1)
     if (content.contains("[")) {
@@ -1727,8 +1700,30 @@ private fun replaceSpecialCharacter(captionContent: String): String {
 /**
  * 有一些字幕并不是在一个的固定位置，而是标注在人物旁边，这个函数删除位置信息
  */
-private fun removeLocationInfo(content:String):String{
-    var pattern = Pattern.compile("\\{.*\\}")
-    var matcher = pattern.matcher(content)
+fun removeLocationInfo(content:String):String{
+    val pattern = Pattern.compile("\\{.*\\}")
+    val matcher = pattern.matcher(content)
     return matcher.replaceAll("")
+}
+
+fun removeItalicSymbol(content: String):String{
+    var string = content
+    if (string.contains("<i>")) {
+        string = string.replace("<i>", "")
+    }
+    if (string.contains("</i>")) {
+        string = string.replace("</i>", "")
+    }
+    return string
+}
+fun replaceNewLine(content: String):String{
+    var string = content
+    if (string.contains("\r\n")) {
+        string = string.replace("\r\n", " ")
+    } else if (string.contains("\n")) {
+        string = string.replace("\n", " ")
+    }else if (string.contains("<br />")){
+        string = string.replace("<br />", " ")
+    }
+    return string
 }
