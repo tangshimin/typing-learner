@@ -5,8 +5,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import player.isMacOS
 import state.AppState
+import state.TypingType
 
 /**
  * 侧边菜单
@@ -26,7 +26,7 @@ import state.AppState
 )
 @Composable
 fun TypingSidebar(state: AppState) {
-    if (state.openSettings) {
+    if (state.openSettings && state.typing.type == TypingType.WORD) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
@@ -37,6 +37,31 @@ fun TypingSidebar(state: AppState) {
             Spacer(Modifier.fillMaxWidth().height(if(isMacOS()) 78.dp else 48.dp))
             Divider()
             val ctrl = LocalCtrl.current
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable {
+                    state.typing.type = TypingType.SUBTITLES
+                    state.saveTypingState()
+                }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("抄写字幕", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "$ctrl+T",
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }
+
+                Spacer(Modifier.width(15.dp))
+                Icon(
+                    Icons.Filled.TextFields,
+                    contentDescription = "Localized description",
+                    tint = MaterialTheme.colors.onBackground,
+                    modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
+                )
+            }
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
