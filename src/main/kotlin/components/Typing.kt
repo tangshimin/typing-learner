@@ -132,8 +132,8 @@ fun Typing(
                  * 播放错误音效
                  */
                 val playBeepSound = {
-                    if (state.typing.isPlaySoundTips) {
-                        playSound("audio/beep.wav", state.typing.soundTipsVolume)
+                    if (state.typingWord.isPlaySoundTips) {
+                        playSound("audio/beep.wav", state.typingWord.soundTipsVolume)
                     }
                 }
 
@@ -141,8 +141,8 @@ fun Typing(
                  * 播放成功音效
                  */
                 val playSuccessSound = {
-                    if (state.typing.isPlaySoundTips) {
-                        playSound("audio/hint.wav", state.typing.soundTipsVolume)
+                    if (state.typingWord.isPlaySoundTips) {
+                        playSound("audio/hint.wav", state.typingWord.soundTipsVolume)
                     }
                 }
 
@@ -150,8 +150,8 @@ fun Typing(
                  * 播放整个章节完成时音效
                  */
                 val playChapterFinished = {
-                    if (state.typing.isPlaySoundTips) {
-                        playSound("audio/Success!!.wav", state.typing.soundTipsVolume)
+                    if (state.typingWord.isPlaySoundTips) {
+                        playSound("audio/Success!!.wav", state.typingWord.soundTipsVolume)
                     }
                 }
 
@@ -159,8 +159,8 @@ fun Typing(
                  * 播放按键音效
                  */
                 val playKeySound = {
-                    if (state.typing.isPlayKeystrokeSound) {
-                        playSound("audio/keystroke.wav", state.typing.keystrokeVolume)
+                    if (state.global.isPlayKeystrokeSound) {
+                        playSound("audio/keystroke.wav", state.global.keystrokeVolume)
                     }
                 }
 
@@ -205,18 +205,18 @@ fun Typing(
                         } else state.dictationIndex++
                     } else {
                         when {
-                            (state.typing.index == state.vocabulary.size - 1) -> {
+                            (state.typingWord.index == state.vocabulary.size - 1) -> {
                                 isVocabularyFinished = true
                                 playChapterFinished()
                                 showChapterFinishedDialog = true
                             }
-                            ((state.typing.index + 1) % 20 == 0) -> {
+                            ((state.typingWord.index + 1) % 20 == 0) -> {
                                 playChapterFinished()
                                 showChapterFinishedDialog = true
                             }
-                            else -> state.typing.index += 1
+                            else -> state.typingWord.index += 1
                         }
-                        state.saveTypingState()
+                        state.saveTypingWordState()
                     }
                 }
 
@@ -270,7 +270,7 @@ fun Typing(
                             state.speed.correctCount = state.speed.correctCount + 1
                             playSuccessSound()
                             if (state.isDictation) state.chapterCorrectTime++
-                            if (state.typing.isAuto) {
+                            if (state.typingWord.isAuto) {
                                 Timer("cleanInputChar", false).schedule(50) {
                                     toNext()
                                     wordTextFieldValue = ""
@@ -366,16 +366,16 @@ fun Typing(
                 )
                 Phonetic(
                     word = word,
-                    phoneticVisible = state.typing.phoneticVisible
+                    phoneticVisible = state.typingWord.phoneticVisible
                 )
                 Morphology(
                     word = word,
                     isPlaying = state.isPlaying,
-                    morphologyVisible = state.typing.morphologyVisible
+                    morphologyVisible = state.typingWord.morphologyVisible
                 )
                 Definition(
                     word = word,
-                    definitionVisible = state.typing.definitionVisible,
+                    definitionVisible = state.typingWord.definitionVisible,
                     isPlaying = state.isPlaying,
                     textFieldValue = definitionTextFieldValue,
                     typingResult = definitionTypingResult,
@@ -384,7 +384,7 @@ fun Typing(
                 )
                 Translation(
                     word = word,
-                    translationVisible = state.typing.translationVisible,
+                    translationVisible = state.typingWord.translationVisible,
                     isPlaying = state.isPlaying
                 )
 
@@ -403,12 +403,12 @@ fun Typing(
                         } else false
                     }
                 Captions(
-                    captionsVisible = state.typing.subtitlesVisible,
+                    captionsVisible = state.typingWord.subtitlesVisible,
                     playTripleMap = getPlayTripleMap(state, word),
                     videoPlayerWindow = state.videoPlayerWindow,
                     videoPlayerComponent = state.videoPlayerComponent,
                     isPlaying = state.isPlaying,
-                    volume = state.typing.videoVolume,
+                    volume = state.global.videoVolume,
                     setIsPlaying = { state.isPlaying = it },
                     word = word,
                     bounds = videoBounds,
@@ -841,7 +841,7 @@ fun Captions(
                         volume = volume,
                         captionContent = captionContent,
                         textFieldValue = textFieldValue,
-                        typingResult = typingResult!!,
+                        typingResult = typingResult,
                         checkTyping = { editIndex, input, editContent ->
                             checkTyping(editIndex, input, editContent)
                         },

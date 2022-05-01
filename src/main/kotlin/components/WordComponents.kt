@@ -232,7 +232,7 @@ fun WordComponents(
 
                             }
                         } else {
-                            if (state.typing.wordVisible) {
+                            if (state.typingWord.wordVisible) {
                                 withStyle(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.onBackground,
@@ -271,8 +271,8 @@ fun WordComponents(
             }
             AudioButton(
                 word = wordValue,
-                volume = state.typing.audioVolume,
-                pronunciation = state.typing.pronunciation,
+                volume = state.global.audioVolume,
+                pronunciation = state.typingWord.pronunciation,
             )
         }
         val clipboardManager = LocalClipboardManager.current
@@ -284,7 +284,7 @@ fun WordComponents(
                         message = "确定要删除单词 $wordValue ?",
                         confirm = {
                             scope.launch {
-                                val index = state.typing.index
+                                val index = state.typingWord.index
                                 state.vocabulary.wordList.removeAt(index)
                                 state.vocabulary.size = state.vocabulary.wordList.size
                                 state.saveCurrentVocabulary()
@@ -354,7 +354,7 @@ fun WordComponents(
                             save = { newWord ->
                                 scope.launch{
                                     val current = state.getCurrentWord()
-                                    val index = state.typing.index
+                                    val index = state.typingWord.index
                                     newWord.captions = current.captions
                                     newWord.externalCaptions = current.externalCaptions
                                     state.vocabulary.wordList.removeAt(index)
@@ -406,8 +406,8 @@ fun WordComponents(
      * 索引递减
      */
     val decreaseIndex = {
-        if (state.vocabulary.size > 19) state.typing.index -= 19
-        else state.typing.index = 0
+        if (state.vocabulary.size > 19) state.typingWord.index -= 19
+        else state.typingWord.index = 0
     }
 
     /**
@@ -453,10 +453,10 @@ fun WordComponents(
      */
     val nextChapter: () -> Unit = {
         if (state.isDictation) state.exitDictationMode()
-        state.typing.index += 1
-        state.typing.chapter++
+        state.typingWord.index += 1
+        state.typingWord.chapter++
         resetChapterTime()
-        state.saveTypingState()
+        state.saveTypingWordState()
         changeShowChapterFinishedDialog(false)
     }
 
@@ -484,13 +484,13 @@ fun WordComponents(
      */
     val resetIndex: (isShuffle: Boolean) -> Unit = { isShuffle ->
 
-        state.typing.index = 0
-        state.typing.chapter = 1
+        state.typingWord.index = 0
+        state.typingWord.chapter = 1
         if (isShuffle) {
             state.vocabulary.wordList.shuffle()
             state.saveCurrentVocabulary()
         }
-        state.saveTypingState()
+        state.saveTypingWordState()
         resetChapterTime()
         changeShowChapterFinishedDialog(false)
         setIsVocabularyFinished(false)

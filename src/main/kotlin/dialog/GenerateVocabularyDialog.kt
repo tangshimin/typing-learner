@@ -48,7 +48,6 @@ import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
-import player.mediaPlayer
 import state.AppState
 import state.composeAppResource
 import subtitleFile.FormatASS
@@ -56,12 +55,8 @@ import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import theme.DarkColorScheme
 import theme.LightColorScheme
-import uk.co.caprica.vlcj.player.base.MediaPlayer
-import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.BorderLayout
 import java.awt.Desktop
-import java.awt.Dimension
-import java.awt.Point
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -154,7 +149,7 @@ fun GenerateVocabularyDialog(
             var filteringType by remember { mutableStateOf(DOCUMENT) }
         val contentPanel = ComposePanel()
             contentPanel.setContent {
-                MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
+                MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
                     Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
                         /**
                          * 摘要词库
@@ -356,7 +351,7 @@ fun GenerateVocabularyDialog(
         val bottomPanel = ComposePanel()
         bottomPanel.setSize(Int.MAX_VALUE, 54)
         bottomPanel.setContent {
-            MaterialTheme(colors = if (state.typing.isDarkTheme) DarkColorScheme else LightColorScheme) {
+            MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.Center,
@@ -1456,7 +1451,6 @@ fun readDocument(
 
     addProgress(0.15F)
     setProgressText("从文档提取出 ${set.size} 个单词，正在批量查询单词，如果词典里没有的就丢弃")
-    val start = System.currentTimeMillis()
     val validSet = Dictionary.querySet(set)
     setProgressText("${validSet.size} 个有效单词")
     addProgress(0.1F)

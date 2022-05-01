@@ -311,7 +311,7 @@ fun EditingCaptions(
                                         play(
                                             window = state.videoPlayerWindow,
                                             setIsPlaying = {},
-                                            volume = state.typing.videoVolume,
+                                            volume = state.global.videoVolume,
                                             playTriple = playTriple,
                                             videoPlayerComponent= state.videoPlayerComponent,
                                             bounds =playerBounds
@@ -651,7 +651,7 @@ fun SettingTimeLine(
                                                 play(
                                                     window = state.videoPlayerWindow,
                                                     setIsPlaying = {},
-                                                    volume = state.typing.videoVolume,
+                                                    volume = state.global.videoVolume,
                                                     playTriple = playTriple,
                                                     videoPlayerComponent= mediaPlayerComponent,
                                                     bounds =playerBounds
