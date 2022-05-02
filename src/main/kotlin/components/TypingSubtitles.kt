@@ -238,7 +238,7 @@ fun TypingSubtitles(
     /** 当前界面的快捷键 */
     val boxKeyEvent: (KeyEvent) -> Boolean = {
         when {
-            (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
+            (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
                 toTypingWord()
                 true
             }
@@ -894,7 +894,7 @@ fun SubtitlesSidebar(
                     Text("记忆单词", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "$ctrl+W",
+                        text = "$ctrl+T",
                         color = MaterialTheme.colors.onBackground
                     )
                 }

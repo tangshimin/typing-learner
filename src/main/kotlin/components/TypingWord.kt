@@ -39,6 +39,7 @@ import player.isMacOS
 import player.mediaPlayer
 import player.playAudio
 import state.AppState
+import state.TypingType
 import theme.DarkColorScheme
 import theme.LightColorScheme
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -130,6 +131,10 @@ fun TypingWord(
             }
             (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
                 state.typingWord.translationVisible = !state.typingWord.translationVisible
+                true
+            }
+            (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
+                state.global.type = TypingType.SUBTITLES
                 true
             }
             (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
