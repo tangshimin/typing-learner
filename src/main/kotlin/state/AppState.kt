@@ -486,6 +486,23 @@ class AppState {
     }
 
     /**
+     * 改变词库
+     */
+    fun changeVocabulary(file:File){
+        vocabulary = loadMutableVocabulary(file.absolutePath)
+        typingWord.vocabularyName = file.nameWithoutExtension
+        typingWord.vocabularyPath = file.absolutePath
+        if (isDictation) {
+            exitDictationMode()
+            resetChapterTime()
+        }
+        typingWord.chapter = 1
+        typingWord.index = 0
+        wordCorrectTime = 0
+        wordWrongTime = 0
+        saveTypingWordState()
+    }
+    /**
      * 保存当前的词库
      */
     fun saveCurrentVocabulary() {

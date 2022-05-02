@@ -180,18 +180,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 fileChooser.selectedFile = null
                 if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     val file = fileChooser.selectedFile
-                    state.vocabulary = loadMutableVocabulary(file.absolutePath)
-                    state.typingWord.vocabularyName = file.nameWithoutExtension
-                    state.typingWord.vocabularyPath = file.absolutePath
-                    if (state.isDictation) {
-                        state.exitDictationMode()
-                        state.resetChapterTime()
-                    }
-                    state.typingWord.chapter = 1
-                    state.typingWord.index = 0
-                    state.wordCorrectTime = 0
-                    state.wordWrongTime = 0
-                    state.saveTypingWordState()
+                    state.changeVocabulary(file)
                     state.loadingFileChooserVisible = false
                 } else {
                     state.loadingFileChooserVisible = false
@@ -206,18 +195,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     val recentFile = File(recentItem.path)
                     if(recentFile.exists()){
                         Item(text = recentItem.name,onClick = {
-                            state.vocabulary = loadMutableVocabulary(recentItem.path)
-                            state.typingWord.vocabularyName = recentItem.name
-                            state.typingWord.vocabularyPath = recentItem.path
-                            if (state.isDictation) {
-                                state.exitDictationMode()
-                                state.resetChapterTime()
-                            }
-                            state.typingWord.chapter = 1
-                            state.typingWord.index = 0
-                            state.wordCorrectTime = 0
-                            state.wordWrongTime = 0
-                            state.saveTypingWordState()
+                            val file = File(recentItem.path)
+                            state.changeVocabulary(file)
                             state.loadingFileChooserVisible = false
                         })
                     }else{

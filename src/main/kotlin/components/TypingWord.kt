@@ -33,6 +33,7 @@ import androidx.compose.ui.window.WindowState
 import data.Caption
 import data.VocabularyType
 import data.Word
+import data.loadMutableVocabulary
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.isMacOS
@@ -51,6 +52,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.swing.JFrame
+import javax.swing.JOptionPane
 import kotlin.concurrent.schedule
 
 /**
@@ -250,6 +252,34 @@ fun TypingWord(
         }
 
     }
+
+    /**  处理拖放文件的函数 */
+    val transferHandler = createTransferHandler(
+        showWrongMessage = { message ->
+            JOptionPane.showMessageDialog(window, message)
+        },
+        parseImportFile = { file ->
+            scope.launch {
+                if (file.extension == "json") {
+                    if (state.typingWord.vocabularyPath != file.absolutePath) {
+                        state.changeVocabulary(file)
+                    } else {
+                        JOptionPane.showMessageDialog(window, "词库已打开")
+                    }
+
+                } else if (file.extension == "mkv"){
+                    JOptionPane.showMessageDialog(window, "如果想打开 MKV 视频文件抄写字幕，\n需要先切换到抄写字幕界面，\n如果想生成词库需要先打开生成词库界面。")
+                }
+                else {
+                    JOptionPane.showMessageDialog(window, "只能读取 json 格式的词库")
+                }
+
+
+            }
+        }
+    )
+
+    window.transferHandler = transferHandler
 
     Box(Modifier.background(MaterialTheme.colors.background)
         .onKeyEvent { keyEvent(it) }) {
