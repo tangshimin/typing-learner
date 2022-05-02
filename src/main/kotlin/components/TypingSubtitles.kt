@@ -45,6 +45,8 @@ import dialog.replaceNewLine
 import kotlinx.coroutines.launch
 import player.isMacOS
 import player.mediaPlayer
+import state.GlobalState
+import state.TypingSubtitlesState
 import state.getSettingsDirectory
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
@@ -67,56 +69,56 @@ import javax.swing.filechooser.FileSystemView
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun Subtitles(
-    videoPath: String,
-    trackId: Int,
-    currentIndex: Int,
-    setCurrentIndex: (Int) -> Unit,
-    firstVisibleItemIndex: Int,
-    setFirstVisibleItemIndex: (Int) -> Unit,
-    captionList: List<Caption>,
-    maxLength: Int,
-    back: () -> Unit,
+fun TypingSubtitles(
+    typingSubtitles : TypingSubtitlesState,
+    globalState: GlobalState,
+    saveSubtitlesState:() -> Unit,
+    saveGlobalState:() -> Unit,
+    toTypingWord: () -> Unit,
     isOpenSettings: Boolean,
     setIsOpenSettings: (Boolean) -> Unit,
     window: ComposeWindow,
     playerWindow: JFrame,
     videoVolume: Float,
     mediaPlayerComponent: Component,
-    playKeySound: () -> Unit,
-    setTrackId: (Int) -> Unit,
-    setTrackDescription: (String) -> Unit,
-    trackSize: Int,
-    setTrackSize: (Int) -> Unit,
-    setVideoPath: (String) -> Unit,
-    setSubtitlesPath: (String) -> Unit,
     futureFileChooser: FutureTask<JFileChooser>,
     closeLoadingDialog: () -> Unit,
-    isDarkTheme: Boolean,
-    setIsDarkTheme: (Boolean) -> Unit,
-    isPlayKeystrokeSound: Boolean,
-    setIsPlayKeystrokeSound: (Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val captionList = remember{ mutableStateListOf<Caption>()}
     var isPlaying by remember { mutableStateOf(false) }
     var showOpenFile by remember { mutableStateOf(false) }
     var selectedPath by remember { mutableStateOf("") }
     var showSelectTrack by remember { mutableStateOf(false) }
-    var trackList = remember { mutableStateListOf<Pair<Int, String>>() }
-    val videoPlayerBounds by remember {
-        mutableStateOf(
-            Rectangle(
-                0,
-                0,
-                540,
-                303
-            )
+    val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
+    val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
+
+    if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
+        parseSubtitles(
+            subtitlesPath = typingSubtitles.subtitlesPath,
+            setMaxLength = {
+                scope.launch {
+                    typingSubtitles.sentenceMaxLength = it
+                    saveSubtitlesState()
+                }
+            },
+            setCaptionList = {
+                captionList.clear()
+                captionList.addAll(it)
+            }
         )
     }
 
-    /** 设置字幕列表的回调函数 */
+    /** 播放按键音效 */
+    val playKeySound = {
+        if (globalState.isPlayKeystrokeSound) {
+            playSound("audio/keystroke.wav", globalState.keystrokeVolume)
+        }
+    }
+
+    /** 设置字幕列表的被回调函数 */
     val setTrackList: (List<Pair<Int, String>>) -> Unit = {
         trackList.clear()
         trackList.addAll(it)
@@ -132,7 +134,7 @@ fun Subtitles(
         fileChooser.selectedFile = null
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = fileChooser.selectedFile
-            if (videoPath != file.absolutePath) {
+            if (typingSubtitles.videoPath != file.absolutePath) {
                 selectedPath = file.absolutePath
                 parseTrackList(
                     mediaPlayerComponent,
@@ -152,12 +154,12 @@ fun Subtitles(
 
     /**  使用按钮播放视频时调用的回调函数   */
     val buttonEventPlay: (Caption) -> Unit = { caption ->
-        val file = File(videoPath)
+        val file = File(typingSubtitles.videoPath)
         if (file.exists()) {
             if (!isPlaying) {
                 scope.launch {
                     isPlaying = true
-                    val playTriple = Triple(caption, videoPath, trackId)
+                    val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
                     play(
                         window = playerWindow,
                         setIsPlaying = { isPlaying = it },
@@ -175,12 +177,68 @@ fun Subtitles(
 
     }
 
+    /** 保存轨道 ID 时被调用的回调函数 */
+    val saveTrackID:(Int) -> Unit =  {
+        scope.launch {
+            typingSubtitles.trackID = it
+            saveSubtitlesState()
+        }
+    }
+
+    /** 保存轨道名称时被调用的回调函数 */
+    val saveTrackDescription:(String) -> Unit = {
+        scope.launch {
+            typingSubtitles.trackDescription = it
+            saveSubtitlesState()
+        }
+    }
+
+    /** 保存轨道数量时被调用的回调函数 */
+    val saveTrackSize:(Int) -> Unit = {
+        scope.launch {
+            typingSubtitles.trackSize = it
+            saveSubtitlesState()
+        }
+    }
+
+    /** 保存视频路径时被调用的回调函数 */
+    val saveVideoPath:(String) -> Unit = {
+        typingSubtitles.videoPath = it
+        saveSubtitlesState()
+    }
+
+    /** 保存一个新的字幕时被调用的回调函数 */
+    val saveSubtitlesPath:(String) -> Unit = {
+        scope.launch {
+            typingSubtitles.subtitlesPath = it
+            typingSubtitles.firstVisibleItemIndex = 0
+            typingSubtitles.currentIndex = 0
+            focusManager.clearFocus()
+            saveSubtitlesState()
+        }
+    }
+
+    /** 保存是否时深色模式时被调用的回调函数 */
+    val saveIsDarkTheme:(Boolean) -> Unit = {
+        scope.launch {
+            globalState.isDarkTheme = it
+            saveGlobalState()
+        }
+    }
+
+    /** 保存是否启用击键音效时被调用的回调函数 */
+    val saveIsPlayKeystrokeSound:(Boolean) -> Unit = {
+        scope.launch {
+            globalState.isPlayKeystrokeSound = it
+            saveGlobalState
+        }
+    }
 
     /** 当前界面的快捷键 */
     val boxKeyEvent: (KeyEvent) -> Boolean = {
         when {
             (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
-                back()
+                toTypingWord()
                 true
             }
             (it.isCtrlPressed && it.key == Key.O && it.type == KeyEventType.KeyUp) -> {
@@ -193,16 +251,16 @@ fun Subtitles(
                 true
             }
             (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
-                setIsDarkTheme(!isDarkTheme)
+                saveIsDarkTheme(!globalState.isDarkTheme)
                 true
             }
             (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
-                setIsPlayKeystrokeSound(!isPlayKeystrokeSound)
+                saveIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
                 true
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
-                val caption = captionList[currentIndex]
-                val playTriple = Triple(caption, videoPath, trackId)
+                val caption = captionList[typingSubtitles.currentIndex]
+                val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
                 if (!isPlaying) {
                     scope.launch {
                         isPlaying = true
@@ -233,7 +291,7 @@ fun Subtitles(
         },
         parseImportFile = { file ->
             scope.launch {
-                if (videoPath != file.absolutePath) {
+                if (typingSubtitles.videoPath != file.absolutePath) {
                     selectedPath = file.absolutePath
                     parseTrackList(
                         mediaPlayerComponent,
@@ -263,15 +321,15 @@ fun Subtitles(
         Row(Modifier.fillMaxSize()) {
             SubtitlesSidebar(
                 isOpen = isOpenSettings,
-                back = { back() },
-                trackSize = trackSize,
+                back = { toTypingWord() },
+                trackSize = typingSubtitles.trackSize,
                 openFile = { showOpenFile = true },
                 openFileChooser = { openFileChooser() },
                 selectTrack = { showSelectTrack = true },
-                isDarkTheme = isDarkTheme,
-                setIsDarkTheme = { setIsDarkTheme(it) },
-                isPlayKeystrokeSound = isPlayKeystrokeSound,
-                setIsPlayKeystrokeSound = { setIsPlayKeystrokeSound(it) },
+                isDarkTheme = globalState.isDarkTheme,
+                setIsDarkTheme = { saveIsDarkTheme(it) },
+                isPlayKeystrokeSound = globalState.isPlayKeystrokeSound,
+                setIsPlayKeystrokeSound = { saveIsPlayKeystrokeSound(it) },
             )
             if (isOpenSettings) {
                 val topPadding = if (isMacOS()) 30.dp else 0.dp
@@ -284,7 +342,7 @@ fun Subtitles(
 
                 if (captionList.isNotEmpty()) {
 
-                    val listState = rememberLazyListState(firstVisibleItemIndex)
+                    val listState = rememberLazyListState(typingSubtitles.firstVisibleItemIndex)
                     val isAtTop by remember {
                         derivedStateOf {
                             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
@@ -292,7 +350,7 @@ fun Subtitles(
                     }
                     val startTimeWidth = 141.dp
                     val endPadding = 10.dp
-                    val maxWidth = startTimeWidth + endPadding + (maxLength * 13).dp
+                    val maxWidth = startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -399,8 +457,11 @@ fun Subtitles(
                                                 .onKeyEvent { textFieldKeyEvent(it) }
                                                 .onFocusChanged {
                                                     if (it.isFocused) {
-                                                        setCurrentIndex(index)
-                                                        setFirstVisibleItemIndex(listState.firstVisibleItemIndex)
+                                                        scope.launch{
+                                                            typingSubtitles.currentIndex = index
+                                                            typingSubtitles.firstVisibleItemIndex = listState.firstVisibleItemIndex
+                                                            saveSubtitlesState()
+                                                        }
                                                     } else if (textFieldValue.isNotEmpty()) {
                                                         typingResult.clear()
                                                         textFieldValue = ""
@@ -458,7 +519,7 @@ fun Subtitles(
                                         maxLines = 1,
                                     )
 
-                                    if (currentIndex == index) {
+                                    if (typingSubtitles.currentIndex == index) {
                                         Divider(
                                             Modifier.align(Alignment.BottomCenter)
                                                 .background(MaterialTheme.colors.primary)
@@ -467,7 +528,7 @@ fun Subtitles(
                                 }
 
                                 Row(Modifier.width(48.dp).height(48.dp)) {
-                                    if (currentIndex == index) {
+                                    if (typingSubtitles.currentIndex == index) {
                                         TooltipArea(
                                             tooltip = {
                                                 Surface(
@@ -548,9 +609,10 @@ fun Subtitles(
                             onClick = {
                                 scope.launch {
                                     listState.scrollToItem(0)
-                                    setCurrentIndex(0)
-                                    setFirstVisibleItemIndex(0)
+                                    typingSubtitles.currentIndex = 0
+                                    typingSubtitles.firstVisibleItemIndex = 0
                                     focusManager.clearFocus()
+                                    saveSubtitlesState()
                                 }
                             },
                             backgroundColor = if (MaterialTheme.colors.isLight) Color.LightGray else Color.DarkGray,
@@ -570,15 +632,15 @@ fun Subtitles(
                         cancel = { showOpenFile = false },
                         openFileChooser = { openFileChooser() },
                         showCancel = captionList.isNotEmpty(),
-                        setTrackId = { setTrackId(it) },
-                        setTrackDescription = { setTrackDescription(it) },
+                        setTrackId = { saveTrackID(it) },
+                        setTrackDescription = { saveTrackDescription(it) },
                         trackList = trackList,
                         setTrackList = { setTrackList(it) },
-                        setVideoPath = { setVideoPath(it) },
+                        setVideoPath = { saveVideoPath(it) },
                         selectedPath = selectedPath,
                         setSelectedPath = { selectedPath = it },
-                        setSubtitlesPath = { setSubtitlesPath(it) },
-                        setTrackSize = { setTrackSize(it) },
+                        setSubtitlesPath = { saveSubtitlesPath(it) },
+                        setTrackSize = { saveTrackSize(it) },
                     )
                 }
                 if (showSelectTrack) {
@@ -593,21 +655,21 @@ fun Subtitles(
                                 parseTrackList(
                                     mediaPlayerComponent,
                                     playerWindow,
-                                    videoPath,
+                                    typingSubtitles.videoPath,
                                     setTrackList = { setTrackList(it) },
                                 )
                             }
                             SelectTrack(
                                 close = { showSelectTrack = false },
-                                setTrackId = { setTrackId(it) },
-                                setTrackDescription = { setTrackDescription(it) },
+                                setTrackId = { saveTrackID(it) },
+                                setTrackDescription = { saveTrackDescription(it) },
                                 trackList = trackList,
                                 setTrackList = { setTrackList(it) },
-                                setVideoPath = { setVideoPath(it) },
-                                selectedPath = videoPath,
+                                setVideoPath = { saveVideoPath(it) },
+                                selectedPath = typingSubtitles.videoPath,
                                 setSelectedPath = { selectedPath = it },
-                                setSubtitlesPath = { setSubtitlesPath(it) },
-                                setTrackSize = { setTrackSize(it) },
+                                setSubtitlesPath = { saveSubtitlesPath(it) },
+                                setTrackSize = { saveTrackSize(it) },
                                 setIsLoading = { loading = it }
                             )
                             OutlinedButton(onClick = { showSelectTrack = false }) {
@@ -653,13 +715,15 @@ fun OpenFileComponent(
 ) {
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
-        Divider(Modifier.align(Alignment.TopCenter))
         var loading by remember { mutableStateOf(false) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.width(IntrinsicSize.Max).align(Alignment.Center)
         ) {
 
+           Text(text = "可以拖放 MKV 文件到这里",
+               color = MaterialTheme.colors.primary,
+           modifier = Modifier.padding(end = 20.dp))
             OutlinedButton(
                 modifier = Modifier.padding(end = 20.dp),
                 onClick = { openFileChooser() }) {
@@ -745,7 +809,6 @@ fun SelectTrack(
                                 setTrackId(trackId)
                                 setTrackDescription(description)
                                 setVideoPath(selectedPath)
-                                // TODO
                                 val subtitles = writeToFile(selectedPath, trackId)
                                 if (subtitles != null) {
                                     setSubtitlesPath(subtitles.absolutePath)

@@ -355,10 +355,10 @@ class AppState {
         val typingSubtitlesData = TypingSubtitlesData(
             typingSubtitles.videoPath,
             typingSubtitles.subtitlesPath,
-            typingSubtitles.subtitlesTrackID,
+            typingSubtitles.trackID,
             typingSubtitles.trackDescription,
-            typingSubtitles.subtitlesTrackSize,
-            typingSubtitles.captionIndex,
+            typingSubtitles.trackSize,
+            typingSubtitles.currentIndex,
             typingSubtitles.firstVisibleItemIndex,
             typingSubtitles.sentenceMaxLength,
         )
@@ -598,6 +598,7 @@ fun composeAppResource(path: String): File {
     }
 }
 
+/** 获取应用程序的配置文件的目录 */
 fun getSettingsDirectory():File{
     val homeDir = File(System.getProperty("user.home"))
     val applicationDir = File(homeDir, ".qwerty-learner")
