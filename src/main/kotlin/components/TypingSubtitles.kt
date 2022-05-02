@@ -236,30 +236,30 @@ fun TypingSubtitles(
     }
 
     /** 当前界面的快捷键 */
-    val boxKeyEvent: (KeyEvent) -> Boolean = {
+    val boxKeyEvent: (KeyEvent) -> Boolean = { keyEvent ->
         when {
-            (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.T && keyEvent.type == KeyEventType.KeyUp) -> {
                 toTypingWord()
                 true
             }
-            (it.isCtrlPressed && it.key == Key.O && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.O && keyEvent.type == KeyEventType.KeyUp) -> {
                 openFileChooser()
                 showOpenFile = true
                 true
             }
-            (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.S && keyEvent.type == KeyEventType.KeyUp) -> {
                 showSelectTrack = true
                 true
             }
-            (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.D && keyEvent.type == KeyEventType.KeyUp) -> {
                 saveIsDarkTheme(!globalState.isDarkTheme)
                 true
             }
-            (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.M && keyEvent.type == KeyEventType.KeyUp) -> {
                 saveIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
                 true
             }
-            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z && keyEvent.type == KeyEventType.KeyUp) -> {
                 val caption = captionList[typingSubtitles.currentIndex]
                 val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
                 if (!isPlaying) {

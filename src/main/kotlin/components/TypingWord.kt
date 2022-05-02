@@ -1064,6 +1064,7 @@ fun Captions(
                     Caption(
                         videoPlayerWindow = videoPlayerWindow,
                         videoPlayerComponent = videoPlayerComponent,
+                        isPlaying = isPlaying,
                         setIsPlaying = {
                             setIsPlaying(it)
                         },
@@ -1155,6 +1156,7 @@ fun secondsToString(seconds: Double): String {
 fun Caption(
     videoPlayerWindow: JFrame,
     videoPlayerComponent: Component,
+    isPlaying: Boolean,
     setIsPlaying: (Boolean) -> Unit,
     volume: Float,
     captionContent: String,
@@ -1279,26 +1281,29 @@ fun Caption(
                 )
             ) {
                 IconButton(onClick = {
-                    val file = File(relativeVideoPath)
-                    if (file.exists()) {
-                        setIsPlaying(true)
-                        scope.launch {
-                            play(
-                                videoPlayerWindow,
-                                setIsPlaying = { setIsPlaying(it) },
-                                volume,
-                                playTriple,
-                                videoPlayerComponent,
-                                bounds
-                            )
-                        }
+                   if(!isPlaying){
+                       val file = File(relativeVideoPath)
+                       if (file.exists()) {
+                           setIsPlaying(true)
+                           scope.launch {
+                               play(
+                                   videoPlayerWindow,
+                                   setIsPlaying = { setIsPlaying(it) },
+                                   volume,
+                                   playTriple,
+                                   videoPlayerComponent,
+                                   bounds
+                               )
+                           }
 
-                    } else {
-                        isPathWrong = true
-                        Timer("恢复状态", false).schedule(2000) {
-                            isPathWrong = false
-                        }
-                    }
+                       } else {
+                           isPathWrong = true
+                           Timer("恢复状态", false).schedule(2000) {
+                               isPathWrong = false
+                           }
+                       }
+                   }
+
 
                 }) {
                     Icon(
