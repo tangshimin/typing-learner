@@ -73,7 +73,7 @@ fun TypingWord(
 ) {
     /** 当前正在学习的单词 */
     val currentWord = state.getCurrentWord()
-
+    val scope = rememberCoroutineScope()
     /**
      * 用快捷键播放视频时被调用的回调函数
      * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
@@ -110,35 +110,59 @@ fun TypingWord(
     val keyEvent: (KeyEvent) -> Boolean = {
         when {
             (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.isAuto = !state.typingWord.isAuto
+                scope.launch {
+                    state.typingWord.isAuto = !state.typingWord.isAuto
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
-                state.global.isDarkTheme = !state.global.isDarkTheme
+                scope.launch {
+                    state.global.isDarkTheme = !state.global.isDarkTheme
+                    state.saveGlobalState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
+                scope.launch {
+                    state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
+                scope.launch {
+                    state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.definitionVisible = !state.typingWord.definitionVisible
+                scope.launch {
+                    state.typingWord.definitionVisible = !state.typingWord.definitionVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.translationVisible = !state.typingWord.translationVisible
+                scope.launch {
+                    state.typingWord.translationVisible = !state.typingWord.translationVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
-                state.global.type = TypingType.SUBTITLES
+                scope.launch {
+                    state.global.type = TypingType.SUBTITLES
+                    state.saveGlobalState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.wordVisible = !state.typingWord.wordVisible
+                scope.launch {
+                    state.typingWord.wordVisible = !state.typingWord.wordVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
 
@@ -188,24 +212,38 @@ fun TypingWord(
                 true
             }
             (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
+                scope.launch {
+                    state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
 
             (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
-                state.global.isPlayKeystrokeSound = !state.global.isPlayKeystrokeSound
+                scope.launch {
+                    state.global.isPlayKeystrokeSound = !state.global.isPlayKeystrokeSound
+                    state.saveGlobalState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
+                scope.launch {
+                    state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.One && it.type == KeyEventType.KeyUp) -> {
-                state.openSettings = !state.openSettings
+                scope.launch {
+                    state.openSettings = !state.openSettings
+                }
                 true
             }
             (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
-                state.typingWord.speedVisible = !state.typingWord.speedVisible
+                scope.launch {
+                    state.typingWord.speedVisible = !state.typingWord.speedVisible
+                    state.saveTypingWordState()
+                }
                 true
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
