@@ -12,10 +12,10 @@ import kotlinx.serialization.Serializable
 data class TypingSubtitlesData(
     val videoPath: String = "",
     val subtitlesPath:String = "",
-    val subtitlesTrackID: Int = 0,
+    val trackID: Int = 0,
     val trackDescription: String = "",
-    val subtitlesTrackSize: Int = 0,
-    val captionIndex: Int = 0,
+    val trackSize: Int = 0,
+    val currentIndex: Int = 0,
     val firstVisibleItemIndex:Int = 0,
     var sentenceMaxLength :Int = 0
 )
@@ -31,16 +31,16 @@ class TypingSubtitlesState(typingSubtitlesData :TypingSubtitlesData){
     var subtitlesPath by mutableStateOf(typingSubtitlesData.subtitlesPath)
 
     /** 抄写字幕时的字幕的轨道 ID */
-    var subtitlesTrackID by mutableStateOf(typingSubtitlesData.subtitlesTrackID)
+    var trackID by mutableStateOf(typingSubtitlesData.trackID)
 
     /** 选择的字幕名称  */
     var trackDescription by mutableStateOf(typingSubtitlesData.trackDescription)
 
     /** 字幕轨道的数量  */
-    var subtitlesTrackSize by mutableStateOf(typingSubtitlesData.subtitlesTrackSize)
+    var trackSize by mutableStateOf(typingSubtitlesData.trackSize)
 
     /** 抄写字幕的索引  */
-    var captionIndex by mutableStateOf(typingSubtitlesData.captionIndex)
+    var currentIndex by mutableStateOf(typingSubtitlesData.currentIndex)
 
     /** 抄写字幕时屏幕顶部的行索引  */
     var firstVisibleItemIndex by mutableStateOf(typingSubtitlesData.firstVisibleItemIndex)

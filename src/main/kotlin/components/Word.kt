@@ -67,7 +67,7 @@ import kotlin.concurrent.fixedRateTimer
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @Composable
-fun WordComponents(
+fun Word(
     state: AppState,
     word: Word,
     correctTime: Int,

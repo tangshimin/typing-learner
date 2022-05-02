@@ -1,17 +1,23 @@
 package components
 
 import LocalCtrl
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import player.isMacOS
 import state.AppState
 import state.TypingType
@@ -24,8 +30,9 @@ import state.TypingType
     kotlinx.serialization.ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class
 )
 @Composable
-fun TypingSidebar(state: AppState) {
-    if (state.openSettings && state.global.type == TypingType.WORD) {
+fun TypingWordSidebar(state: AppState) {
+    val scope = rememberCoroutineScope()
+    if (state.openSettings) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
@@ -33,15 +40,18 @@ fun TypingSidebar(state: AppState) {
                 .width(216.dp)
                 .fillMaxHeight()
         ) {
-            Spacer(Modifier.fillMaxWidth().height(if(isMacOS()) 78.dp else 48.dp))
+            Spacer(Modifier.fillMaxWidth().height(if (isMacOS()) 78.dp else 48.dp))
             Divider()
             val ctrl = LocalCtrl.current
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().clickable {
-                    state.global.type = TypingType.SUBTITLES
-                    state.saveGlobalState()
+                    scope.launch {
+                        state.global.type = TypingType.SUBTITLES
+                        state.saveGlobalState()
+                    }
+
                 }.padding(start = 16.dp, end = 8.dp)
             ) {
                 Row {
@@ -80,8 +90,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.wordVisible,
                     onCheckedChange = {
-                        state.typingWord.wordVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.wordVisible = it
+                            state.saveTypingWordState()
+                        }
                     },
                 )
             }
@@ -104,8 +116,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.phoneticVisible,
                     onCheckedChange = {
-                        state.typingWord.phoneticVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.phoneticVisible = it
+                            state.saveTypingWordState()
+                        }
                     },
 
                     )
@@ -129,8 +143,11 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.morphologyVisible,
                     onCheckedChange = {
-                        state.typingWord.morphologyVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.morphologyVisible = it
+                            state.saveTypingWordState()
+                        }
+
                     },
                 )
             }
@@ -153,8 +170,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.definitionVisible,
                     onCheckedChange = {
-                        state.typingWord.definitionVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.definitionVisible = it
+                            state.saveTypingWordState()
+                        }
                     },
                 )
             }
@@ -177,8 +196,11 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.translationVisible,
                     onCheckedChange = {
-                        state.typingWord.translationVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.translationVisible = it
+                            state.saveTypingWordState()
+                        }
+
                     },
                 )
             }
@@ -201,8 +223,11 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.subtitlesVisible,
                     onCheckedChange = {
-                        state.typingWord.subtitlesVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.subtitlesVisible = it
+                            state.saveTypingWordState()
+                        }
+
                     },
                 )
             }
@@ -225,8 +250,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.speedVisible,
                     onCheckedChange = {
-                        state.typingWord.speedVisible = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.speedVisible = it
+                            state.saveTypingWordState()
+                        }
                     },
                 )
             }
@@ -249,8 +276,11 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.isAuto,
                     onCheckedChange = {
-                        state.typingWord.isAuto = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.isAuto = it
+                            state.saveTypingWordState()
+                        }
+
                     },
 
                     )
@@ -275,10 +305,13 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.global.isDarkTheme,
                     onCheckedChange = {
-                        state.global.isDarkTheme = it
-                        state.saveGlobalState()
+                        scope.launch {
+                            state.global.isDarkTheme = it
+                            state.saveGlobalState()
+                        }
+
                     },
-                    )
+                )
             }
 
             Row(
@@ -301,8 +334,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.global.isPlayKeystrokeSound,
                     onCheckedChange = {
-                        state.global.isPlayKeystrokeSound = it
-                        state.saveGlobalState()
+                        scope.launch {
+                            state.global.isPlayKeystrokeSound = it
+                            state.saveGlobalState()
+                        }
                     },
 
                     )
@@ -327,8 +362,10 @@ fun TypingSidebar(state: AppState) {
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = state.typingWord.isPlaySoundTips,
                     onCheckedChange = {
-                        state.typingWord.isPlaySoundTips = it
-                        state.saveTypingWordState()
+                        scope.launch {
+                            state.typingWord.isPlaySoundTips = it
+                            state.saveTypingWordState()
+                        }
                     },
 
                     )
@@ -349,13 +386,13 @@ fun TypingSidebar(state: AppState) {
                     var expanded by remember { mutableStateOf(false) }
                     CursorDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = {expanded = false},
-                    ){
+                        onDismissRequest = { expanded = false },
+                    ) {
                         Surface(
                             elevation = 4.dp,
                             shape = RectangleShape,
                         ) {
-                            Column (Modifier.width(300.dp).height(180.dp).padding(start = 16.dp, end = 16.dp)){
+                            Column(Modifier.width(300.dp).height(180.dp).padding(start = 16.dp, end = 16.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("击键音效")
                                     Slider(value = state.global.keystrokeVolume, onValueChange = {
@@ -395,7 +432,7 @@ fun TypingSidebar(state: AppState) {
                             }
                         }
                     }
-                    IconButton(onClick = { expanded = true },) {
+                    IconButton(onClick = { expanded = true }) {
                         Icon(
                             imageVector = Icons.Filled.VolumeUp,
                             contentDescription = "",
@@ -437,9 +474,11 @@ fun TypingSidebar(state: AppState) {
                         if (state.vocabulary.language == "english") {
                             DropdownMenuItem(
                                 onClick = {
-                                    state.typingWord.pronunciation = "uk"
-                                    state.saveTypingWordState()
-                                    expanded = false
+                                    scope.launch {
+                                        state.typingWord.pronunciation = "uk"
+                                        state.saveTypingWordState()
+                                        expanded = false
+                                    }
                                 },
                                 modifier = Modifier.width(87.dp).height(40.dp)
                             ) {
@@ -447,9 +486,11 @@ fun TypingSidebar(state: AppState) {
                             }
                             DropdownMenuItem(
                                 onClick = {
-                                    state.typingWord.pronunciation = "us"
-                                    state.saveTypingWordState()
-                                    expanded = false
+                                    scope.launch {
+                                        state.typingWord.pronunciation = "us"
+                                        state.saveTypingWordState()
+                                        expanded = false
+                                    }
                                 },
                                 modifier = Modifier.width(87.dp).height(40.dp)
                             ) {
@@ -460,9 +501,11 @@ fun TypingSidebar(state: AppState) {
                         if (state.vocabulary.language == "japanese") {
                             DropdownMenuItem(
                                 onClick = {
-                                    state.typingWord.pronunciation = "jp"
-                                    state.saveTypingWordState()
-                                    expanded = false
+                                    scope.launch {
+                                        state.typingWord.pronunciation = "jp"
+                                        state.saveTypingWordState()
+                                        expanded = false
+                                    }
                                 },
                                 modifier = Modifier.width(87.dp).height(40.dp)
                             ) {
@@ -472,9 +515,11 @@ fun TypingSidebar(state: AppState) {
 
                         DropdownMenuItem(
                             onClick = {
-                                state.typingWord.pronunciation = "false"
-                                state.saveTypingWordState()
-                                expanded = false
+                                scope.launch {
+                                    state.typingWord.pronunciation = "false"
+                                    state.saveTypingWordState()
+                                    expanded = false
+                                }
                             },
                             modifier = Modifier.width(87.dp).height(40.dp)
                         ) {
