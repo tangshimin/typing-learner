@@ -114,6 +114,7 @@ fun main() = application {
                                 isOpenSettings = state.openSettings,
                                 setIsOpenSettings = { state.openSettings = it },
                                 window = window,
+                                title = title,
                                 playerWindow = state.videoPlayerWindow,
                                 videoVolume = state.global.videoVolume,
                                 mediaPlayerComponent = state.videoPlayerComponent,
