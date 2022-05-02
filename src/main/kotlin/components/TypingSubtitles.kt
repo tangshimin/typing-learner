@@ -343,6 +343,7 @@ fun TypingSubtitles(
                 if (captionList.isNotEmpty()) {
 
                     val listState = rememberLazyListState(typingSubtitles.firstVisibleItemIndex)
+                    val stateHorizontal = rememberScrollState(0)
                     val isAtTop by remember {
                         derivedStateOf {
                             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
@@ -358,7 +359,8 @@ fun TypingSubtitles(
                             .align(Alignment.Center)
                             .fillMaxWidth()
                             .fillMaxHeight()
-                            .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp),
+                            .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp)
+                            .horizontalScroll(stateHorizontal),
                     ) {
                         itemsIndexed(captionList) { index, caption ->
                             val captionContent = caption.content
@@ -603,7 +605,11 @@ fun TypingSubtitles(
                         modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                         adapter = rememberScrollbarAdapter(scrollState = listState)
                     )
-
+                    HorizontalScrollbar(
+                        modifier = Modifier.align(Alignment.BottomStart)
+                            .fillMaxWidth(),
+                        adapter =  rememberScrollbarAdapter(stateHorizontal)
+                    )
                     if (!isAtTop) {
                         FloatingActionButton(
                             onClick = {
