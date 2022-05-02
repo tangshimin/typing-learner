@@ -1,10 +1,12 @@
 # qwerty-learner-desktop
 
-感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
-
-感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)， qwerty leaner desktop 的所有的本地词典数据都来源于 ECDICT。现在程序使用的是一个基础版有76万词条，完整版的数据实在太大，导入到 H2 数据库之后有500M,后续可能会增加一个功能，加载那个350万词条的数据库。
+基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) ，用 kotlin + compose desktop 写的桌面版。
 
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
+
+demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
+
+### [下载地址](https://github.com/tangshimin/qwerty-learner-desktop/releases/tag/v1.0.0-beta2)
 
 ### 主要新增功能如下：
 
@@ -36,8 +38,15 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 ### ~~大文件拉取~~
 ~~本地词库是一个大文件(265MB)如果安装了[Git Large File Storage (LFS)](https://git-lfs.github.com/) 可以直接 `clone`即可。若在安装 Git LFS 之前执行了 `clone`，则拉取下来的仓库并不包含大文件本体，而是一个指向其 LFS 存储对象的文件指针，这种情况需要使用 `git lfs pull` 拉取文件指针所指向的完整对象。~~
 
-### [大文件存储](https://git-lfs.github.com/)的流量用完了，
+### [大文件存储](https://git-lfs.github.com/)的流量用完了
+
+准备把词典文件压缩成`.7z` 文件，`clone` 之后在本地解压缩
 
 ### 开发环境
 - jdk 17
 - VLC 视频播放器
+
+### 致谢
+感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
+
+感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
