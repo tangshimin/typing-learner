@@ -160,7 +160,7 @@ fun TypingWordSidebar(state: AppState) {
                     Text("英文释义", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "$ctrl+F",
+                        text = "$ctrl+E",
                         color = MaterialTheme.colors.onBackground
                     )
                 }
