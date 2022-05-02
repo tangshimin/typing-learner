@@ -84,8 +84,8 @@ fun main() = application {
                             TypingWord(
                                 window = window,
                                 title = title,
-                                audioPlayer = audioPlayerComponent,
                                 state = state,
+                                audioPlayer = audioPlayerComponent,
                                 videoBounds = videoBounds
                             )
                         }
