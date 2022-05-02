@@ -70,6 +70,40 @@ fun TypingWord(
     state: AppState,
     videoBounds: Rectangle,
 ) {
+    /** 当前正在学习的单词 */
+    val currentWord = state.getCurrentWord()
+
+    /**
+     * 用快捷键播放视频时被调用的回调函数
+     * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    val shortcutPlay : (playTriple: Triple<Caption, String, Int>?) -> Unit =  {playTriple ->
+        if (playTriple != null) {
+            if (!state.isPlaying) {
+                val file = File(playTriple.second)
+                if (file.exists()) {
+                    state.isPlaying = true
+                    Thread(Runnable {
+                        EventQueue.invokeLater {
+                            play(
+                                window = state.videoPlayerWindow,
+                                setIsPlaying = { state.isPlaying = it },
+                                state.global.videoVolume,
+                                playTriple,
+                                state.videoPlayerComponent,
+                                videoBounds
+                            )
+                        }
+
+                    }).start()
+                }
+            } else {
+                println("通知用户，视频地址错误")
+            }
+        }
+    }
+
 
     /** 处理全局快捷键的回调函数 */
     val keyEvent: (KeyEvent) -> Boolean = {
@@ -104,9 +138,8 @@ fun TypingWord(
             }
 
             (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
-                val word = state.getCurrentWord()
                 playAudio(
-                    word = word.value,
+                    word = currentWord.value,
                     volume = state.global.audioVolume,
                     pronunciation = state.typingWord.pronunciation,
                     mediaPlayerComponent = audioPlayer,
@@ -117,35 +150,35 @@ fun TypingWord(
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                    val playTriple = getPayTriple(state, 0)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    val playTriple = getPayTriple(currentWord, 0)
+                    shortcutPlay(playTriple)
                 } else {
                     val caption = state.getCurrentWord().captions[0]
                     val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    shortcutPlay(playTriple)
                 }
                 true
             }
             (it.isCtrlPressed &&  it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 2) {
-                    val playTriple = getPayTriple(state, 1)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    val playTriple = getPayTriple(currentWord, 1)
+                    shortcutPlay(playTriple)
 
                 } else if (state.getCurrentWord().captions.size >= 2) {
                     val caption = state.getCurrentWord().captions[1]
                     val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    shortcutPlay(playTriple)
                 }
                 true
             }
             (it.isCtrlPressed &&  it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 3) {
-                    val playTriple = getPayTriple(state, 2)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    val playTriple = getPayTriple(currentWord, 2)
+                    shortcutPlay(playTriple)
                 } else if (state.getCurrentWord().captions.size >= 3) {
                     val caption = state.getCurrentWord().captions[2]
                     val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(state,  playTriple, state.videoPlayerComponent, videoBounds)
+                    shortcutPlay(playTriple)
                 }
                 true
             }
@@ -196,12 +229,13 @@ fun TypingWord(
             Box(Modifier.fillMaxSize()) {
                 val endPadding = 0.dp
                 if(isMacOS()){
-                    Text(text = title, color = MaterialTheme.colors.onBackground,
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
-                    window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
-                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
-                    window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
+                    MacOSTitle(
+                        title = title,
+                        window = window,
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp)
+                    )
                 }
+
                 if (state.vocabulary.wordList.isNotEmpty()) {
                     Box(Modifier.align(Alignment.Center)
                         .padding(end = endPadding)) {
@@ -213,10 +247,7 @@ fun TypingWord(
                                 .background(MaterialTheme.colors.background)
                                 .focusable(true)
                         ) {
-                            /**
-                             * 当前正在学习的单词
-                             */
-                            val word = state.getCurrentWord()
+
 
                             /**
                              * 单词输入框里的字符串
@@ -307,9 +338,9 @@ fun TypingWord(
                             val dictationSkipCurrentWord: () -> Unit = {
                                 if (state.wordCorrectTime == 0) {
                                     state.chapterWrongTime++
-                                    val dictationWrongTime = state.dictationWrongWords[word]
+                                    val dictationWrongTime = state.dictationWrongWords[currentWord]
                                     if (dictationWrongTime == null) {
-                                        state.dictationWrongWords[word] = 1
+                                        state.dictationWrongWords[currentWord] = 1
                                     }
                                 }
                             }
@@ -368,14 +399,14 @@ fun TypingWord(
                                  *  防止用户粘贴内容过长，如果粘贴的内容超过 word.value 的长度，
                                  * 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
                                  */
-                                if (wordTextFieldValue.length > word.value.length) {
+                                if (wordTextFieldValue.length > currentWord.value.length) {
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
-                                } else if (input.length <= word.value.length) {
+                                } else if (input.length <= currentWord.value.length) {
                                     val chars = input.toList()
                                     for (i in chars.indices) {
                                         val inputChar = chars[i]
-                                        val wordChar = word.value[i]
+                                        val wordChar = currentWord.value[i]
                                         if (inputChar == wordChar) {
                                             wordTypingResult.add(Pair(inputChar, true))
                                         } else {
@@ -387,11 +418,11 @@ fun TypingWord(
                                             state.wordWrongTime++
                                             if (state.isDictation) {
                                                 state.chapterWrongTime++
-                                                val dictationWrongTime = state.dictationWrongWords[word]
+                                                val dictationWrongTime = state.dictationWrongWords[currentWord]
                                                 if (dictationWrongTime != null) {
-                                                    state.dictationWrongWords[word] = dictationWrongTime + 1
+                                                    state.dictationWrongWords[currentWord] = dictationWrongTime + 1
                                                 } else {
-                                                    state.dictationWrongWords[word] = 1
+                                                    state.dictationWrongWords[currentWord] = 1
                                                 }
                                             }
                                             Timer("cleanInputChar", false).schedule(50) {
@@ -401,7 +432,7 @@ fun TypingWord(
                                         }
                                     }
                                     // 用户输入的单词完全正确
-                                    if (wordTypingResult.size == word.value.length && done) {
+                                    if (wordTypingResult.size == currentWord.value.length && done) {
                                         // 输入完全正确
                                         state.speed.correctCount = state.speed.correctCount + 1
                                         playSuccessSound()
@@ -429,18 +460,18 @@ fun TypingWord(
                             val checkDefinitionInput: (String) -> Unit = { input ->
                                 definitionTextFieldValue = input
                                 definitionTypingResult.clear()
-                                if (input.length <= word.definition.length) {
+                                if (input.length <= currentWord.definition.length) {
                                     val chars = input.toList()
                                     for (i in chars.indices) {
                                         val char = chars[i]
-                                        if (char == word.definition[i]) {
+                                        if (char == currentWord.definition[i]) {
                                             definitionTypingResult.add(Pair(char, true))
                                         } else {
                                             definitionTypingResult.add(Pair(char, false))
                                         }
                                     }
 
-                                    if (input.length == word.definition.length) {
+                                    if (input.length == currentWord.definition.length) {
                                         Timer("cleanInputChar", false).schedule(50) {
                                             definitionTextFieldValue = ""
                                             definitionTypingResult.clear()
@@ -478,9 +509,10 @@ fun TypingWord(
                                 }
 
                             }
+
                             Word(
                                 state = state,
-                                word = word,
+                                word = currentWord,
                                 correctTime = state.wordCorrectTime,
                                 wrongTime = state.wordWrongTime,
                                 toNext = { toNext() },
@@ -501,16 +533,16 @@ fun TypingWord(
                                 playKeySound = { playKeySound() },
                             )
                             Phonetic(
-                                word = word,
+                                word = currentWord,
                                 phoneticVisible = state.typingWord.phoneticVisible
                             )
                             Morphology(
-                                word = word,
+                                word = currentWord,
                                 isPlaying = state.isPlaying,
                                 morphologyVisible = state.typingWord.morphologyVisible
                             )
                             Definition(
-                                word = word,
+                                word = currentWord,
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = state.isPlaying,
                                 textFieldValue = definitionTextFieldValue,
@@ -519,7 +551,7 @@ fun TypingWord(
                                 playKeySound = { playKeySound() },
                             )
                             Translation(
-                                word = word,
+                                word = currentWord,
                                 translationVisible = state.typingWord.translationVisible,
                                 isPlaying = state.isPlaying
                             )
@@ -540,13 +572,13 @@ fun TypingWord(
                                 }
                             Captions(
                                 captionsVisible = state.typingWord.subtitlesVisible,
-                                playTripleMap = getPlayTripleMap(state, word),
+                                playTripleMap = getPlayTripleMap(state, currentWord),
                                 videoPlayerWindow = state.videoPlayerWindow,
                                 videoPlayerComponent = state.videoPlayerComponent,
                                 isPlaying = state.isPlaying,
                                 volume = state.global.videoVolume,
                                 setIsPlaying = { state.isPlaying = it },
-                                word = word,
+                                word = currentWord,
                                 bounds = videoBounds,
                                 textFieldValueList = captionsTextFieldValueList,
                                 typingResultMap = captionsTypingResultMap,
@@ -592,6 +624,22 @@ fun TypingWord(
         )
     }
 
+}
+
+@Composable
+fun MacOSTitle(
+    title: String,
+    window: ComposeWindow,
+    modifier: Modifier
+) {
+    Text(
+        text = title,
+        color = MaterialTheme.colors.onBackground,
+        modifier = modifier
+    )
+    window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
+    window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
+    window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
 }
 
 /**
@@ -1310,44 +1358,44 @@ fun play(
 
 }
 
-/**
- * 用快捷键播放视频
- * @param state 应用程序的状态
- * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
- * @param mediaPlayerComponent 视频播放组件
- * @param videoBounds 视频播放器的位置和大小
- */
-@OptIn(ExperimentalSerializationApi::class)
-private fun shortcutPlay(
-    state: AppState,
-    playTriple: Triple<Caption, String, Int>?,
-    mediaPlayerComponent: Component,
-    videoBounds: Rectangle
-) {
-    if (playTriple != null) {
-        if (!state.isPlaying) {
-            val file = File(playTriple.second)
-            if (file.exists()) {
-                state.isPlaying = true
-                Thread(Runnable {
-                    EventQueue.invokeLater {
-                        play(
-                            window = state.videoPlayerWindow,
-                            setIsPlaying = { state.isPlaying = it },
-                            state.global.videoVolume,
-                            playTriple,
-                            mediaPlayerComponent,
-                            videoBounds
-                        )
-                    }
-
-                }).start()
-            }
-        } else {
-            println("通知用户，视频地址错误")
-        }
-    }
-}
+///**
+// * 用快捷键播放视频
+// * @param state 应用程序的状态
+// * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+// * @param mediaPlayerComponent 视频播放组件
+// * @param videoBounds 视频播放器的位置和大小
+// */
+//@OptIn(ExperimentalSerializationApi::class)
+//private fun shortcutPlay(
+//    state: AppState,
+//    playTriple: Triple<Caption, String, Int>?,
+//    mediaPlayerComponent: Component,
+//    videoBounds: Rectangle
+//) {
+//    if (playTriple != null) {
+//        if (!state.isPlaying) {
+//            val file = File(playTriple.second)
+//            if (file.exists()) {
+//                state.isPlaying = true
+//                Thread(Runnable {
+//                    EventQueue.invokeLater {
+//                        play(
+//                            window = state.videoPlayerWindow,
+//                            setIsPlaying = { state.isPlaying = it },
+//                            state.global.videoVolume,
+//                            playTriple,
+//                            mediaPlayerComponent,
+//                            videoBounds
+//                        )
+//                    }
+//
+//                }).start()
+//            }
+//        } else {
+//            println("通知用户，视频地址错误")
+//        }
+//    }
+//}
 
 fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
     val windowWidth = mainWindow.size.width
@@ -1396,20 +1444,18 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
 }
 
 /**
- * @param state 应用程序的状态
+ * @param currentWord 当前正在记忆的单词
  * @param index links 的 index
  * @return Triple<Caption, String, Int>? ,视频播放器需要的信息
  */
 @OptIn(ExperimentalSerializationApi::class)
-fun getPayTriple(state: AppState, index: Int): Triple<Caption, String, Int>? {
+fun getPayTriple(currentWord: Word, index: Int): Triple<Caption, String, Int>? {
 
-    return if(index < state.getCurrentWord().externalCaptions.size){
-        val externalCaption = state.getCurrentWord().externalCaptions[index]
+    return if(index < currentWord.externalCaptions.size){
+        val externalCaption = currentWord.externalCaptions[index]
         val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
         Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
     }else{
         null
     }
-
-
 }
