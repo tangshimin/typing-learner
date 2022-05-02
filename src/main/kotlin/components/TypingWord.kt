@@ -246,16 +246,6 @@ fun TypingWord(
                 }
                 true
             }
-            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
-                reset(state.speed)
-                true
-            }
-
-            (it.isCtrlPressed && it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) -> {
-                startTimer(state.speed)
-                true
-            }
-
             else -> false
         }
 
