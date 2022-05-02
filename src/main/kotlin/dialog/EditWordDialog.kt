@@ -297,28 +297,32 @@ fun EditingCaptions(
                         )
                     )
                 }
+                var isPlaying by remember { mutableStateOf(false) }
                 IconButton(onClick = {},
                     modifier = Modifier
-                        .onPointerEvent(PointerEventType.Press) {
+                        .onPointerEvent(PointerEventType.Press) { pointerEvent ->
                             val location =
-                                it.awtEventOrNull?.locationOnScreen
+                                pointerEvent.awtEventOrNull?.locationOnScreen
                             if (location != null) {
-                                playerBounds.x = location.x - 270 + 24
-                                playerBounds.y = location.y - 320
-                                val file = File(relativeVideoPath)
-                                if (file.exists()) {
-                                    scope.launch {
-                                        play(
-                                            window = state.videoPlayerWindow,
-                                            setIsPlaying = {},
-                                            volume = state.global.videoVolume,
-                                            playTriple = playTriple,
-                                            videoPlayerComponent= state.videoPlayerComponent,
-                                            bounds =playerBounds
-                                        )
+                                if(!isPlaying){
+                                    isPlaying = true
+                                    playerBounds.x = location.x - 270 + 24
+                                    playerBounds.y = location.y - 320
+                                    val file = File(relativeVideoPath)
+                                    if (file.exists()) {
+                                        scope.launch {
+                                            play(
+                                                window = state.videoPlayerWindow,
+                                                setIsPlaying = { isPlaying = it },
+                                                volume = state.global.videoVolume,
+                                                playTriple = playTriple,
+                                                videoPlayerComponent= state.videoPlayerComponent,
+                                                bounds =playerBounds
+                                            )
+                                        }
+                                    } else {
+                                        println("视频地址错误")
                                     }
-                                } else {
-                                    println("视频地址错误")
                                 }
                             }
                         }) {
@@ -439,7 +443,9 @@ fun EditingCaptions(
  * @param confirm 点击确定后调用的回调
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
  */
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, kotlinx.serialization.ExperimentalSerializationApi::class,
+    kotlinx.serialization.ExperimentalSerializationApi::class
+)
 @ExperimentalComposeUiApi
 @Composable
 fun SettingTimeLine(
@@ -636,31 +642,36 @@ fun SettingTimeLine(
                         }) {
                             Text("确定")
                         }
+                        var isPlaying by remember{ mutableStateOf(false)}
                         OutlinedButton(onClick = {},
                             modifier = Modifier
                                 .padding(start = 20.dp)
-                                .onPointerEvent(PointerEventType.Press) {
+                                .onPointerEvent(PointerEventType.Press) { pointerEvent ->
                                     val location =
-                                        it.awtEventOrNull?.locationOnScreen
+                                        pointerEvent.awtEventOrNull?.locationOnScreen
                                     if (location != null) {
-                                        val file = File(relativeVideoPath)
-                                        if (file.exists()) {
-                                            scope.launch {
-                                                playTriple.first.start = secondsToString(start)
-                                                playTriple.first.end = secondsToString(end)
-                                                play(
-                                                    window = state.videoPlayerWindow,
-                                                    setIsPlaying = {},
-                                                    volume = state.global.videoVolume,
-                                                    playTriple = playTriple,
-                                                    videoPlayerComponent= mediaPlayerComponent,
-                                                    bounds =playerBounds
-                                                )
-                                            }
+                                        if(!isPlaying){
+                                            isPlaying = true
+                                            val file = File(relativeVideoPath)
+                                            if (file.exists()) {
+                                                scope.launch {
+                                                    playTriple.first.start = secondsToString(start)
+                                                    playTriple.first.end = secondsToString(end)
+                                                    play(
+                                                        window = state.videoPlayerWindow,
+                                                        setIsPlaying = { isPlaying = it },
+                                                        volume = state.global.videoVolume,
+                                                        playTriple = playTriple,
+                                                        videoPlayerComponent= mediaPlayerComponent,
+                                                        bounds =playerBounds
+                                                    )
+                                                }
 
-                                        } else {
-                                            println("视频地址错误")
+                                            } else {
+                                                println("视频地址错误")
+                                            }
                                         }
+
                                     }
                                 }
                         ) {
