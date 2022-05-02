@@ -292,17 +292,24 @@ fun TypingSubtitles(
         },
         parseImportFile = { file ->
             scope.launch {
-                if (typingSubtitles.videoPath != file.absolutePath) {
-                    selectedPath = file.absolutePath
-                    parseTrackList(
-                        mediaPlayerComponent,
-                        playerWindow,
-                        file.absolutePath,
-                        setTrackList = { setTrackList(it) },
-                    )
+                if (file.extension == "mkv") {
+                    if (typingSubtitles.videoPath != file.absolutePath) {
+                        selectedPath = file.absolutePath
+                        parseTrackList(
+                            mediaPlayerComponent,
+                            playerWindow,
+                            file.absolutePath,
+                            setTrackList = { setTrackList(it) },
+                        )
+                    } else {
+                        JOptionPane.showMessageDialog(window, "文件已打开")
+                    }
+
                 } else {
-                    JOptionPane.showMessageDialog(window, "文件已打开")
+                    JOptionPane.showMessageDialog(window, "暂时只能读取 mkv 格式的视频文件")
                 }
+
+
             }
         }
     )
@@ -1030,12 +1037,7 @@ fun createTransferHandler(
                 val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
                 if (files.size == 1) {
                     val file = files[0]
-                    if (file.extension == "mkv") {
-                        parseImportFile(file)
-                    } else {
-                        showWrongMessage("暂时只能读取 mkv 格式的视频文件")
-                    }
-
+                    parseImportFile(file)
                 } else {
                     showWrongMessage("一次只能读取一个文件")
                 }
