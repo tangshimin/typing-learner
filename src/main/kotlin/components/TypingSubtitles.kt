@@ -305,7 +305,10 @@ fun TypingSubtitles(
                         JOptionPane.showMessageDialog(window, "文件已打开")
                     }
 
-                } else {
+                } else if(file.extension == "json"){
+                    JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
+                }
+                else {
                     JOptionPane.showMessageDialog(window, "暂时只能读取 mkv 格式的视频文件")
                 }
 
