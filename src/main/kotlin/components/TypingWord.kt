@@ -137,7 +137,7 @@ fun TypingWord(
                 }
                 true
             }
-            (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
+            (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.definitionVisible = !state.typingWord.definitionVisible
                     state.saveTypingWordState()
