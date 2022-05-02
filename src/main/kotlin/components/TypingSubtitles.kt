@@ -78,6 +78,7 @@ fun TypingSubtitles(
     isOpenSettings: Boolean,
     setIsOpenSettings: (Boolean) -> Unit,
     window: ComposeWindow,
+    title:String,
     playerWindow: JFrame,
     videoVolume: Float,
     mediaPlayerComponent: Component,
@@ -694,6 +695,13 @@ fun TypingSubtitles(
 
         }
 
+        if(isMacOS()){
+            MacOSTitle(
+                title = title,
+                window = window,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp)
+            )
+        }
         Settings(
             isOpen = isOpenSettings,
             setIsOpen = { setIsOpenSettings(it) },
