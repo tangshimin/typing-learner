@@ -42,6 +42,7 @@ import components.parseTrackList
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
+import dialog.FilterState.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -100,7 +101,7 @@ fun GenerateVocabularyDialog(
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(1190.dp, 785.dp)
+            size = DpSize(1210.dp, 785.dp)
         ),
     ) {
         val scope = rememberCoroutineScope()
@@ -247,6 +248,11 @@ fun GenerateVocabularyDialog(
                          */
                         var replaceToLemma by remember { mutableStateOf(false) }
 
+                        /**
+                         * 这个 filterState 有四个状态：Idle、"Parse"、"Filtering"、"End"
+                         */
+                        var filterState by remember { mutableStateOf(Idle) }
+
                         Divider()
                         Row(Modifier.fillMaxWidth()){
                             Column (Modifier.width(540.dp).fillMaxHeight()){
@@ -254,14 +260,17 @@ fun GenerateVocabularyDialog(
                                     notBncFilter = notBncFilter,
                                     setNotBncFilter = {
                                         notBncFilter = it
+                                        filterState = Filtering
                                     },
                                     notFrqFilter = notFrqFilter,
                                     setNotFrqFilter = {
                                         notFrqFilter = it
+                                        filterState = Filtering
                                     },
                                     replaceToLemma = replaceToLemma,
                                     setReplaceToLemma = {
                                         replaceToLemma = it
+                                        filterState = Filtering
                                     },
                                 )
                                 VocabularyFilter(
@@ -270,10 +279,12 @@ fun GenerateVocabularyDialog(
                                     selectedFileListAdd = {
                                         if(!selectedFileList.contains(it)){
                                             selectedFileList.add(it)
+                                            filterState = Filtering
                                         }
                                     },
                                     selectedFileListRemove = {
                                         selectedFileList.remove(it)
+                                        filterState = Filtering
                                     },
                                     recentList = state.recentList,
                                     removeInvalidRecentItem = {
@@ -285,15 +296,7 @@ fun GenerateVocabularyDialog(
                             Column(
                                 Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
                             ) {
-                                /**
-                                 * 这个 flag 有三个状态：""、"start"、"end"
-                                 */
-                                var flag by remember { mutableStateOf("") }
-                                var progress by remember { mutableStateOf(0.1f) }
-                                val animatedProgress by animateFloatAsState(
-                                    targetValue = progress,
-                                    animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
-                                )
+
                                 var progressText by remember { mutableStateOf("") }
 
                                 /**
@@ -323,10 +326,9 @@ fun GenerateVocabularyDialog(
                                     selectedTrackId = selectedTrackId,
                                     setSelectedTrackId = {selectedTrackId = it},
                                     analysis = { pathName,trackId ->
-                                        flag = "start"
+                                        filterState = Parse
                                         selectedFileList.clear()
                                         documentWords.clear()
-                                        progress = 0.15F
                                         Thread(Runnable() {
 
                                             val words = when (type) {
@@ -339,23 +341,17 @@ fun GenerateVocabularyDialog(
                                                         vocabulary.wordList.toSet()
 
                                                     }else{
-                                                        readDocument(pathName = pathName,
-                                                            addProgress = { progress += it },
-                                                            setProgressText = { progressText = it })
+                                                        readDocument(pathName = pathName, setProgressText = { progressText = it })
                                                     }
 
                                                 }
                                                 SUBTITLES -> {
-                                                    readSRT(
-                                                        pathName = pathName,
-                                                        addProgress = { progress += it },
-                                                        setProgressText = { progressText = it })
+                                                    readSRT(pathName = pathName, setProgressText = { progressText = it })
                                                 }
                                                 MKV -> {
                                                     readMKV(
                                                         pathName = pathName,
                                                         trackId = trackId,
-                                                        addProgress = { progress += it },
                                                         setProgressText = { progressText = it },
                                                         setIsSelectedASS = {isSelectedASS = it})
                                                 }
@@ -363,47 +359,64 @@ fun GenerateVocabularyDialog(
 
 
                                             words.forEach { word -> documentWords.add(word) }
-
-
-                                            progress = 1F
-                                            flag = "end"
-                                            progress = 0F
+                                            filterState = if(notBncFilter || notFrqFilter || replaceToLemma || selectedFileList.isNotEmpty()){
+                                                Filtering
+                                            }else{
+                                                End
+                                            }
+                                            if(filterState == End){
+                                                previewList.clear()
+                                                previewList.addAll(documentWords)
+                                            }
                                         }).start()
 
                                     })
 
                                 Box(Modifier.fillMaxSize()) {
-                                    if (flag == "start") {
-                                        Column(
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.align(Alignment.Center).fillMaxSize()
-                                        ) {
-                                            LinearProgressIndicator(
-                                                progress = animatedProgress,
-                                            )
-                                            Text(text = progressText, color = MaterialTheme.colors.onBackground)
+                                    when (filterState) {
+                                        Parse -> {
+                                            Column(
+                                                verticalArrangement = Arrangement.Center,
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                modifier = Modifier.align(Alignment.Center).fillMaxSize()
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    Modifier.width(60.dp).padding(bottom = 60.dp)
+                                                )
+                                                Text(text = progressText, color = MaterialTheme.colors.onBackground)
+                                            }
                                         }
-                                    } else if (flag == "end") {
-                                        val filteredDocumentList = filterDocumentWords(
-                                            documentWords,
-                                            notBncFilter,
-                                            notFrqFilter,
-                                            replaceToLemma
-                                        )
-                                        previewList.clear()
-                                        val filteredList = filterSelectVocabulary(
-                                            selectedFileList = selectedFileList,
-                                            filteredDocumentList = filteredDocumentList
-                                        )
-                                        previewList.addAll(filteredList)
-                                        PreviewWords(
-                                            type = type,
-                                            previewList = previewList,
-                                            summaryVocabulary = summaryVocabulary,
-                                            removeWord = {
-                                                previewList.remove(it)
-                                            })
+                                        Filtering -> {
+                                            CircularProgressIndicator(
+                                                Modifier.width(60.dp).align(Alignment.Center)
+                                            )
+                                            Thread(Runnable {
+                                                val filteredDocumentList = filterDocumentWords(
+                                                    documentWords,
+                                                    notBncFilter,
+                                                    notFrqFilter,
+                                                    replaceToLemma
+                                                )
+                                                previewList.clear()
+                                                val filteredList = filterSelectVocabulary(
+                                                    selectedFileList = selectedFileList,
+                                                    filteredDocumentList = filteredDocumentList
+                                                )
+                                                previewList.addAll(filteredList)
+                                                filterState =  End
+                                            }).start()
+
+
+                                        }
+                                        End -> {
+                                            PreviewWords(
+                                                type = type,
+                                                previewList = previewList,
+                                                summaryVocabulary = summaryVocabulary,
+                                                removeWord = {
+                                                    previewList.remove(it)
+                                                })
+                                        }
                                     }
 
                                 }
@@ -484,6 +497,7 @@ fun GenerateVocabularyDialog(
 
     }
 }
+
 @Serializable
 data class RecentItem(val time:String,val name:String,val path:String){
     override fun equals(other: Any?): Boolean {
@@ -494,7 +508,10 @@ data class RecentItem(val time:String,val name:String,val path:String){
     override fun hashCode(): Int {
         return name.hashCode() + path.hashCode()
     }
+}
 
+enum class FilterState {
+    Idle,Parse,Filtering,End
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -1478,7 +1495,6 @@ fun PreviewWords(
 @Throws(IOException::class)
 fun readDocument(
     pathName: String,
-    addProgress: (Float) -> Unit,
     setProgressText: (String) -> Unit
 ): Set<Word> {
     val file = File(pathName)
@@ -1488,7 +1504,6 @@ fun readDocument(
     if (extension == "pdf") {
         setProgressText("正在加载文档")
         val document: PDDocument = PDDocument.load(file)
-        addProgress(0.1F)
         //Instantiate PDFTextStripper class
         val pdfStripper = PDFTextStripper()
         text = pdfStripper.getText(document)
@@ -1500,11 +1515,9 @@ fun readDocument(
     val set: MutableSet<String> = HashSet()
     ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { inputStream ->
         val model = TokenizerModel(inputStream)
-        addProgress(0.35F)
         setProgressText("正在分词")
         val tokenizer: Tokenizer = TokenizerME(model)
         val tokenize = tokenizer.tokenize(text)
-        addProgress(0.1F)
         setProgressText("正在处理特殊分隔符")
         tokenize.forEach { word ->
             val lowercase = word.lowercase(Locale.getDefault())
@@ -1523,11 +1536,9 @@ fun readDocument(
 
     }
 
-    addProgress(0.15F)
     setProgressText("从文档提取出 ${set.size} 个单词，正在批量查询单词，如果词典里没有的就丢弃")
     val validSet = Dictionary.querySet(set)
     setProgressText("${validSet.size} 个有效单词")
-    addProgress(0.1F)
     setProgressText("")
     return validSet
 }
@@ -1538,7 +1549,6 @@ fun readDocument(
 @Throws(IOException::class)
 private fun readSRT(
     pathName: String,
-    addProgress: (Float) -> Unit,
     setProgressText: (String) -> Unit
 ): Set<Word> {
     val map: MutableMap<String, MutableList<Caption>> = HashMap()
@@ -1550,7 +1560,6 @@ private fun readSRT(
         val formatASS = FormatASS()
         val file = File(pathName)
         val inputStream: InputStream = FileInputStream(file)
-        addProgress(0.1F)
         setProgressText("正在解析字幕文件")
         val timedTextObject: TimedTextObject =  if(file.extension == "srt"){
             formatSRT.parseFile(file.name, inputStream)
@@ -1560,7 +1569,6 @@ private fun readSRT(
 
         val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
         val captionList: Collection<subtitleFile.Caption> = captions.values
-        addProgress(0.2F)
         setProgressText("正在分词")
         for (caption in captionList) {
             var content = replaceSpecialCharacter(caption.content)
@@ -1589,7 +1597,6 @@ private fun readSRT(
             }
         }
     }
-    addProgress(0.2F)
     setProgressText("从字幕文件中提取出 ${map.size} 个单词，正在批量查询单词，如果词典里没有就丢弃")
     val validSet = Dictionary.querySet(map.keys)
     setProgressText("${validSet.size} 个有效单词")
@@ -1598,7 +1605,6 @@ private fun readSRT(
             word.captions = map[word.value]!!
         }
     }
-    addProgress(0.35F)
     setProgressText("")
     return validSet
 }
@@ -1608,7 +1614,6 @@ private fun readSRT(
 private fun readMKV(
     pathName: String,
     trackId :Int,
-    addProgress: (Float) -> Unit,
     setProgressText: (String) -> Unit,
     setIsSelectedASS: (Boolean) -> Unit
 ): Set<Word> {
@@ -1618,7 +1623,6 @@ private fun readMKV(
         reader = EBMLReader(pathName)
 
         setProgressText("正在解析 MKV 文件")
-        addProgress(0.2F)
 
         /**
          * Check to see if this is a valid MKV file
@@ -1670,7 +1674,6 @@ private fun readMKV(
         for (i in 0 until reader.cuesCount) {
             reader.readSubtitlesInCueFrame(i)
         }
-        addProgress(0.45F)
         setProgressText("正在分词")
         ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { inputStream ->
             val model = TokenizerModel(inputStream)
@@ -1726,7 +1729,6 @@ private fun readMKV(
             e.printStackTrace()
         }
     }
-    addProgress(0.1F)
     setProgressText("从视频中提取出${map.keys.size}个单词，正在批量查询单词，如果词典里没有就丢弃")
     val validSet = Dictionary.querySet(map.keys)
     setProgressText("${validSet.size}个有效单词")
@@ -1735,7 +1737,6 @@ private fun readMKV(
             word.captions = map[word.value]!!
         }
     }
-    addProgress(0.1F)
     setProgressText("")
     return validSet
 }
