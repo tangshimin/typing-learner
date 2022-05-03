@@ -170,7 +170,7 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("选择词库(O)", mnemonic = 'O',onClick = {
+        Item("打开词库(O)", mnemonic = 'O',onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
                 val fileChooser =  state.futureFileChooser.get()
@@ -191,7 +191,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         })
 
         if(state.recentList.isNotEmpty()){
-            Menu("选择最近生成的词库(R)", mnemonic = 'R'){
+            Menu("打开最近生成的词库(R)", mnemonic = 'R'){
                 state.recentList.forEach { recentItem ->
                     val recentFile = File(recentItem.path)
                     if(recentFile.exists()){
