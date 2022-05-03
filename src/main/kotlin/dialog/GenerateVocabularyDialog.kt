@@ -37,10 +37,12 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import com.matthewn4444.ebml.EBMLReader
 import com.matthewn4444.ebml.subtitles.SSASubtitles
+import components.createTransferHandler
 import components.parseTrackList
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import opennlp.tools.tokenize.Tokenizer
@@ -101,6 +103,8 @@ fun GenerateVocabularyDialog(
             size = DpSize(1190.dp, 785.dp)
         ),
     ) {
+        val scope = rememberCoroutineScope()
+
         val fileFilter = when (title) {
             "过滤词库" -> FileNameExtensionFilter(
                 "词库",
@@ -122,15 +126,19 @@ fun GenerateVocabularyDialog(
             else -> null
         }
 
+            /**
+             * 选择的文件的绝对路径
+             */
+            var selectedFilePath by remember { mutableStateOf("") }
 
             /**
-             * 选择的文件名
+             * 选择的字幕名称
              */
-            var selectedFileName by remember { mutableStateOf("") }
+            var selectedSubtitlesName by remember { mutableStateOf("    ") }
 
             /**
-             * 预览的单词
-             */
+            * 预览的单词
+            */
             val previewList = remember { mutableStateListOf<Word>() }
 
             /**
@@ -147,6 +155,64 @@ fun GenerateVocabularyDialog(
              * 需要过滤的词库的类型
              */
             var filteringType by remember { mutableStateOf(DOCUMENT) }
+
+            /**
+             * 字幕轨道列表
+             */
+            val trackList  = remember { mutableStateListOf<Pair<Int, String>>() }
+
+
+            /**  处理拖放文件的函数 */
+            val transferHandler = createTransferHandler(
+                showWrongMessage = { message ->
+                    JOptionPane.showMessageDialog(window, message)
+                },
+                parseImportFile = { file ->
+                    scope.launch {
+                        when (file.extension) {
+                            "pdf", "txt" -> {
+                                if(type == DOCUMENT){
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                }else{
+                                    JOptionPane.showMessageDialog(window, "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。")
+                                }
+                            }
+                            "srt", "ass" -> {
+                                if(type == SUBTITLES){
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                }else{
+                                    JOptionPane.showMessageDialog(window, "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。")
+                                }
+                            }
+                            "mkv" -> {
+                                if(type == MKV){
+                                    selectedFilePath = file.absolutePath
+                                    relateVideoPath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                    parseTrackList(
+                                        state.videoPlayerComponent,
+                                        state.videoPlayerWindow,
+                                        file.absolutePath,
+                                        setTrackList = {
+                                            trackList.clear()
+                                            trackList.addAll(it)
+                                        }
+                                    )
+                                }else{
+                                    JOptionPane.showMessageDialog(window, "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。")
+                                }
+                            }
+                            else -> {
+                                JOptionPane.showMessageDialog(window, "格式不支持")
+                            }
+                        }
+                    }
+                }
+            )
+            window.transferHandler = transferHandler
+
         val contentPanel = ComposePanel()
             contentPanel.setContent {
                 MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
@@ -235,15 +301,18 @@ fun GenerateVocabularyDialog(
                                  * 因为我测试了一个 MKV 里的 ASS,生成词库后，只能播放一条字幕，然后程序就崩溃了。
                                  */
                                 var isSelectedASS by remember { mutableStateOf(false) }
-                                val trackList  = remember { mutableStateListOf<Pair<Int, String>>() }
+
                                 SelectFile(
                                     state = state,
                                     type = type,
                                     title = title,
+                                    selectedFilePath = selectedFilePath,
+                                    setSelectedFilePath = {selectedFilePath = it},
+                                    selectedSubtitle = selectedSubtitlesName,
+                                    setSelectedSubtitle = {selectedSubtitlesName = it},
                                     isSelectedASS = isSelectedASS,
                                     setIsSelectedASS = {isSelectedASS = it},
                                     fileFilter = fileFilter,
-                                    setSelectFileName = {selectedFileName = it },
                                     relateVideoPath = relateVideoPath,
                                     setRelateVideoPath = {relateVideoPath = it},
                                     trackList = trackList,
@@ -346,8 +415,6 @@ fun GenerateVocabularyDialog(
                 }
             }
 
-
-
         val bottomPanel = ComposePanel()
         bottomPanel.setSize(Int.MAX_VALUE, 54)
         bottomPanel.setContent {
@@ -370,7 +437,8 @@ fun GenerateVocabularyDialog(
                                 fileChooser.dialogType = JFileChooser.SAVE_DIALOG
                                 fileChooser.dialogTitle = "保存词库"
                                 val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
-                                fileChooser.selectedFile = File("$myDocuments${File.separator}$selectedFileName.json")
+                                val fileName = File(selectedFilePath).nameWithoutExtension
+                                fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
                                 val userSelection = fileChooser.showSaveDialog(window)
                                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                                     val fileToSave = fileChooser.selectedFile
@@ -957,6 +1025,10 @@ fun SelectFile(
     state: AppState,
     type: VocabularyType,
     title: String,
+    selectedFilePath:String,
+    setSelectedFilePath:(String) -> Unit,
+    selectedSubtitle:String,
+    setSelectedSubtitle:(String) -> Unit,
     isSelectedASS:Boolean,
     setIsSelectedASS:(Boolean) ->Unit,
     relateVideoPath:String,
@@ -966,13 +1038,11 @@ fun SelectFile(
     selectedTrackId:Int,
     setSelectedTrackId:(Int) -> Unit,
     fileFilter: FileNameExtensionFilter?,
-    setSelectFileName: (String) -> Unit,
     analysis: (String,Int) -> Unit
 ) {
 
     Column(Modifier.height(IntrinsicSize.Max)){
-        var filePath by remember { mutableStateOf("") }
-        var selectedSubtitle by remember { mutableStateOf("    ") }
+//        var selectedSubtitle by remember { mutableStateOf("    ") }
         var isReading by remember { mutableStateOf(false) }
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -998,10 +1068,11 @@ fun SelectFile(
                 Spacer(Modifier.width(44.dp))
             }
             BasicTextField(
-                value = filePath,
+                value = selectedFilePath,
                 onValueChange = {
-                    filePath = it
-                    setSelectFileName(it)
+//                    absolutePath = it
+                    setSelectedFilePath(it)
+//                    setSelectFileName(File(it).nameWithoutExtension)
                 },
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colors.primary),
@@ -1028,8 +1099,10 @@ fun SelectFile(
                     fileChooser.addChoosableFileFilter(fileFilter)
                     if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         val file = fileChooser.selectedFile
-                        filePath = file.absolutePath
-                        selectedSubtitle = "    "
+//                        absolutePath = file.absolutePath
+                        setSelectedFilePath(file.absolutePath)
+//                        selectedSubtitle = "    "
+                        setSelectedSubtitle("    ")
                         if(type == MKV) {
                             isReading = true
                             setRelateVideoPath(file.absolutePath)
@@ -1040,7 +1113,7 @@ fun SelectFile(
                                 setTrackList = { setTrackList(it) },
                             )
                         }
-                        setSelectFileName(file.nameWithoutExtension)
+//                        setSelectFileName(file.nameWithoutExtension)
                         fileChooser.selectedFile = File("")
                     }
                     fileChooser.removeChoosableFileFilter(fileFilter)
@@ -1051,17 +1124,17 @@ fun SelectFile(
             }
 
             Spacer(Modifier.width(10.dp))
-            if(type != MKV && filePath.isNotEmpty()){
+            if(type != MKV && selectedFilePath.isNotEmpty()){
                 OutlinedButton(
                     onClick = {
-                        analysis(filePath,selectedTrackId)
+                        analysis(selectedFilePath,selectedTrackId)
                     }) {
                     Text("分析", fontSize = 12.sp)
                 }
             }
         }
 
-        if(filePath.isNotEmpty() && type == MKV){
+        if(selectedFilePath.isNotEmpty() && type == MKV){
             Row(horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -1105,7 +1178,8 @@ fun SelectFile(
                                         onClick = {
                                             expanded = false
                                             setIsSelectedASS(false)
-                                            selectedSubtitle = description
+//                                            selectedSubtitle = description
+                                            setSelectedSubtitle(description)
                                             setSelectedTrackId(index)
                                         },
                                         modifier = Modifier.width(282.dp).height(40.dp)
@@ -1140,7 +1214,7 @@ fun SelectFile(
                         Text("暂时不支持 ASS 字幕,请重新选择", color =Color.Red)
                     }else{
                         OutlinedButton(onClick = {
-                            analysis(filePath,selectedTrackId)
+                            analysis(selectedFilePath,selectedTrackId)
                         }) {
                             Text("分析", fontSize = 12.sp)
                         }
@@ -1149,7 +1223,7 @@ fun SelectFile(
             }
         }
 
-        if(type==SUBTITLES && filePath.isNotEmpty()){
+        if(type==SUBTITLES && selectedFilePath.isNotEmpty()){
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
