@@ -1,6 +1,7 @@
 package state
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
@@ -520,7 +521,7 @@ class AppState {
     /**
      * 读取最近生成的词库列表
      */
-    private fun readRecentList(): MutableList<RecentItem> {
+    private fun readRecentList(): SnapshotStateList<RecentItem> {
         val recentListFile = getRecentListFile()
         var list =  if(recentListFile.exists()){
              try {
@@ -555,12 +556,10 @@ class AppState {
                 recentList.remove(item)
                 recentList.add(0,item)
             }
+            val serializeList = mutableListOf<RecentItem>()
+            serializeList.addAll(recentList)
 
-            val format = Json {
-                prettyPrint = true
-                encodeDefaults = true
-            }
-            val json = format.encodeToString(recentList)
+            val json = jsonBuilder.encodeToString(serializeList)
             val recentListFile = getRecentListFile()
             recentListFile.writeText(json)
         }).start()
@@ -569,16 +568,19 @@ class AppState {
     fun removeInvalidRecentItem(recentItem: RecentItem){
         Thread(Runnable {
             recentList.remove(recentItem)
-            val format = Json {
-                prettyPrint = true
-                encodeDefaults = true
-            }
-            val json = format.encodeToString(recentList)
+            val serializeList = mutableListOf<RecentItem>()
+            serializeList.addAll(recentList)
+            val json = jsonBuilder.encodeToString(recentList)
             val recentListFile = getRecentListFile()
             recentListFile.writeText(json)
         }).start()
 
     }
+}
+
+val jsonBuilder = Json {
+    prettyPrint = true
+    encodeDefaults = true
 }
 
 @OptIn(ExperimentalSerializationApi::class)
