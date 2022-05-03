@@ -84,6 +84,7 @@ fun TypingSubtitles(
     mediaPlayerComponent: Component,
     futureFileChooser: FutureTask<JFileChooser>,
     closeLoadingDialog: () -> Unit,
+    wrongColor: Color
 ) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -499,7 +500,7 @@ fun TypingSubtitles(
                                                 } else {
                                                     withStyle(
                                                         style = SpanStyle(
-                                                            color = Color.Red,
+                                                            color = wrongColor,
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                             fontFamily = FontFamily.Monospace,

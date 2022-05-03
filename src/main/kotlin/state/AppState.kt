@@ -38,6 +38,7 @@ data class GlobalData(
     val videoVolume: Float = 0.8F,
     val keystrokeVolume: Float = 0.75F,
     val isPlayKeystrokeSound: Boolean = true,
+    val wrongColorValue: ULong = 18446462598732840960UL,
 )
 
 /** 全局的可观察状态 */
@@ -72,6 +73,11 @@ class GlobalState(globalData :GlobalData){
      * 是否播放按键音效
      */
     var isPlayKeystrokeSound by mutableStateOf(globalData.isPlayKeystrokeSound)
+
+    /**
+     * 错误颜色
+     */
+    var wrongColorValue by mutableStateOf(globalData.wrongColorValue)
 }
 
 /**
@@ -312,6 +318,7 @@ class AppState {
             global.videoVolume,
             global.keystrokeVolume,
             global.isPlayKeystrokeSound,
+            global.wrongColorValue
         )
         val format = Json {
             prettyPrint = true
