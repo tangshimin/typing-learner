@@ -120,6 +120,7 @@ fun main() = application {
                                 mediaPlayerComponent = state.videoPlayerComponent,
                                 futureFileChooser = state.futureFileChooser,
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
+                                wrongColor = Color(state.global.wrongColorValue)
                             )
                         }
                         ANKI ->{}

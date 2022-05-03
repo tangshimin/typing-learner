@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.VolumeUp
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 import player.isMacOS
 import state.AppState
 import state.TypingType
+import javax.swing.JColorChooser
 
 /**
  * 侧边菜单
@@ -370,75 +372,107 @@ fun TypingWordSidebar(state: AppState) {
 
                     )
             }
-
-            Box(Modifier.fillMaxWidth()) {
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                        .clickable { }.padding(start = 16.dp, end = 8.dp)
-                ) {
-                    Row {
-                        Text("音量控制", color = MaterialTheme.colors.onBackground)
-                    }
-                    Spacer(Modifier.width(15.dp))
-                    var expanded by remember { mutableStateOf(false) }
-                    CursorDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
-                        Surface(
-                            elevation = 4.dp,
-                            shape = RectangleShape,
-                        ) {
-                            Column(Modifier.width(300.dp).height(180.dp).padding(start = 16.dp, end = 16.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("击键音效")
-                                    Slider(value = state.global.keystrokeVolume, onValueChange = {
-                                        Thread(Runnable {
-                                            state.global.keystrokeVolume = it
-                                            state.saveGlobalState()
-                                        }).start()
-                                    })
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("提示音效")
-                                    Slider(value = state.typingWord.soundTipsVolume, onValueChange = {
-                                        Thread(Runnable {
-                                            state.typingWord.soundTipsVolume = it
-                                        }).start()
-                                    })
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("单词发音")
-                                    Slider(value = state.global.audioVolume, onValueChange = {
-                                        Thread(Runnable {
-                                            state.global.audioVolume = it
-                                            state.saveGlobalState()
-                                        }).start()
-                                    })
-                                }
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("视频播放")
-                                    Slider(value = state.global.videoVolume, onValueChange = {
-                                        Thread(Runnable {
-                                            state.global.videoVolume = it
-                                            state.saveGlobalState()
-                                        }).start()
-                                    })
-                                }
-
-                            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("错误颜色", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "",
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }
+                Spacer(Modifier.width(15.dp))
+                IconButton(onClick = {
+                    scope.launch {
+                        var composeColor = Color(state.global.wrongColorValue)
+                        val initialColor = java.awt.Color(composeColor.red,composeColor.green,composeColor.blue)
+                        val color = JColorChooser.showDialog(null,"选择错误字符的颜色",initialColor)
+                        if(color != null){
+                            state.global.wrongColorValue = color.toCompose().value
+                            state.saveGlobalState()
                         }
                     }
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.VolumeUp,
-                            contentDescription = "",
-                            tint = MaterialTheme.colors.primary
-                        )
+
+                }){
+                    Icon(
+                        Icons.Default.Colorize,
+                        contentDescription = "",
+                        tint = Color(state.global.wrongColorValue)
+                    )
+                }
+            }
+
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("音量控制", color = MaterialTheme.colors.onBackground)
+                }
+                Spacer(Modifier.width(15.dp))
+                var expanded by remember { mutableStateOf(false) }
+                CursorDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    Surface(
+                        elevation = 4.dp,
+                        shape = RectangleShape,
+                    ) {
+                        Column(Modifier.width(300.dp).height(180.dp).padding(start = 16.dp, end = 16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("击键音效")
+                                Slider(value = state.global.keystrokeVolume, onValueChange = {
+                                    Thread(Runnable {
+                                        state.global.keystrokeVolume = it
+                                        state.saveGlobalState()
+                                    }).start()
+                                })
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("提示音效")
+                                Slider(value = state.typingWord.soundTipsVolume, onValueChange = {
+                                    Thread(Runnable {
+                                        state.typingWord.soundTipsVolume = it
+                                    }).start()
+                                })
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("单词发音")
+                                Slider(value = state.global.audioVolume, onValueChange = {
+                                    Thread(Runnable {
+                                        state.global.audioVolume = it
+                                        state.saveGlobalState()
+                                    }).start()
+                                })
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("视频播放")
+                                Slider(value = state.global.videoVolume, onValueChange = {
+                                    Thread(Runnable {
+                                        state.global.videoVolume = it
+                                        state.saveGlobalState()
+                                    }).start()
+                                })
+                            }
+
+                        }
                     }
+                }
+                IconButton(onClick = { expanded = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.VolumeUp,
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.primary
+                    )
                 }
             }
             Row(
@@ -534,4 +568,8 @@ fun TypingWordSidebar(state: AppState) {
 
 
     }
+}
+
+fun java.awt.Color.toCompose(): Color {
+    return Color(red, green, blue)
 }

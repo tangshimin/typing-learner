@@ -606,6 +606,7 @@ fun TypingWord(
                             )
                             Definition(
                                 word = currentWord,
+                                wrongColor = Color(state.global.wrongColorValue),
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = state.isPlaying,
                                 textFieldValue = definitionTextFieldValue,
@@ -653,6 +654,7 @@ fun TypingWord(
                                 },
                                 playKeySound = { playKeySound() },
                                 modifier = captionsModifier,
+                                wrongColor = Color(state.global.wrongColorValue)
                             )
                             if (state.isPlaying) Spacer(Modifier.height((videoSize.height).dp).width(videoSize.width.dp))
                         }
@@ -885,6 +887,7 @@ fun Morphology(
 @Composable
 fun Definition(
     word: Word,
+    wrongColor:Color,
     definitionVisible: Boolean,
     isPlaying: Boolean,
     textFieldValue: String,
@@ -954,7 +957,7 @@ fun Definition(
                                 } else {
                                     withStyle(
                                         style = SpanStyle(
-                                            color = Color.Red,
+                                            color = wrongColor,
                                             fontSize = LocalTextStyle.current.fontSize,
                                             letterSpacing = LocalTextStyle.current.letterSpacing,
                                             fontFamily = LocalTextStyle.current.fontFamily,
@@ -1070,6 +1073,7 @@ fun Captions(
     checkTyping: (Int, String, String) -> Unit,
     playKeySound: () -> Unit,
     modifier: Modifier,
+    wrongColor :Color
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1108,7 +1112,8 @@ fun Captions(
                         playKeySound = { playKeySound() },
                         index = index,
                         playTriple = playTriple,
-                        bounds = bounds
+                        bounds = bounds,
+                        wrongColor = wrongColor
                     )
                 }
 
@@ -1196,7 +1201,8 @@ fun Caption(
     playKeySound: () -> Unit,
     index: Int,
     playTriple: Triple<Caption, String, Int>,
-    bounds: Rectangle
+    bounds: Rectangle,
+    wrongColor: Color,
 ) {
     val scope = rememberCoroutineScope()
     val relativeVideoPath = playTriple.second
@@ -1255,7 +1261,7 @@ fun Caption(
                             } else {
                                 withStyle(
                                     style = SpanStyle(
-                                        color = Color.Red,
+                                        color = wrongColor,
                                         fontSize = LocalTextStyle.current.fontSize,
                                         letterSpacing = LocalTextStyle.current.letterSpacing,
                                         fontFamily = LocalTextStyle.current.fontFamily,
