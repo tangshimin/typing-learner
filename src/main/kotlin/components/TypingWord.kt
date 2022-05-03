@@ -1426,44 +1426,6 @@ fun play(
 
 }
 
-///**
-// * 用快捷键播放视频
-// * @param state 应用程序的状态
-// * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
-// * @param mediaPlayerComponent 视频播放组件
-// * @param videoBounds 视频播放器的位置和大小
-// */
-//@OptIn(ExperimentalSerializationApi::class)
-//private fun shortcutPlay(
-//    state: AppState,
-//    playTriple: Triple<Caption, String, Int>?,
-//    mediaPlayerComponent: Component,
-//    videoBounds: Rectangle
-//) {
-//    if (playTriple != null) {
-//        if (!state.isPlaying) {
-//            val file = File(playTriple.second)
-//            if (file.exists()) {
-//                state.isPlaying = true
-//                Thread(Runnable {
-//                    EventQueue.invokeLater {
-//                        play(
-//                            window = state.videoPlayerWindow,
-//                            setIsPlaying = { state.isPlaying = it },
-//                            state.global.videoVolume,
-//                            playTriple,
-//                            mediaPlayerComponent,
-//                            videoBounds
-//                        )
-//                    }
-//
-//                }).start()
-//            }
-//        } else {
-//            println("通知用户，视频地址错误")
-//        }
-//    }
-//}
 
 fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
     val windowWidth = mainWindow.size.width
