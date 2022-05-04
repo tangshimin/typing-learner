@@ -291,7 +291,8 @@ fun TypingSubtitles(
         showWrongMessage = { message ->
             JOptionPane.showMessageDialog(window, message)
         },
-        parseImportFile = { file ->
+        parseImportFile = { files ->
+            val file = files.first()
             scope.launch {
                 if (file.extension == "mkv") {
                     if (typingSubtitles.videoPath != file.absolutePath) {
@@ -1019,9 +1020,14 @@ fun SubtitlesSidebar(
     }
 }
 
- /** 创建拖放处理器 */
+ /** 创建拖放处理器
+  * @param singleFile 是否只接收单个文件
+  * @param parseImportFile 处理导入的文件的函数
+  * @param showWrongMessage 显示提示信息的函数
+  */
 fun createTransferHandler(
-    parseImportFile: (File) -> Unit,
+    singleFile:Boolean = true,
+    parseImportFile: (List<File>) -> Unit,
     showWrongMessage: (String) -> Unit,
 ): TransferHandler {
     return object : TransferHandler() {
@@ -1039,12 +1045,16 @@ fun createTransferHandler(
             val transferable = support.transferable
             try {
                 val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-                if (files.size == 1) {
-                    val file = files[0]
-                    parseImportFile(file)
-                } else {
-                    showWrongMessage("一次只能读取一个文件")
+                if(singleFile){
+                    if (files.size == 1) {
+                        parseImportFile(files)
+                    } else {
+                        showWrongMessage("一次只能读取一个文件")
+                    }
+                }else{
+                    parseImportFile(files)
                 }
+
 
             } catch (exception: UnsupportedFlavorException) {
                 return false

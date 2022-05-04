@@ -168,7 +168,8 @@ fun GenerateVocabularyDialog(
             showWrongMessage = { message ->
                 JOptionPane.showMessageDialog(window, message)
             },
-            parseImportFile = { file ->
+            parseImportFile = { files ->
+                val file = files.first()
                 scope.launch {
                     when (file.extension) {
                         "pdf", "txt" -> {
