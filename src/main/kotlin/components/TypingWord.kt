@@ -258,7 +258,8 @@ fun TypingWord(
         showWrongMessage = { message ->
             JOptionPane.showMessageDialog(window, message)
         },
-        parseImportFile = { file ->
+        parseImportFile = { files ->
+            val file = files.first()
             scope.launch {
                 if (file.extension == "json") {
                     if (state.typingWord.vocabularyPath != file.absolutePath) {
