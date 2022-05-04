@@ -182,6 +182,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     val file = fileChooser.selectedFile
                     state.changeVocabulary(file)
+                    state.global.type = WORD
+                    state.saveGlobalState()
                     state.loadingFileChooserVisible = false
                 } else {
                     state.loadingFileChooserVisible = false
@@ -198,6 +200,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                         Item(text = recentItem.name,onClick = {
                             val file = File(recentItem.path)
                             state.changeVocabulary(file)
+                            state.global.type = WORD
+                            state.saveGlobalState()
                             state.loadingFileChooserVisible = false
                         })
                     }else{
@@ -227,8 +231,10 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         })
     }
     Menu("字幕(S)",mnemonic = 'S'){
+        val enableTypingSubtitles = (state.global.type == WORD)
         Item(
             "抄写字幕(T)",mnemonic = 'T',
+            enabled = enableTypingSubtitles,
             onClick = {
                 state.global.type = SUBTITLES
             },
@@ -243,7 +249,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
             )
         }
         //如果当前词库类型为文档就启用
-        val enableLinkVocabulary = state.vocabulary.type == VocabularyType.DOCUMENT
+        val enableLinkVocabulary = (state.vocabulary.type == VocabularyType.DOCUMENT && state.global.type == WORD)
         Item(
             "链接字幕词库(L)",mnemonic = 'L',
             enabled = enableLinkVocabulary,
@@ -251,8 +257,10 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         )
     }
     Menu("章节(C)", mnemonic = 'C') {
+        val enable = state.global.type == WORD
         Item(
             "选择章节(C)",mnemonic = 'C',
+            enabled = enable,
             onClick = {
                 state.openSelectChapter = true
             },
