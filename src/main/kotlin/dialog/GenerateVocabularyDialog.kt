@@ -215,6 +215,11 @@ fun GenerateVocabularyDialog(
                                 )
                             }
                         }
+                        "json" -> {
+                            if(title == "过滤词库"){
+                                selectedFilePath = file.absolutePath
+                            }
+                        }
                         else -> {
                             JOptionPane.showMessageDialog(window, "格式不支持")
                         }
