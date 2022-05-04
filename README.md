@@ -48,33 +48,14 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 15. 默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。
 
-
-### ~~大文件拉取~~
-~~本地词库是一个大文件(265MB)如果安装了[Git Large File Storage (LFS)](https://git-lfs.github.com/) 可以直接 `clone`即可。若在安装 Git LFS 之前执行了 `clone`，则拉取下来的仓库并不包含大文件本体，而是一个指向其 LFS 存储对象的文件指针，这种情况需要使用 `git lfs pull` 拉取文件指针所指向的完整对象。~~
-
-### [大文件存储](https://git-lfs.github.com/)的流量用完了
-
-准备把词典文件压缩成`.7z` 文件，`clone` 之后在本地解压缩
-
 ### 开发环境
+
+- 启动项目之前需要将 `qwerty-learner-desktop\resources\common\dictionary` 文件夹里的词典文件`ecdict.mv.db.7z` 解压缩。不然不能使用生成词库功能。
 - JDK 17
 - VLC 视频播放器
+
 
 ### 致谢
 感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
