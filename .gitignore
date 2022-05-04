@@ -5,3 +5,4 @@
 /resources/common/settings.json
 /resources/windows/settings.json
 src/main/resources/.DS_Store
+/resources/common/dictionary/ecdict.mv.db
