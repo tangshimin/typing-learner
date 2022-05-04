@@ -17,12 +17,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import components.createTransferHandler
 import data.*
+import kotlinx.coroutines.launch
 import java.io.File
+import java.util.*
 import java.util.concurrent.FutureTask
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
+import kotlin.concurrent.schedule
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -40,6 +45,58 @@ fun MergeVocabularyDialog(
             size = DpSize(600.dp,600.dp)
         ),
     ) {
+        val scope = rememberCoroutineScope()
+        /** 是否启用合并按钮 */
+        var mergeEnabled by remember{ mutableStateOf(false)}
+        /** 选择的词库列表 */
+        var selectedFileList = remember { mutableStateListOf<File>() }
+        /** 合并后的新词库 */
+        var newVocabulary by remember { mutableStateOf<Vocabulary?>(null) }
+        /** 合并词库的数量限制 */
+        var isOutOfRange by remember { mutableStateOf(false) }
+        /** 单词的总数 */
+        var size by remember{ mutableStateOf(0)}
+        /** 正在读取的词库名称 */
+        var fileName by remember{ mutableStateOf("")}
+        /** 更新单词的总数的回调函数 */
+        val updateSize :(Int)->Unit = {
+            size = it
+        }
+        /** 更新正在读取的词库名称的回调函数 */
+        val updateFileName :(String) -> Unit = {
+            fileName = it
+        }
+
+        /**  处理拖放文件的函数 */
+        val transferHandler = createTransferHandler(
+            singleFile = false,
+            showWrongMessage = { message ->
+                JOptionPane.showMessageDialog(window, message)
+            },
+            parseImportFile = {files ->
+                scope.launch {
+                    for (file in files) {
+                        if (file.extension == "json") {
+                            if(selectedFileList.size + 1 < 101){
+                                if (!selectedFileList.contains(file)) {
+                                    selectedFileList.add(file)
+                                }
+                            }else{
+                                isOutOfRange = true
+                            }
+
+                        }else {
+                            JOptionPane.showMessageDialog(window, "词库的格式不对")
+                        }
+                    }
+                    mergeEnabled = selectedFileList.size>1
+                    // 导入了新的词库，重置总计单词的数量。
+                    updateSize(0)
+                }
+            }
+        )
+
+        window.transferHandler = transferHandler
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
@@ -51,18 +108,6 @@ fun MergeVocabularyDialog(
                 Column (verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()){
-                    var mergeEnabled by remember{ mutableStateOf(false)}
-                    var selectedFileList = remember { mutableStateListOf<File>() }
-                    var newVocabulary by remember { mutableStateOf<Vocabulary?>(null) }
-                    var isOutOfRange by remember { mutableStateOf(false) }
-                    var size by remember{ mutableStateOf(0)}
-                    var fileName by remember{ mutableStateOf("")}
-                    val updateSize :(Int)->Unit = {
-                        size = it
-                    }
-                    val updateFileName :(String) -> Unit = {
-                        fileName = it
-                    }
                     if(!merging){
                         val height = if(selectedFileList.size<9) (selectedFileList.size * 48+10).dp else 450.dp
                         Box(Modifier.fillMaxWidth().height(height)){
@@ -106,6 +151,10 @@ fun MergeVocabularyDialog(
                             color = Color.Red,
                             modifier = Modifier.padding(bottom = 10.dp)
                         )
+                        // 10 秒后消失
+                        Timer("重置状态", false).schedule(10000) {
+                            isOutOfRange = false
+                        }
                     }
 
                     if(merging){
@@ -137,17 +186,17 @@ fun MergeVocabularyDialog(
                                 fileChooser.addChoosableFileFilter(fileFilter)
                                 fileChooser.selectedFile = null
                                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                                    if(fileChooser.selectedFiles.size<101){
-                                        isOutOfRange = false
-                                        fileChooser.selectedFiles.forEach { file ->
+                                    fileChooser.selectedFiles.forEach { file ->
+                                        if(selectedFileList.size + 1 < 100){
                                             if (!selectedFileList.contains(file)) {
                                                 selectedFileList.add(file)
                                             }
+                                        }else{
+                                            isOutOfRange = true
                                         }
-                                    }else{
-                                        isOutOfRange = true
                                     }
-                                    mergeEnabled = fileChooser.selectedFiles.isNotEmpty()
+
+                                    mergeEnabled = selectedFileList.size>1
                                     if(fileChooser.selectedFiles.isNotEmpty()){
                                         updateSize(0)
                                     }
