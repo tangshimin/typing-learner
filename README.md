@@ -15,7 +15,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 1. 可以用[电影生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
   ![Generate Vocabulary From MKV Video File](https://user-images.githubusercontent.com/16540656/166684580-57e31303-e849-4bb6-be9a-2cc0cb851317.png)
-2. 可以[用英文文档生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
+2. [可以用英文文档生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 
 
 3. 基于文档的词库可以链接用 MKV 视频或字幕生成的词库。下面着张图片表示，电影 Sintel 的所有字幕中，有 9 条字幕，匹配了四级词库中的 6 个单词。
@@ -46,7 +46,6 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 15. 默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。
 
-15. 默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。
 
 ### 开发环境
 
