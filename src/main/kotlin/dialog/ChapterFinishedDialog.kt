@@ -287,31 +287,12 @@ fun ChapterFinishedDialog(
 
                     }
                     Spacer(Modifier.width(20.dp))
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                shape = RectangleShape
-                            ) {
-                                Text(text = "快捷键 Enter", modifier = Modifier.padding(10.dp))
-                            }
-                        },
-                        delayMillis = 300,
-                        tooltipPlacement = TooltipPlacement.ComponentRect(
-                            anchor = Alignment.TopCenter,
-                            alignment = Alignment.TopCenter,
-                            offset = DpOffset.Zero
-                        )
-                    ) {
-                        if (isVocabularyFinished) {
-                            OutlinedButton(onClick = {
-                                resetIndex(true)
-                            }) {
-                                Text("随机重置词库", color = textColor)
-                            }
+                    if (isVocabularyFinished) {
+                        OutlinedButton(onClick = {
+                            resetIndex(true)
+                        }) {
+                            Text("随机重置词库", color = textColor)
                         }
-
                     }
 
                 }
