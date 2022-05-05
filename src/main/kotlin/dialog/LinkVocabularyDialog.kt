@@ -29,6 +29,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
+import components.createTransferHandler
+import components.parseTrackList
 import components.play
 import data.Caption
 import data.ExternalCaption
@@ -42,6 +44,7 @@ import java.awt.Rectangle
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.filechooser.FileSystemView
 
 /**
@@ -208,6 +211,27 @@ fun LinkVocabularyDialog(
             size = DpSize(600.dp, 650.dp)
         ),
     ) {
+
+
+        /**  处理拖放文件的函数 */
+        val transferHandler = createTransferHandler(
+            showWrongMessage = { message ->
+                JOptionPane.showMessageDialog(window, message)
+            },
+            parseImportFile = { files ->
+                val file = files.first()
+                scope.launch {
+                    if (file.extension == "json") {
+                        extractCaption(file)
+                    } else {
+                        JOptionPane.showMessageDialog(window, "词库的格式不正确")
+                    }
+
+
+                }
+            }
+        )
+        window.transferHandler = transferHandler
 
         WindowDraggableArea {
             Surface(
