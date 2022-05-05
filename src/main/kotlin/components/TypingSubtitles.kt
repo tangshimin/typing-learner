@@ -216,6 +216,8 @@ fun TypingSubtitles(
             typingSubtitles.firstVisibleItemIndex = 0
             typingSubtitles.currentIndex = 0
             focusManager.clearFocus()
+            /** 把之前的字幕列表清除才能触发解析字幕的函数重新运行 */
+            captionList.clear()
             saveSubtitlesState()
         }
     }
@@ -362,9 +364,10 @@ fun TypingSubtitles(
                             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
                         }
                     }
+                    val startPadding = 150.dp
                     val startTimeWidth = 141.dp
                     val endPadding = 10.dp
-                    val maxWidth = startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
+                    val maxWidth = startPadding + startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
