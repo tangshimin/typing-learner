@@ -94,7 +94,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.wordVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
                     },
                 )
@@ -120,7 +122,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.phoneticVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
                     },
 
@@ -147,7 +151,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.morphologyVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
 
                     },
@@ -174,7 +180,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.definitionVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
                     },
                 )
@@ -200,7 +208,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.translationVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
 
                     },
@@ -227,7 +237,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.subtitlesVisible = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
 
                     },
@@ -280,7 +292,9 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.isAuto = it
-                            state.saveTypingWordState()
+                            if(!state.isDictation){
+                                state.saveTypingWordState()
+                            }
                         }
 
                     },

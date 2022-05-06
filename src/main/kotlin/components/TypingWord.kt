@@ -114,7 +114,9 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.isAuto = !state.typingWord.isAuto
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
@@ -128,28 +130,36 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
             (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
             (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.definitionVisible = !state.typingWord.definitionVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
             (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.translationVisible = !state.typingWord.translationVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
@@ -163,7 +173,9 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.wordVisible = !state.typingWord.wordVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }
@@ -216,7 +228,9 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
-                    state.saveTypingWordState()
+                    if(!state.isDictation){
+                        state.saveTypingWordState()
+                    }
                 }
                 true
             }

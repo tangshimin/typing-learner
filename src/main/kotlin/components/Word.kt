@@ -459,24 +459,27 @@ fun Word(
         state.saveTypingWordState()
         changeShowChapterFinishedDialog(false)
     }
-
     /**
      * 进入默写模式
      */
     val enterDictation: () -> Unit = {
-        // 正常地进入默写模式，或从复习错误单词进入默写模式
-        if (!state.isDictation || state.isReviewWrongList) {
-            state.isReviewWrongList = false
-            state.enterDictationMode()
-        } else {
-            // 再默写一次
-            state.dictationIndex = 0
-            // 重新生成一个乱序的单词列表
-            state.dictationWords = state.generateDictationWords(wordValue)
+        scope.launch {
+            state.saveTypingWordState()
+            // 正常地进入默写模式，或从复习错误单词进入默写模式
+            if (!state.isDictation || state.isReviewWrongList) {
+                state.isReviewWrongList = false
+                state.enterDictationMode()
+            } else {
+                // 再默写一次
+                state.dictationIndex = 0
+                // 重新生成一个乱序的单词列表
+                state.dictationWords = state.generateDictationWords(wordValue)
+            }
+            resetChapterTime()
+            changeShowChapterFinishedDialog(false)
         }
-        resetChapterTime()
-        changeShowChapterFinishedDialog(false)
     }
+
 
     /**
      * 重置索引
