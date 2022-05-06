@@ -623,6 +623,14 @@ fun composeAppResource(path: String): File {
         file
     }
 }
+fun getAudioDirectory():File{
+    val homeDir = File(System.getProperty("user.home"))
+    val audioDir = File(homeDir, ".qwerty-learner/audio")
+    if (!audioDir.exists()) {
+        audioDir.mkdir()
+    }
+    return audioDir
+}
 
 /** 获取应用程序的配置文件的目录 */
 fun getSettingsDirectory():File{

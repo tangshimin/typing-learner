@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import state.getAudioDirectory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.Component
@@ -150,7 +151,7 @@ fun playAudio(
 }
 
 fun getAudioPath(word: String, pronunciation: String): String {
-    var audioDir = File("audio")
+    val audioDir = getAudioDirectory()
     if (!audioDir.exists()) {
         audioDir.mkdir()
     }
@@ -179,7 +180,7 @@ fun getAudioPath(word: String, pronunciation: String): String {
         val audioURL = "https://dict.youdao.com/dictvoice?audio=${mutableWord}&${type}"
         try {
             val audioBytes = URL(audioURL).readBytes()
-            val file = File("audio/${fileName}.mp3")
+            val file = File(audioDir,"$fileName.mp3")
             file.writeBytes(audioBytes)
             path = file.absolutePath
         } catch (exception: Exception) {
