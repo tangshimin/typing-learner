@@ -427,41 +427,43 @@ fun TypingWord(
                              * 切换下一个单词
                              */
                             val toNext: () -> Unit = {
-                                wordTypingResult.clear()
-                                wordTextFieldValue = ""
-                                definitionTextFieldValue = ""
-                                definitionTypingResult.clear()
-                                captionsTypingResultMap.clear()
-                                captionsTextFieldValueList = mutableStateListOf("", "", "")
-                                state.wordCorrectTime = 0
-                                state.wordWrongTime = 0
-                                if (state.isDictation) {
-                                    if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
-                                        /**
-                                         * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
-                                         * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
-                                         * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
-                                         */
-                                        Timer("playChapterFinishedSound", false).schedule(1000) {
-                                            playChapterFinished()
-                                        }
-                                        showChapterFinishedDialog = true
+                                scope.launch {
+                                    wordTypingResult.clear()
+                                    wordTextFieldValue = ""
+                                    definitionTextFieldValue = ""
+                                    definitionTypingResult.clear()
+                                    captionsTypingResultMap.clear()
+                                    captionsTextFieldValueList = mutableStateListOf("", "", "")
+                                    state.wordCorrectTime = 0
+                                    state.wordWrongTime = 0
+                                    if (state.isDictation) {
+                                        if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
+                                            /**
+                                             * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
+                                             * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
+                                             * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
+                                             */
+                                            Timer("playChapterFinishedSound", false).schedule(1000) {
+                                                playChapterFinished()
+                                            }
+                                            showChapterFinishedDialog = true
 
-                                    } else state.dictationIndex++
-                                } else {
-                                    when {
-                                        (state.typingWord.index == state.vocabulary.size - 1) -> {
-                                            isVocabularyFinished = true
-                                            playChapterFinished()
-                                            showChapterFinishedDialog = true
+                                        } else state.dictationIndex++
+                                    } else {
+                                        when {
+                                            (state.typingWord.index == state.vocabulary.size - 1) -> {
+                                                isVocabularyFinished = true
+                                                playChapterFinished()
+                                                showChapterFinishedDialog = true
+                                            }
+                                            ((state.typingWord.index + 1) % 20 == 0) -> {
+                                                playChapterFinished()
+                                                showChapterFinishedDialog = true
+                                            }
+                                            else -> state.typingWord.index += 1
                                         }
-                                        ((state.typingWord.index + 1) % 20 == 0) -> {
-                                            playChapterFinished()
-                                            showChapterFinishedDialog = true
-                                        }
-                                        else -> state.typingWord.index += 1
+                                        state.saveTypingWordState()
                                     }
-                                    state.saveTypingWordState()
                                 }
                             }
 
