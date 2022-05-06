@@ -33,7 +33,7 @@ import state.AppState
 fun SelectChapterDialog(state: AppState) {
     Dialog(title = "选择章节",
         onCloseRequest = { state.openSelectChapter = false},
-        resizable = false,
+        resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
             size = DpSize(930.dp, 785.dp)
@@ -65,10 +65,10 @@ fun SelectChapter(
 
         Box(
             modifier = Modifier
-                .size(930.dp, 785.dp) .background(color = MaterialTheme.colors.background)
+                .fillMaxSize()
+                .background(color = MaterialTheme.colors.background)
         ) {
             Column (modifier = Modifier.align(Alignment.TopCenter)){
-                Divider()
                 Row(horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 5.dp,bottom = 5.dp)){
@@ -78,8 +78,7 @@ fun SelectChapter(
                 }
                 Divider()
             }
-            val top = if(!MaterialTheme.colors.isLight) 85.dp else 55.dp
-            Row(modifier = Modifier.align(Alignment.Center).padding(top = top,bottom = 55.dp)){
+            Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp,bottom = 55.dp)){
                 Chapters(
                     checkedChapter = chapter,
                     size = state.vocabulary.size,
@@ -121,9 +120,7 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
         LazyVerticalGrid(
             cells = GridCells.Adaptive(144.dp),
             contentPadding = PaddingValues(10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 50.dp, end = 60.dp),
+            modifier = Modifier.fillMaxWidth(),
             state = listState
         ) {
             itemsIndexed(chapters) { index: Int, item: String ->
