@@ -59,7 +59,7 @@ fun ChapterFinishedDialog(
     val width = if(isVocabularyFinished) 550.dp else 400.dp
     val height = (180 + ((dictationWrongWords.size * 18) + 10)).dp
     Dialog(
-        title = "提示",
+        title = "",
         onCloseRequest = { close() },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -106,13 +106,13 @@ fun ChapterFinishedDialog(
                     focusRequester.requestFocus()
                 }
                 val textColor = MaterialTheme.colors.primary
-                Spacer(modifier = Modifier.height(10.dp))
+//                Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
 
-                    val text = if (isVocabularyFinished) {
+                    val title = if (isVocabularyFinished) {
                         "您已完成最后一个章节"
                     } else if (isDictation){
                         if(isReviewWrongList){
@@ -120,7 +120,7 @@ fun ChapterFinishedDialog(
                         }else "您已默写完本章节"
 
                     } else "您已学习完本章节"
-                    Text(text = "$text", color = MaterialTheme.colors.onBackground)
+                    Text(text = "$title", color = MaterialTheme.colors.onBackground)
                 }
 
                 if (isDictation && !isReviewWrongList) {
@@ -166,7 +166,8 @@ fun ChapterFinishedDialog(
                             }
                         }
                     }
-
+                }else{
+                    Spacer(modifier = Modifier.height(33.dp))
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
