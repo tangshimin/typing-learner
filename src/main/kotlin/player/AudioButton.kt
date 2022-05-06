@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.Component
@@ -36,6 +37,7 @@ fun AudioButton(
     pronunciation: String,
 ) {
     if (pronunciation != "false") {
+        val scope = rememberCoroutineScope()
         val audioPlayerComponent = LocalMediaPlayerComponent.current
         var isPlaying by remember { mutableStateOf(false) }
 
@@ -77,7 +79,11 @@ fun AudioButton(
                 IconToggleButton(
                     checked = isPlaying,
                     onCheckedChange = {
-                        Thread(Runnable { playAudio() }).start()
+                        if(!isPlaying){
+                            scope.launch {
+                                playAudio()
+                            }
+                        }
                     }) {
                     Crossfade(isPlaying) { isPlaying ->
                         if (isPlaying) {

@@ -107,7 +107,8 @@ fun TypingWord(
         }
     }
 
-
+    /** 是否正在播放单词发音 */
+    var isPlayingAudio by remember { mutableStateOf(false) }
     /** 处理全局快捷键的回调函数 */
     val keyEvent: (KeyEvent) -> Boolean = {
         when {
@@ -181,14 +182,16 @@ fun TypingWord(
             }
 
             (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
-                playAudio(
-                    word = currentWord.value,
-                    volume = state.global.audioVolume,
-                    pronunciation = state.typingWord.pronunciation,
-                    mediaPlayerComponent = audioPlayer,
-                    changePlayerState = {},
-                    setIsAutoPlay = {}
-                )
+                if(!isPlayingAudio){
+                    playAudio(
+                        word = currentWord.value,
+                        volume = state.global.audioVolume,
+                        pronunciation = state.typingWord.pronunciation,
+                        mediaPlayerComponent = audioPlayer,
+                        changePlayerState = {isPlaying -> isPlayingAudio = isPlaying},
+                        setIsAutoPlay = {}
+                    )
+                }
                 true
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
