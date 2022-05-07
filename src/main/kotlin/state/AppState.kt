@@ -10,7 +10,6 @@ import components.flatlaf.InitializeFileChooser
 import data.Word
 import data.loadMutableVocabulary
 import dialog.RecentItem
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -339,11 +338,7 @@ class AppState {
                     global.wrongColor.value,
                     global.primaryColor.value
                 )
-                val format = Json {
-                    prettyPrint = true
-                    encodeDefaults = true
-                }
-                val json = format.encodeToString(globalData)
+                val json = jsonBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()
                 settings.writeText(json)
             }
@@ -373,11 +368,8 @@ class AppState {
                     typingWord.vocabularyName,
                     typingWord.vocabularyPath,
                 )
-                val format = Json {
-                    prettyPrint = true
-                    encodeDefaults = true
-                }
-                val json = format.encodeToString(typingWordData)
+
+                val json = jsonBuilder.encodeToString(typingWordData)
                 val settings = getWordSettingsFile()
                 settings.writeText(json)
             }
@@ -399,11 +391,8 @@ class AppState {
                     typingSubtitles.firstVisibleItemIndex,
                     typingSubtitles.sentenceMaxLength,
                 )
-                val format = Json {
-                    prettyPrint = true
-                    encodeDefaults = true
-                }
-                val json = format.encodeToString(typingSubtitlesData)
+
+                val json = jsonBuilder.encodeToString(typingSubtitlesData)
                 val typingSubtitlesSetting = getSubtitlesSettingsFile()
                 typingSubtitlesSetting.writeText(json)
             }
@@ -547,14 +536,11 @@ class AppState {
     fun saveCurrentVocabulary() {
         runBlocking {
             launch {
-                val format = Json {
-                    prettyPrint = true
-                    encodeDefaults = true
-                }
-                    val json = format.encodeToString(vocabulary.serializeVocabulary)
-                    val file = getResourcesFile(typingWord.vocabularyPath)
-                    file.writeText(json)
-            }}
+                val json = jsonBuilder.encodeToString(vocabulary.serializeVocabulary)
+                val file = getResourcesFile(typingWord.vocabularyPath)
+                file.writeText(json)
+            }
+        }
     }
 
     /**
