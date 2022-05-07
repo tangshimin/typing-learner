@@ -125,8 +125,7 @@ fun main() = application {
                                 wrongColor = state.global.wrongColor
                             )
                         }
-                        ANKI -> {
-                        }
+
                     }
 
                 }
