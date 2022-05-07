@@ -333,82 +333,56 @@ fun TypingWord(
                         ) {
 
 
-                            /**
-                             * 单词输入框里的字符串
-                             */
+                            /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
-                            /**
-                             * 英语定义输入框里的字符串
-                             */
+                            /** 英语定义输入框里的字符串 */
                             var definitionTextFieldValue by remember { mutableStateOf("") }
 
-                            /**
-                             * 字幕输入框里的字符串列表
-                             */
+                            /** 字幕输入框里的字符串列表 */
                             var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
 
-                            /**
-                             * 单词输入框输入的结果
-                             */
+                            /** 单词输入框输入的结果*/
                             val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
-                            /**
-                             * 英语定义输入框的结果
-                             */
+                            /** 英语定义输入框的结果 */
                             val definitionTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
-                            /**
-                             * 字幕输入框的结果
-                             */
+                            /** 字幕输入框的结果 */
                             val captionsTypingResultMap =
                                 remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
 
-                            /**
-                             * 显示本章节已经完成对话框
-                             */
+                            /** 显示本章节已经完成对话框 */
                             var showChapterFinishedDialog by remember { mutableStateOf(false) }
 
-                            /**
-                             * 显示整个词库已经学习完成对话框
-                             */
+                            /** 显示整个词库已经学习完成对话框 */
                             var isVocabularyFinished by remember { mutableStateOf(false) }
 
-                            /**
-                             * 显示编辑单词对话框
-                             */
+                            /** 显示编辑单词对话框 */
                             var showEditWordDialog by remember { mutableStateOf(false) }
 
-                            /**
-                             * 播放错误音效
-                             */
+                            /** 播放错误音效 */
                             val playBeepSound = {
                                 if (state.typingWord.isPlaySoundTips) {
                                     playSound("audio/beep.wav", state.typingWord.soundTipsVolume)
                                 }
                             }
 
-                            /**
-                             * 播放成功音效
-                             */
+                            /** 播放成功音效 */
                             val playSuccessSound = {
                                 if (state.typingWord.isPlaySoundTips) {
                                     playSound("audio/hint.wav", state.typingWord.soundTipsVolume)
                                 }
                             }
 
-                            /**
-                             * 播放整个章节完成时音效
-                             */
+                            /** 播放整个章节完成时音效 */
                             val playChapterFinished = {
                                 if (state.typingWord.isPlaySoundTips) {
                                     playSound("audio/Success!!.wav", state.typingWord.soundTipsVolume)
                                 }
                             }
 
-                            /**
-                             * 播放按键音效
-                             */
+                            /** 播放按键音效 */
                             val playKeySound = {
                                 if (state.global.isPlayKeystrokeSound) {
                                     playSound("audio/keystroke.wav", state.global.keystrokeVolume)
@@ -429,9 +403,7 @@ fun TypingWord(
                                 }
                             }
 
-                            /**
-                             * 切换下一个单词
-                             */
+                            /** 切换下一个单词 */
                             val toNext: () -> Unit = {
                                 scope.launch {
                                     wordTypingResult.clear()
@@ -474,9 +446,7 @@ fun TypingWord(
                             }
 
 
-                            /**
-                             * 检查输入的单词
-                             */
+                            /** 检查输入的单词 */
                             val checkWordInput: (String) -> Unit = { input ->
                                 wordTextFieldValue = input
                                 wordTypingResult.clear()
@@ -540,9 +510,7 @@ fun TypingWord(
                                 }
                             }
 
-                            /**
-                             * 检查输入的英语定义
-                             */
+                            /** 检查输入的英语定义 */
                             val checkDefinitionInput: (String) -> Unit = { input ->
                                 definitionTextFieldValue = input
                                 definitionTypingResult.clear()
@@ -567,9 +535,7 @@ fun TypingWord(
                                 }
                             }
 
-                            /**
-                             * 检查输入的字幕
-                             */
+                            /** 检查输入的字幕 */
                             val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
                                 captionsTextFieldValueList[index] = input
                                 val typingResult = captionsTypingResultMap[index]
