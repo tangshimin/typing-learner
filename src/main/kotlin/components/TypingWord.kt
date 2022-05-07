@@ -9,13 +9,11 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -33,7 +31,6 @@ import androidx.compose.ui.window.WindowState
 import data.Caption
 import data.VocabularyType
 import data.Word
-import data.loadMutableVocabulary
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.isMacOS
@@ -41,8 +38,7 @@ import player.mediaPlayer
 import player.playAudio
 import state.AppState
 import state.TypingType
-import theme.DarkColorScheme
-import theme.LightColorScheme
+import theme.createColors
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.*
@@ -124,6 +120,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.global.isDarkTheme = !state.global.isDarkTheme
+                    state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
                     state.saveGlobalState()
                 }
                 true
@@ -1408,27 +1405,6 @@ fun play(
     end = end.div(1000_000_000)
     videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
 
-    val closeButton = ComposePanel()
-    closeButton.bounds = Rectangle(bounds.size.width - 48, 0, 48, 48)
-    closeButton.setContent {
-        MaterialTheme(colors = if (MaterialTheme.colors.isLight) LightColorScheme else DarkColorScheme) {
-            // TODO 等 ComposePanel 支持背景透明之后重构
-            Box(Modifier
-                .clickable { window.isVisible = false }
-                .fillMaxSize()
-                .background(Color.Black)
-            ) {
-                IconButton(onClick = { window.isVisible = false }) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "",
-                        tint = MaterialTheme.colors.primary
-                    )
-                }
-            }
-        }
-    }
-
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
             mediaPlayer.audio().setVolume((volume * 100).toInt())
@@ -1445,7 +1421,6 @@ fun play(
     })
     window.layout = null
     window.contentPane.add(videoPlayerComponent)
-//        window.contentPane.add(closeButton)
     window.isVisible = true
     videoPlayerComponent.mediaPlayer().media()
         .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")

@@ -8,10 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Colorize
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +19,7 @@ import kotlinx.coroutines.launch
 import player.isMacOS
 import state.AppState
 import state.TypingType
+import theme.createColors
 import javax.swing.JColorChooser
 
 /**
@@ -323,6 +321,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.global.isDarkTheme = it
+                            state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
                             state.saveGlobalState()
                         }
 
@@ -417,6 +416,40 @@ fun TypingWordSidebar(state: AppState) {
                         Icons.Default.Colorize,
                         contentDescription = "",
                         tint = Color(state.global.wrongColorValue)
+                    )
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+                    .clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("主色调", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "",
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }
+                Spacer(Modifier.width(15.dp))
+                IconButton(onClick = {
+                    scope.launch {
+                        val initialColor = state.global.primaryColor.toAwt()
+                        val color = JColorChooser.showDialog(null,"选择颜色",initialColor)
+                        if(color != null){
+                            state.global.primaryColor = color.toCompose()
+                            state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
+                            state.saveGlobalState()
+                        }
+                    }
+
+                }){
+                    Icon(
+                        Icons.Default.Palette,
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.primary
                     )
                 }
             }
@@ -586,4 +619,8 @@ fun TypingWordSidebar(state: AppState) {
 
 fun java.awt.Color.toCompose(): Color {
     return Color(red, green, blue)
+}
+
+fun Color.toAwt():java.awt.Color{
+    return java.awt.Color(red,green,blue)
 }

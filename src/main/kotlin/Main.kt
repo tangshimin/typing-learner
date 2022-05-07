@@ -32,8 +32,7 @@ import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
 import state.rememberAppState
-import theme.DarkColorScheme
-import theme.LightColorScheme
+import theme.*
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
@@ -73,8 +72,7 @@ fun main() = application {
                     state.videoPlayerComponent.mediaPlayer().release()
                 },
             ) {
-
-                MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
+                MaterialTheme(colors = state.colors) {
                     WindowMenuBar(state)
                     MenuDialogs(state)
                     // 视频播放器的位置，大小

@@ -3,6 +3,7 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
@@ -16,6 +17,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
+import theme.createColors
 import java.io.File
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -39,6 +41,7 @@ data class GlobalData(
     val keystrokeVolume: Float = 0.75F,
     val isPlayKeystrokeSound: Boolean = true,
     val wrongColorValue: ULong = 18446462598732840960UL,
+    val primaryColorValue:ULong = 18377412168996880384UL
 )
 
 /** 全局的可观察状态 */
@@ -78,6 +81,11 @@ class GlobalState(globalData :GlobalData){
      * 错误颜色
      */
     var wrongColorValue by mutableStateOf(globalData.wrongColorValue)
+
+    /**
+     * 主色调，默认为绿色
+     */
+    var primaryColor by mutableStateOf(Color(globalData.primaryColorValue))
 }
 
 /**
@@ -100,6 +108,11 @@ class AppState {
      * 应用程序的全局状态
      */
     var global:GlobalState = loadGlobalState()
+
+    /**
+     * Material 颜色
+     */
+    var colors by mutableStateOf(createColors(global.isDarkTheme,global.primaryColor))
 
     /**
      * 记忆单词的配置文件保存的状态
@@ -318,7 +331,8 @@ class AppState {
             global.videoVolume,
             global.keystrokeVolume,
             global.isPlayKeystrokeSound,
-            global.wrongColorValue
+            global.wrongColorValue,
+            global.primaryColor.value
         )
         val format = Json {
             prettyPrint = true

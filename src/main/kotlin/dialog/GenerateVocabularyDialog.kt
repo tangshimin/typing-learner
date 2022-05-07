@@ -55,8 +55,6 @@ import state.composeAppResource
 import subtitleFile.FormatASS
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
-import theme.DarkColorScheme
-import theme.LightColorScheme
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.io.File
@@ -231,7 +229,7 @@ fun GenerateVocabularyDialog(
 
         val contentPanel = ComposePanel()
         contentPanel.setContent {
-            MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
+            MaterialTheme(colors = state.colors) {
                 Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
                     /**
                      * 摘要词库
@@ -448,7 +446,7 @@ fun GenerateVocabularyDialog(
         val bottomPanel = ComposePanel()
         bottomPanel.setSize(Int.MAX_VALUE, 54)
         bottomPanel.setContent {
-            MaterialTheme(colors = if (state.global.isDarkTheme) DarkColorScheme else LightColorScheme) {
+            MaterialTheme(colors = state.colors) {
                 Column(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.Center,
