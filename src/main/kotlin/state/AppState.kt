@@ -3,7 +3,6 @@ package state
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
@@ -13,7 +12,6 @@ import dialog.RecentItem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -32,203 +30,82 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 
-/** 全局的数据类 */
-@ExperimentalSerializationApi
-@Serializable
-data class GlobalData(
-    val type: TypingType = TypingType.WORD,
-    val isDarkTheme: Boolean = true,
-    val audioVolume: Float = 0.8F,
-    val videoVolume: Float = 0.8F,
-    val keystrokeVolume: Float = 0.75F,
-    val isPlayKeystrokeSound: Boolean = true,
-    val wrongColorValue: ULong = 18446462598732840960UL,
-    val primaryColorValue: ULong = 18377412168996880384UL
-)
-
-/** 全局的可观察状态 */
-@OptIn(ExperimentalSerializationApi::class)
-class GlobalState(globalData: GlobalData) {
-    /**
-     * 练习的类型
-     */
-    var type by mutableStateOf(globalData.type)
-
-    /**
-     * 是否是深色模式
-     */
-    var isDarkTheme by mutableStateOf(globalData.isDarkTheme)
-
-    /**
-     * 单词发音的音量
-     */
-    var audioVolume by mutableStateOf(globalData.audioVolume)
-
-    /**
-     * 视频播放的音量
-     */
-    var videoVolume by mutableStateOf(globalData.videoVolume)
-
-    /**
-     * 按键音效音量
-     */
-    var keystrokeVolume by mutableStateOf(globalData.keystrokeVolume)
-
-    /**
-     * 是否播放按键音效
-     */
-    var isPlayKeystrokeSound by mutableStateOf(globalData.isPlayKeystrokeSound)
-
-    /**
-     * 错误颜色
-     */
-    var wrongColor by mutableStateOf(Color(globalData.wrongColorValue))
-
-    /**
-     * 主色调，默认为绿色
-     */
-    var primaryColor by mutableStateOf(Color(globalData.primaryColorValue))
-}
-
-/**
- * 速度组件可观察的状态
- */
-class MutableSpeedState {
-    var isStart by mutableStateOf(false)
-    var inputCount by mutableStateOf(0)
-    var correctCount by mutableStateOf(0F)
-    var wrongCount by mutableStateOf(0)
-    var time: LocalTime by mutableStateOf(LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss")))
-    var timer by mutableStateOf(Timer())
-    var autoPauseTimer by mutableStateOf(Timer())
-}
-
-
 @ExperimentalSerializationApi
 class AppState {
-    /**
-     * 应用程序的全局状态
-     */
+
+    /** 应用程序的全局状态 */
     var global: GlobalState = loadGlobalState()
 
-    /**
-     * Material 颜色
-     */
+    /** Material 颜色 */
     var colors by mutableStateOf(createColors(global.isDarkTheme, global.primaryColor))
 
-    /**
-     * 记忆单词的配置文件保存的状态
-     */
+    /** 记忆单词的配置文件保存的状态 */
     var typingWord: TypingWordState = loadTypingWordState()
 
-    /**
-     * 抄写字幕的可观察的状态
-     */
+    /** 抄写字幕的可观察的状态 */
     var typingSubtitles: TypingSubtitlesState = loadTypingSubtitlesState()
 
-    /**
-     * 当前单词的正确次数
-     */
+    /** 当前单词的正确次数 */
     var wordCorrectTime by mutableStateOf(0)
 
-    /**
-     * 当前单词的错误次数
-     */
+    /** 当前单词的错误次数 */
     var wordWrongTime by mutableStateOf(0)
 
-    /**
-     * 视频播放窗口
-     */
+    /** 视频播放窗口 */
     var videoPlayerWindow = createVideoPlayerWindow()
 
-    /**
-     * VLC 视频播放组件
-     */
+    /** VLC 视频播放组件 */
     var videoPlayerComponent = createMediaPlayerComponent()
 
-    /**
-     * 文件选择器，如果不提前加载反应会很慢
-     */
+    /** 文件选择器，如果不提前加载反应会很慢 */
     var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(global.isDarkTheme)
 
-    /**
-     * 词库
-     */
+    /** 词库 */
     var vocabulary = loadMutableVocabulary(typingWord.vocabularyPath)
 
-    /**
-     * 最近生成的词库列表
-     */
+    /** 最近生成的词库列表 */
     var recentList = readRecentList()
 
-    /**
-     * 是否是默写模式
-     */
+    /** 是否是默写模式 */
     var isDictation by mutableStateOf(false)
 
-    /**
-     * 当前章节的正确数，主要用于默写模式
-     */
+    /** 当前章节的正确数，主要用于默写模式 */
     var chapterCorrectTime by mutableStateOf(0F)
 
-    /**
-     * 当前章节的错误数，主要用于默写模式
-     */
+    /** 当前章节的错误数，主要用于默写模式 */
     var chapterWrongTime by mutableStateOf(0F)
 
-    /**
-     * 默写模式的错误单词
-     */
+    /** 默写模式的错误单词 */
     val dictationWrongWords = mutableMapOf<Word, Int>()
 
-    /**
-     * 默写模式 -> 复习错误单词模式
-     */
+    /** 默写模式 -> 复习错误单词模式 */
     var isReviewWrongList by mutableStateOf(false)
 
-    /**
-     * 默写的单词
-     */
+    /** 默写的单词 */
     var dictationWords = listOf<Word>()
 
-    /**
-     * 默写模式的索引
-     */
+    /** 默写模式的索引 */
     var dictationIndex by mutableStateOf(0)
 
-    /**
-     * 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复
-     */
+    /** 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复 */
     private var typingWordStateMap: MutableMap<String, Boolean> = mutableMapOf()
 
-    /**
-     * 是否正在播放视频
-     */
+    /** 是否正在播放视频 */
     var isPlaying by mutableStateOf(false)
 
-    /**
-     * 是否打开选择章节窗口
-     */
+    /** 是否打开选择章节窗口 */
     var openSelectChapter by mutableStateOf(false)
 
-    /**
-     * 打开设置
-     */
+    /** 打开设置 */
     var openSettings by mutableStateOf(false)
 
-    /**
-     * 是否显示等待窗口
-     */
+    /** 是否显示等待窗口 */
     var loadingFileChooserVisible by mutableStateOf(false)
 
-    /**
-     * 是否显示【合并词库】窗口
-     */
+    /** 是否显示【合并词库】窗口 */
     var mergeVocabulary by mutableStateOf(false)
 
-    /**
-     * 是否显示【过滤词库】窗口
-     */
+    /** 是否显示【过滤词库】窗口 */
     var filterVocabulary by mutableStateOf(false)
 
     /**
@@ -236,25 +113,18 @@ class AppState {
      */
     var generateVocabularyFromDocument by mutableStateOf(false)
 
-    /**
-     * 是否显示【从字幕文件生成词库】窗口
-     */
+    /** 是否显示【从字幕文件生成词库】窗口 */
     var generateVocabularyFromSubtitles by mutableStateOf(false)
 
-    /**
-     * 是否显示【从 MKV 生成词库】 窗口
-     */
+    /** 是否显示【从 MKV 生成词库】 窗口 */
     var generateVocabularyFromMKV by mutableStateOf(false)
 
 
-    /**
-     * 速度组件的状态
-     */
+    /** 速度组件的状态 */
     var speed = MutableSpeedState()
 
-
+    /** 加载全局的设置信息 */
     private fun loadGlobalState(): GlobalState {
-
         val globalSettings = getGlobalSettingsFile()
         return if (globalSettings.exists()) {
             try {
@@ -271,9 +141,7 @@ class AppState {
     }
 
 
-    /**
-     * 载入应用程序设置信息
-     */
+    /** 加载应用记忆单词界面的设置信息 */
     private fun loadTypingWordState(): TypingWordState {
         val typingWordSettings = getWordSettingsFile()
         return if (typingWordSettings.exists()) {
@@ -291,9 +159,7 @@ class AppState {
         }
     }
 
-    /**
-     * 载入抄写字幕的配置信息
-     */
+    /** 加载抄写字幕的配置信息 */
     private fun loadTypingSubtitlesState(): TypingSubtitlesState {
         val typingSubtitlesSetting = getSubtitlesSettingsFile()
         return if (typingSubtitlesSetting.exists()) {
@@ -311,9 +177,7 @@ class AppState {
     }
 
 
-    /**
-     * 初始化视频播放窗口
-     */
+    /** 初始化视频播放窗口 */
     @OptIn(ExperimentalComposeUiApi::class)
     private fun createVideoPlayerWindow(): JFrame {
         val window = JFrame()
@@ -348,9 +212,7 @@ class AppState {
         }
     }
 
-    /**
-     * 保存记忆单词的设置信息
-     */
+    /** 保存记忆单词的设置信息 */
     @OptIn(ExperimentalComposeUiApi::class)
     fun saveTypingWordState() {
         runBlocking {
@@ -402,9 +264,7 @@ class AppState {
         }
     }
 
-    /**
-     * 获得当前单词
-     */
+    /** 获得当前单词 */
     fun getCurrentWord(): Word {
         if (isDictation) {
             return dictationWords[dictationIndex]
@@ -412,9 +272,7 @@ class AppState {
         return getWord(typingWord.index)
     }
 
-    /**
-     * 根据索引返回单词
-     */
+    /** 根据索引返回单词 */
     private fun getWord(index: Int): Word {
         val size = vocabulary.wordList.size
         return if (index in 0..size) {
@@ -452,9 +310,7 @@ class AppState {
     }
 
 
-    /**
-     * 进入默写模式，进入默写模式要保存好当前的状态，退出默写模式后再恢复
-     */
+    /** 进入默写模式，进入默写模式要保存好当前的状态，退出默写模式后再恢复 */
     fun enterDictationMode() {
         val currentWord = getCurrentWord().value
         dictationWords = generateDictationWords(currentWord)
@@ -479,9 +335,7 @@ class AppState {
         isDictation = true
     }
 
-    /**
-     * 退出默写模式，恢复应用状态
-     */
+    /** 退出默写模式，恢复应用状态 */
     fun exitDictationMode() {
         // 恢复状态
         typingWord.isAuto = typingWordStateMap["isAuto"]!!
@@ -496,18 +350,14 @@ class AppState {
         isReviewWrongList = false
     }
 
-    /**
-     * 重置章节计数器,清空默写模式存储的错误单词
-     */
+    /** 重置章节计数器,清空默写模式存储的错误单词 */
     val resetChapterTime: () -> Unit = {
         chapterCorrectTime = 0F
         chapterWrongTime = 0F
         dictationWrongWords.clear()
     }
 
-    /**
-     * 进入复习错误单词模式，复习错误单词模式属于默写模式的子模式，并且利用了默写模式的单词列表。
-     */
+    /** 进入复习错误单词模式，复习错误单词模式属于默写模式的子模式，并且利用了默写模式的单词列表。 */
     fun enterReviewMode(reviewList: List<Word>) {
         // 先把 typing 的状态恢复
         exitDictationMode()
@@ -517,9 +367,7 @@ class AppState {
         dictationIndex = 0
     }
 
-    /**
-     * 改变词库
-     */
+    /** 改变词库 */
     fun changeVocabulary(file: File) {
         vocabulary = loadMutableVocabulary(file.absolutePath)
         typingWord.vocabularyName = file.nameWithoutExtension
@@ -535,9 +383,7 @@ class AppState {
         saveTypingWordState()
     }
 
-    /**
-     * 保存当前的词库
-     */
+    /** 保存当前的词库 */
     fun saveCurrentVocabulary() {
         runBlocking {
             launch {
@@ -548,9 +394,7 @@ class AppState {
         }
     }
 
-    /**
-     * 读取最近生成的词库列表
-     */
+    /** 读取最近生成的词库列表 */
     private fun readRecentList(): SnapshotStateList<RecentItem> {
         val recentListFile = getRecentListFile()
         var list = if (recentListFile.exists()) {
@@ -611,6 +455,17 @@ class AppState {
         }
 
     }
+}
+
+/** 速度组件可观察的状态 */
+class MutableSpeedState {
+    var isStart by mutableStateOf(false)
+    var inputCount by mutableStateOf(0)
+    var correctCount by mutableStateOf(0F)
+    var wrongCount by mutableStateOf(0)
+    var time: LocalTime by mutableStateOf(LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss")))
+    var timer by mutableStateOf(Timer())
+    var autoPauseTimer by mutableStateOf(Timer())
 }
 
 val jsonBuilder = Json {
