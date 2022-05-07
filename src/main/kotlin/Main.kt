@@ -23,7 +23,6 @@ import androidx.compose.ui.window.*
 import components.*
 import components.flatlaf.UpdateFlatLaf
 import data.VocabularyType
-import data.loadMutableVocabulary
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -32,7 +31,6 @@ import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
 import state.rememberAppState
-import theme.*
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
@@ -118,7 +116,7 @@ fun main() = application {
                                 mediaPlayerComponent = state.videoPlayerComponent,
                                 futureFileChooser = state.futureFileChooser,
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                wrongColor = Color(state.global.wrongColorValue)
+                                wrongColor = state.global.wrongColor
                             )
                         }
                         ANKI ->{}

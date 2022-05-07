@@ -623,7 +623,7 @@ fun TypingWord(
                             )
                             Definition(
                                 word = currentWord,
-                                wrongColor = Color(state.global.wrongColorValue),
+                                wrongColor = state.global.wrongColor,
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = state.isPlaying,
                                 textFieldValue = definitionTextFieldValue,
@@ -671,7 +671,7 @@ fun TypingWord(
                                 },
                                 playKeySound = { playKeySound() },
                                 modifier = captionsModifier,
-                                wrongColor = Color(state.global.wrongColorValue)
+                                wrongColor = state.global.wrongColor
                             )
                             if (state.isPlaying) Spacer(Modifier.height((videoSize.height).dp).width(videoSize.width.dp))
                         }

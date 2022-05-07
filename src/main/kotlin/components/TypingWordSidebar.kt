@@ -402,11 +402,10 @@ fun TypingWordSidebar(state: AppState) {
                 Spacer(Modifier.width(15.dp))
                 IconButton(onClick = {
                     scope.launch {
-                        var composeColor = Color(state.global.wrongColorValue)
-                        val initialColor = java.awt.Color(composeColor.red,composeColor.green,composeColor.blue)
-                        val color = JColorChooser.showDialog(null,"选择错误字符的颜色",initialColor)
-                        if(color != null){
-                            state.global.wrongColorValue = color.toCompose().value
+                        val initialColor = state.global.wrongColor.toAwt()
+                        val selectedColor = JColorChooser.showDialog(null,"选择错误字符的颜色",initialColor)
+                        if(selectedColor != null){
+                            state.global.wrongColor = selectedColor.toCompose()
                             state.saveGlobalState()
                         }
                     }
@@ -415,7 +414,7 @@ fun TypingWordSidebar(state: AppState) {
                     Icon(
                         Icons.Default.Colorize,
                         contentDescription = "",
-                        tint = Color(state.global.wrongColorValue)
+                        tint = state.global.wrongColor
                     )
                 }
             }
@@ -437,9 +436,9 @@ fun TypingWordSidebar(state: AppState) {
                 IconButton(onClick = {
                     scope.launch {
                         val initialColor = state.global.primaryColor.toAwt()
-                        val color = JColorChooser.showDialog(null,"选择颜色",initialColor)
-                        if(color != null){
-                            state.global.primaryColor = color.toCompose()
+                        val selectedColor = JColorChooser.showDialog(null,"选择颜色",initialColor)
+                        if(selectedColor != null){
+                            state.global.primaryColor = selectedColor.toCompose()
                             state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
                             state.saveGlobalState()
                         }

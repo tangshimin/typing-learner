@@ -202,7 +202,7 @@ fun Word(
                             } else {
                                 withStyle(
                                     style = SpanStyle(
-                                        color = Color(state.global.wrongColorValue),
+                                        color = state.global.wrongColor,
                                         fontSize = 3.5.em,
                                         letterSpacing = 5.sp,
                                         fontFamily = FontFamily.Monospace,
@@ -267,7 +267,7 @@ fun Word(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "${if (correctTime > 0) correctTime else ""}", color = MaterialTheme.colors.primary)
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "${if (wrongTime > 0) wrongTime else ""}", color = Color(state.global.wrongColorValue))
+                Text(text = "${if (wrongTime > 0) wrongTime else ""}", color = state.global.wrongColor)
             }
             AudioButton(
                 word = wordValue,

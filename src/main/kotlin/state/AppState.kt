@@ -80,7 +80,7 @@ class GlobalState(globalData :GlobalData){
     /**
      * 错误颜色
      */
-    var wrongColorValue by mutableStateOf(globalData.wrongColorValue)
+    var wrongColor by mutableStateOf(Color(globalData.wrongColorValue))
 
     /**
      * 主色调，默认为绿色
@@ -331,7 +331,7 @@ class AppState {
             global.videoVolume,
             global.keystrokeVolume,
             global.isPlayKeystrokeSound,
-            global.wrongColorValue,
+            global.wrongColor.value,
             global.primaryColor.value
         )
         val format = Json {
