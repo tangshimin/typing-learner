@@ -1,6 +1,7 @@
 package data
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -47,7 +48,7 @@ class MutableVocabulary(vocabulary: Vocabulary) {
 /**
  * 获得可观察的单词列表
  */
-fun getMutableStateList(wordList: MutableList<Word>): MutableList<Word> {
+fun getMutableStateList(wordList: MutableList<Word>): SnapshotStateList<Word> {
     val list = mutableStateListOf<Word>()
     list.addAll(wordList)
     return list

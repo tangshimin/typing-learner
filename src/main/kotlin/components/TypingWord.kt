@@ -69,8 +69,7 @@ fun TypingWord(
     state: AppState,
     videoBounds: Rectangle,
 ) {
-    /** 当前正在学习的单词 */
-    val currentWord = state.getCurrentWord()
+
     val scope = rememberCoroutineScope()
 
     /**
@@ -182,6 +181,7 @@ fun TypingWord(
 
             (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
                 if (!isPlayingAudio) {
+                    val currentWord = state.getCurrentWord()
                     playAudio(
                         word = currentWord.value,
                         volume = state.global.audioVolume,
@@ -195,6 +195,7 @@ fun TypingWord(
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                    val currentWord = state.getCurrentWord()
                     val playTriple = getPayTriple(currentWord, 0)
                     shortcutPlay(playTriple)
                 } else {
@@ -207,6 +208,7 @@ fun TypingWord(
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 2) {
+                    val currentWord = state.getCurrentWord()
                     val playTriple = getPayTriple(currentWord, 1)
                     shortcutPlay(playTriple)
 
@@ -220,6 +222,7 @@ fun TypingWord(
             }
             (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 3) {
+                    val currentWord = state.getCurrentWord()
                     val playTriple = getPayTriple(currentWord, 2)
                     shortcutPlay(playTriple)
                 } else if (state.getCurrentWord().captions.size >= 3) {
@@ -292,8 +295,6 @@ fun TypingWord(
                 } else {
                     JOptionPane.showMessageDialog(window, "只能读取 json 格式的词库")
                 }
-
-
             }
         }
     )
@@ -332,7 +333,8 @@ fun TypingWord(
                                 .focusable(true)
                         ) {
 
-
+                            /** 当前正在学习的单词 */
+                            val currentWord = state.getCurrentWord()
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
@@ -658,7 +660,7 @@ fun TypingWord(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            Text("请选择词库,可以拖放词库到这里", style = MaterialTheme.typography.h6)
+                            Text("请重新选择词库,可以拖放词库到这里", style = MaterialTheme.typography.h6)
                         }
                     }
                 }

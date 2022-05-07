@@ -6,8 +6,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
-import data.Word
-import data.loadMutableVocabulary
+import data.*
 import dialog.RecentItem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
