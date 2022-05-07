@@ -300,7 +300,6 @@ class AppState {
     fun generateDictationWords(currentWord: String): List<Word> {
         val start = typingWord.chapter * 20 - 20
         val end = typingWord.chapter * 20
-        println("Dictation words size: ${vocabulary.wordList.subList(start, end).shuffled().size}")
         var list = vocabulary.wordList.subList(start, end).shuffled()
         // 如果打乱顺序的列表的第一个单词，和当前章节的最后一个词相等，就不会触发重组
         while (list[0].value == currentWord) {

@@ -418,8 +418,6 @@ fun Word(
         if (chapterCorrectTime == 0F) {
             0F
         } else {
-            println("chapterCorrectTime:$chapterCorrectTime,chapterWrongTime:$chapterWrongTime")
-            println("rate: ${chapterCorrectTime.div(chapterCorrectTime + chapterWrongTime)}")
             val rateDouble = chapterCorrectTime.div(chapterCorrectTime + chapterWrongTime).toDouble()
             val rateD = BigDecimal(rateDouble).setScale(3, RoundingMode.HALF_EVEN)
 

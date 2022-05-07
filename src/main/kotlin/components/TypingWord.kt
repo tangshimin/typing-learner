@@ -1414,8 +1414,6 @@ fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
     var x = (mainWindow.size.width - size.width).div(2)
     // 232 是单词 + 字幕的高度
     var y = ((mainWindow.size.height - 232 - size.height).div(2)) + 232 + 15
-    println("size:$size")
-    println("x:$x,y:$y")
 
     x += mainWindow.location.x
     y += mainWindow.location.y
