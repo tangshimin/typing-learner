@@ -19,7 +19,7 @@ val LocalMediaPlayerComponent = staticCompositionLocalOf<Component> {
 }
 
 @Composable
-fun rememberMediaPlayerComponent():Component = remember {
+fun rememberMediaPlayerComponent(): Component = remember {
     val mediaPlayerComponent = createMediaPlayerComponent()
     mediaPlayerComponent
 }
@@ -27,15 +27,15 @@ fun rememberMediaPlayerComponent():Component = remember {
 /**
  * 初始化视频播放组件
  */
-fun createMediaPlayerComponent() :Component{
+fun createMediaPlayerComponent(): Component {
     val os = System.getProperty("os.name", "generic").lowercase(Locale.ENGLISH)
     // 如果用户本地没有 VLC 就使用内置的 VLC
-    if(!NativeDiscovery().discover() && os.indexOf("windows") >= 0){
+    if (!NativeDiscovery().discover() && os.indexOf("windows") >= 0) {
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getResourcesFile("VLC").absolutePath ?: "")
     }
 
     // see https://github.com/caprica/vlcj/issues/887#issuecomment-503288294 for why we're using CallbackMediaPlayerComponent for macOS.
-    return  if (isMacOS()) {
+    return if (isMacOS()) {
         CallbackMediaPlayerComponent()
     } else {
         EmbeddedMediaPlayerComponent()
@@ -47,6 +47,7 @@ fun isMacOS(): Boolean {
     val os = System.getProperty("os.name", "generic").lowercase(Locale.ENGLISH)
     return os.indexOf("mac") >= 0 || os.indexOf("darwin") >= 0
 }
+
 fun isWindows(): Boolean {
     val os = System.getProperty("os.name", "generic").lowercase(Locale.ENGLISH)
     return os.indexOf("windows") >= 0

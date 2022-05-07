@@ -11,18 +11,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TypingSubtitlesData(
     val videoPath: String = "",
-    val subtitlesPath:String = "",
+    val subtitlesPath: String = "",
     val trackID: Int = 0,
     val trackDescription: String = "",
     val trackSize: Int = 0,
     val currentIndex: Int = 0,
-    val firstVisibleItemIndex:Int = 0,
-    var sentenceMaxLength :Int = 0
+    val firstVisibleItemIndex: Int = 0,
+    var sentenceMaxLength: Int = 0
 )
 
 /** 抄写单词的可观察状态 */
 @OptIn(ExperimentalSerializationApi::class)
-class TypingSubtitlesState(typingSubtitlesData :TypingSubtitlesData){
+class TypingSubtitlesState(typingSubtitlesData: TypingSubtitlesData) {
 
     /** 抄写字幕时的 MKV 视频文件的路径 */
     var videoPath by mutableStateOf(typingSubtitlesData.videoPath)

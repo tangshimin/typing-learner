@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -24,15 +24,17 @@ import state.AppState
 /**
  * 选择章节
  */
-@OptIn(ExperimentalFoundationApi::class,
+@OptIn(
+    ExperimentalFoundationApi::class,
     ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
 )
 @ExperimentalComposeUiApi
 @Composable
 fun SelectChapterDialog(state: AppState) {
-    Dialog(title = "选择章节",
-        onCloseRequest = { state.openSelectChapter = false},
+    Dialog(
+        title = "选择章节",
+        onCloseRequest = { state.openSelectChapter = false },
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -58,27 +60,29 @@ fun SelectChapter(
     chapter: Int,
     onChapterChanged: (Int) -> Unit,
 ) {
-    Surface (
+    Surface(
         elevation = 5.dp,
         shape = RectangleShape,
-    ){
+    ) {
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colors.background)
         ) {
-            Column (modifier = Modifier.align(Alignment.TopCenter)){
-                Row(horizontalArrangement = Arrangement.Center,
+            Column(modifier = Modifier.align(Alignment.TopCenter)) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(top = 5.dp,bottom = 5.dp)){
+                    modifier = Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 5.dp)
+                ) {
                     Text("${state.vocabulary.name}  ", color = MaterialTheme.colors.onBackground)
                     Text("${state.vocabulary.size}", color = MaterialTheme.colors.primary)
                     Text(" 个单词", color = MaterialTheme.colors.onBackground)
                 }
                 Divider()
             }
-            Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp,bottom = 55.dp)){
+            Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp, bottom = 55.dp)) {
                 Chapters(
                     checkedChapter = chapter,
                     size = state.vocabulary.size,

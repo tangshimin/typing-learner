@@ -11,7 +11,6 @@ import java.awt.Font
 import java.awt.Insets
 import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
-import javax.swing.Icon
 import javax.swing.JFileChooser
 import javax.swing.UIManager
 import javax.swing.border.LineBorder
@@ -46,7 +45,7 @@ fun InitializeFlatLaf(darkTheme: Boolean) {
     UIManager.put("TitlePane.menuBarEmbedded", true)
     UIManager.put("TitlePane.centerTitle", true)
     UIManager.put("TitlePane.TitlePane.noIconLeftGap", 0)
-    UIManager.put("TitlePane.iconMargins", Insets(0,0,0,0))
+    UIManager.put("TitlePane.iconMargins", Insets(0, 0, 0, 0))
     UIManager.put("defaultFont", Font("Default", Font.PLAIN, 16))
     UIManager.put("SplitPaneDivider.gripDotCount", 0)
     UIManager.put("SplitPane.dividerSize", 1)
@@ -57,7 +56,7 @@ fun InitializeFlatLaf(darkTheme: Boolean) {
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
-fun UpdateFlatLaf(darkTheme: Boolean,state:AppState) {
+fun UpdateFlatLaf(darkTheme: Boolean, state: AppState) {
     if (darkTheme) {
         FlatDarkLaf.setup()
         UIManager.put("TitlePane.unifiedBackground", false)
@@ -72,9 +71,9 @@ fun UpdateFlatLaf(darkTheme: Boolean,state:AppState) {
         //MenuBar
         UIManager.put("MenuBar.borderColor", Color(55, 55, 55))
         //SplitPane
-        UIManager.put("SplitPane.background", Color(30,30,30))
+        UIManager.put("SplitPane.background", Color(30, 30, 30))
         //Tree
-        UIManager.put("Tree.background", Color(18,18,18))
+        UIManager.put("Tree.background", Color(18, 18, 18))
         UIManager.put("Tree.foreground", Color(133, 144, 151))
         UIManager.put("Tree.icon.closedColor", Color(133, 144, 151))
         UIManager.put("Tree.icon.collapsedColor", Color(133, 144, 151))
@@ -105,7 +104,7 @@ fun UpdateFlatLaf(darkTheme: Boolean,state:AppState) {
 
         // Panel
 //        UIManager.put("Panel.background", Color.WHITE)
-}
+    }
     state.futureFileChooser = setupFileChooser()
     FlatLaf.updateUI()
 }

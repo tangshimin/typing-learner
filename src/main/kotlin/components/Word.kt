@@ -153,9 +153,10 @@ fun Word(
                 .width(intrinsicSize = IntrinsicSize.Max)
                 .padding(start = 50.dp)
                 .onPointerEvent(PointerEventType.Enter) {
-                    if(!state.isDictation || (state.isDictation && state.isReviewWrongList)){
+                    if (!state.isDictation || (state.isDictation && state.isReviewWrongList)) {
                         activeMenu = true
-                    } }) {
+                    }
+                }) {
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
@@ -352,7 +353,7 @@ fun Word(
                             word = word,
                             state = state,
                             save = { newWord ->
-                                scope.launch{
+                                scope.launch {
                                     val current = state.getCurrentWord()
                                     val index = state.typingWord.index
                                     newWord.captions = current.captions
@@ -459,6 +460,7 @@ fun Word(
         state.saveTypingWordState()
         changeShowChapterFinishedDialog(false)
     }
+
     /**
      * 进入默写模式
      */
@@ -552,7 +554,6 @@ fun Phonetic(
         }
     }
 }
-
 
 
 /**

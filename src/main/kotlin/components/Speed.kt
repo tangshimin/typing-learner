@@ -21,21 +21,23 @@ import kotlin.concurrent.fixedRateTimer
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun Speed(
-    speedVisible:Boolean,
+    speedVisible: Boolean,
     speed: MutableSpeedState,
-    modifier: Modifier) {
+    modifier: Modifier
+) {
     if (speedVisible) {
 
         Box(modifier = modifier) {
-            Row (
+            Row(
                 Modifier
                     .padding(start = 48.dp)
-            ){
-                Surface(elevation = 1.dp,
+            ) {
+                Surface(
+                    elevation = 1.dp,
                     shape = RectangleShape,
                     border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                    modifier = Modifier.padding(top = 20.dp,end = 20.dp)
-                ){
+                    modifier = Modifier.padding(top = 20.dp, end = 20.dp)
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.width(IntrinsicSize.Max).padding(20.dp)
@@ -48,16 +50,25 @@ fun Speed(
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.width(IntrinsicSize.Max)) {
                             var minute = speed.time.toSecondOfDay().div(60F)
-                            if(minute<1) minute = 1F
+                            if (minute < 1) minute = 1F
                             val perMinute = speed.correctCount.div(minute).toInt()
-                            Row(Modifier.width(110.dp)){
-                                Text("速度:",color = textColor,)
-                                Text("${if(perMinute != 0) perMinute else ""}",color = textColor,textAlign = TextAlign.Center,modifier = Modifier.width(60.dp))
+                            Row(Modifier.width(110.dp)) {
+                                Text("速度:", color = textColor)
+                                Text(
+                                    "${if (perMinute != 0) perMinute else ""}",
+                                    color = textColor,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.width(60.dp)
+                                )
                             }
                             Divider(Modifier.fillMaxWidth())
-                            Row(Modifier.width(110.dp)){
-                                Text(text = "时间:",color = textColor,)
-                                Text(text = speed.time.format( DateTimeFormatter.ofPattern("HH:mm:ss")),color = textColor,textAlign = TextAlign.Center)
+                            Row(Modifier.width(110.dp)) {
+                                Text(text = "时间:", color = textColor)
+                                Text(
+                                    text = speed.time.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                                    color = textColor,
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
 
@@ -68,12 +79,13 @@ fun Speed(
 
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun ResetButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
         reset(speed)
-    }){
+    }) {
         Text(text = "重置")
     }
 }
@@ -83,8 +95,8 @@ fun ResetButton(speed: MutableSpeedState) {
 fun StartButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
         startTimer(speed)
-    }){
-        Text(text = if(speed.isStart) "暂停" else "开始")
+    }) {
+        Text(text = if (speed.isStart) "暂停" else "开始")
     }
 }
 
@@ -92,16 +104,17 @@ fun StartButton(speed: MutableSpeedState) {
 @OptIn(ExperimentalSerializationApi::class)
 fun startTimer(speed: MutableSpeedState) {
     speed.isStart = !speed.isStart
-    if(speed.isStart){
+    if (speed.isStart) {
         speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
             speed.time = speed.time.plusSeconds(1)
         }
-    }else{
+    } else {
         speed.timer.cancel()
     }
 }
+
 @OptIn(ExperimentalSerializationApi::class)
- fun reset(speed: MutableSpeedState) {
+fun reset(speed: MutableSpeedState) {
     speed.time = LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
     speed.inputCount = 0
     speed.correctCount = 0F

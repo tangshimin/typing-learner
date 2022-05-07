@@ -31,7 +31,10 @@ import components.ConfirmationDelete
 import components.getPlayTripleMap
 import components.play
 import components.secondsToString
-import data.*
+import data.Caption
+import data.Dictionary
+import data.VocabularyType
+import data.Word
 import kotlinx.coroutines.launch
 import state.AppState
 import java.awt.Component
@@ -81,7 +84,7 @@ fun EditWordDialog(
             var translationFieldValue by remember { mutableStateOf(TextFieldValue(word.translation)) }
             var definitionFieldValue by remember { mutableStateOf(TextFieldValue(word.definition)) }
 
-            Box{
+            Box {
                 Column(Modifier.fillMaxSize().align(Alignment.Center)) {
                     val textStyle = TextStyle(
                         color = MaterialTheme.colors.onBackground
@@ -127,7 +130,7 @@ fun EditWordDialog(
                             Text("查询")
                         }
                         if (updateFailed) {
-                            Text("本地词典没有找到 ${inputWordStr.text} ",  modifier = Modifier.padding(start = 10.dp))
+                            Text("本地词典没有找到 ${inputWordStr.text} ", modifier = Modifier.padding(start = 10.dp))
                         }
                     }
                     val boxModifier = Modifier.fillMaxWidth().height(115.dp).border(border = border)
@@ -178,10 +181,10 @@ fun EditWordDialog(
                             )
                         }
                     }
-                    var linkSize by remember{ mutableStateOf(word.externalCaptions.size)}
+                    var linkSize by remember { mutableStateOf(word.externalCaptions.size) }
                     EditingCaptions(
                         state = state,
-                        setLinkSize = {linkSize = it},
+                        setLinkSize = { linkSize = it },
                         word = word
                     )
 
@@ -191,7 +194,7 @@ fun EditWordDialog(
                             LinkCaptionDialog(
                                 word = word,
                                 state = state,
-                                setLinkSize = {linkSize = it},
+                                setLinkSize = { linkSize = it },
                                 close = { isLink = false }
                             )
                         }
@@ -265,13 +268,14 @@ fun EditWordDialog(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
+@OptIn(
+    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
     kotlinx.serialization.ExperimentalSerializationApi::class
 )
 @Composable
 fun EditingCaptions(
     state: AppState,
-    setLinkSize:(Int) ->Unit,
+    setLinkSize: (Int) -> Unit,
     word: Word
 ) {
     val scope = rememberCoroutineScope()
@@ -304,7 +308,7 @@ fun EditingCaptions(
                             val location =
                                 pointerEvent.awtEventOrNull?.locationOnScreen
                             if (location != null) {
-                                if(!isPlaying){
+                                if (!isPlaying) {
                                     isPlaying = true
                                     playerBounds.x = location.x - 270 + 24
                                     playerBounds.y = location.y - 320
@@ -316,8 +320,8 @@ fun EditingCaptions(
                                                 setIsPlaying = { isPlaying = it },
                                                 volume = state.global.videoVolume,
                                                 playTriple = playTriple,
-                                                videoPlayerComponent= state.videoPlayerComponent,
-                                                bounds =playerBounds
+                                                videoPlayerComponent = state.videoPlayerComponent,
+                                                bounds = playerBounds
                                             )
                                         }
                                     } else {
@@ -341,7 +345,7 @@ fun EditingCaptions(
                         playTriple = playTriple,
                         mediaPlayerComponent = state.videoPlayerComponent,
                         confirm = { (index, start, end) ->
-                            scope.launch{
+                            scope.launch {
                                 if (state.vocabulary.type == VocabularyType.DOCUMENT) {
                                     word.externalCaptions[index].start = secondsToString(start)
                                     word.externalCaptions[index].end = secondsToString(end)
@@ -443,7 +447,8 @@ fun EditingCaptions(
  * @param confirm 点击确定后调用的回调
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
  */
-@OptIn(ExperimentalMaterialApi::class, kotlinx.serialization.ExperimentalSerializationApi::class,
+@OptIn(
+    ExperimentalMaterialApi::class, kotlinx.serialization.ExperimentalSerializationApi::class,
     kotlinx.serialization.ExperimentalSerializationApi::class
 )
 @ExperimentalComposeUiApi
@@ -480,13 +485,16 @@ fun SettingTimeLine(
             shape = RectangleShape,
             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
         ) {
-            Box(modifier = Modifier.fillMaxSize()){
-                Column(horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.align(Alignment.TopCenter)) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                ) {
                     /**
                      * 协程构建器
                      */
                     val scope = rememberCoroutineScope()
+
                     /**
                      * 字幕内容
                      */
@@ -507,6 +515,7 @@ fun SettingTimeLine(
                         )
                     }
                     val oldStart = caption.start
+
                     /**
                      * 当前字幕的结束时间，单位是秒
                      */
@@ -517,16 +526,17 @@ fun SettingTimeLine(
                         )
                     }
                     val oldEnd = caption.end
+
                     /**
                      * 调整时间轴的精度
                      */
                     var precise by remember { mutableStateOf("1S") }
-                    Row (Modifier.width(540.dp).height(303.dp).padding(top = 40.dp)
+                    Row(Modifier.width(540.dp).height(303.dp).padding(top = 40.dp)
                         .onGloballyPositioned { coordinates ->
                             val rect = coordinates.boundsInWindow()
                             playerBounds.x = window.x + rect.left.toInt()
                             playerBounds.y = window.y + rect.top.toInt()
-                        }){  }
+                        }) { }
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -633,16 +643,16 @@ fun SettingTimeLine(
                     ) {
                         Spacer(Modifier.width(20.dp))
                         OutlinedButton(onClick = {
-                            if(oldStart != secondsToString(start) ||
+                            if (oldStart != secondsToString(start) ||
                                 oldEnd != secondsToString(end)
-                            ){
+                            ) {
                                 confirm(Triple(index, start, end))
                             }
                             close()
                         }) {
                             Text("确定")
                         }
-                        var isPlaying by remember{ mutableStateOf(false)}
+                        var isPlaying by remember { mutableStateOf(false) }
                         OutlinedButton(onClick = {},
                             modifier = Modifier
                                 .padding(start = 20.dp)
@@ -650,7 +660,7 @@ fun SettingTimeLine(
                                     val location =
                                         pointerEvent.awtEventOrNull?.locationOnScreen
                                     if (location != null) {
-                                        if(!isPlaying){
+                                        if (!isPlaying) {
                                             isPlaying = true
                                             val file = File(relativeVideoPath)
                                             if (file.exists()) {
@@ -662,8 +672,8 @@ fun SettingTimeLine(
                                                         setIsPlaying = { isPlaying = it },
                                                         volume = state.global.videoVolume,
                                                         playTriple = playTriple,
-                                                        videoPlayerComponent= mediaPlayerComponent,
-                                                        bounds =playerBounds
+                                                        videoPlayerComponent = mediaPlayerComponent,
+                                                        bounds = playerBounds
                                                     )
                                                 }
 
@@ -679,7 +689,7 @@ fun SettingTimeLine(
                         }
 
 
-                        OutlinedButton(onClick = { close() },modifier = Modifier.padding(start = 20.dp)) {
+                        OutlinedButton(onClick = { close() }, modifier = Modifier.padding(start = 20.dp)) {
                             Text("取消")
                         }
                     }

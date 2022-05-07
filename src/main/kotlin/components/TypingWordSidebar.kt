@@ -92,7 +92,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.wordVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -120,7 +120,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.phoneticVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -149,7 +149,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.morphologyVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -178,7 +178,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.definitionVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -206,7 +206,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.translationVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -235,7 +235,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.subtitlesVisible = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -290,7 +290,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.typingWord.isAuto = it
-                            if(!state.isDictation){
+                            if (!state.isDictation) {
                                 state.saveTypingWordState()
                             }
                         }
@@ -321,7 +321,7 @@ fun TypingWordSidebar(state: AppState) {
                     onCheckedChange = {
                         scope.launch {
                             state.global.isDarkTheme = it
-                            state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
+                            state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
                             state.saveGlobalState()
                         }
 
@@ -403,14 +403,14 @@ fun TypingWordSidebar(state: AppState) {
                 IconButton(onClick = {
                     scope.launch {
                         val initialColor = state.global.wrongColor.toAwt()
-                        val selectedColor = JColorChooser.showDialog(null,"选择错误字符的颜色",initialColor)
-                        if(selectedColor != null){
+                        val selectedColor = JColorChooser.showDialog(null, "选择错误字符的颜色", initialColor)
+                        if (selectedColor != null) {
                             state.global.wrongColor = selectedColor.toCompose()
                             state.saveGlobalState()
                         }
                     }
 
-                }){
+                }) {
                     Icon(
                         Icons.Default.Colorize,
                         contentDescription = "",
@@ -436,15 +436,15 @@ fun TypingWordSidebar(state: AppState) {
                 IconButton(onClick = {
                     scope.launch {
                         val initialColor = state.global.primaryColor.toAwt()
-                        val selectedColor = JColorChooser.showDialog(null,"选择颜色",initialColor)
-                        if(selectedColor != null){
+                        val selectedColor = JColorChooser.showDialog(null, "选择颜色", initialColor)
+                        if (selectedColor != null) {
                             state.global.primaryColor = selectedColor.toCompose()
-                            state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
+                            state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
                             state.saveGlobalState()
                         }
                     }
 
-                }){
+                }) {
                     Icon(
                         Icons.Default.Palette,
                         contentDescription = "",
@@ -620,6 +620,6 @@ fun java.awt.Color.toCompose(): Color {
     return Color(red, green, blue)
 }
 
-fun Color.toAwt():java.awt.Color{
-    return java.awt.Color(red,green,blue)
+fun Color.toAwt(): java.awt.Color {
+    return java.awt.Color(red, green, blue)
 }

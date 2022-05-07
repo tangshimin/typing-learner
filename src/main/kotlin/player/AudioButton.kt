@@ -80,7 +80,7 @@ fun AudioButton(
                 IconToggleButton(
                     checked = isPlaying,
                     onCheckedChange = {
-                        if(!isPlaying){
+                        if (!isPlaying) {
                             scope.launch {
                                 playAudio()
                             }
@@ -180,7 +180,7 @@ fun getAudioPath(word: String, pronunciation: String): String {
         val audioURL = "https://dict.youdao.com/dictvoice?audio=${mutableWord}&${type}"
         try {
             val audioBytes = URL(audioURL).readBytes()
-            val file = File(audioDir,"$fileName.mp3")
+            val file = File(audioDir, "$fileName.mp3")
             file.writeBytes(audioBytes)
             path = file.absolutePath
         } catch (exception: Exception) {

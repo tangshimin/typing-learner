@@ -53,6 +53,7 @@ const val CREATE_ECDICT = "CREATE TABLE IF NOT EXISTS ecdict" +
  */
 const val WORD_INDEX_STARDICT = "CREATE INDEX IF NOT EXISTS word_index ON stardict(word)"
 const val WORD_INDEX_ECDICT = "CREATE INDEX IF NOT EXISTS word_index ON ecdict(word)"
+
 /**
  * 删除索引
  */

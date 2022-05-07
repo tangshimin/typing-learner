@@ -14,11 +14,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Pagination(totalSize:Int) {
+fun Pagination(totalSize: Int) {
     var startPage by remember { mutableStateOf(1) }
     var currentPage by remember { mutableStateOf(1) }
     val totalPage by remember { mutableStateOf(20) }
-    var endPage by remember { mutableStateOf(if (totalPage>10) 10 else totalPage) }
+    var endPage by remember { mutableStateOf(if (totalPage > 10) 10 else totalPage) }
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -39,9 +39,9 @@ fun Pagination(totalSize:Int) {
                     currentPage = 1
                     endPage = 10
                 }) {
-                Text("1",color= MaterialTheme.colors.primary,fontWeight = FontWeight.Bold)
+                Text("1", color = MaterialTheme.colors.primary, fontWeight = FontWeight.Bold)
             }
-        }else{
+        } else {
             Spacer(Modifier.width(48.dp))
         }
 
@@ -50,7 +50,7 @@ fun Pagination(totalSize:Int) {
             onClick = {
                 if (currentPage > 0)
                     currentPage -= 1
-                if (currentPage < startPage){
+                if (currentPage < startPage) {
                     startPage = currentPage
                     endPage -= 1
                 }
@@ -101,10 +101,9 @@ fun Pagination(totalSize:Int) {
                     endPage = totalPage
                 }) {
                 val lastPageColor by animateColorAsState(if (currentPage == totalPage) Color(0xFFB0BEC5) else MaterialTheme.colors.primary)
-                Text("$totalPage",color =lastPageColor ,fontWeight = FontWeight.Bold)
+                Text("$totalPage", color = lastPageColor, fontWeight = FontWeight.Bold)
             }
         }
-
 
 
     }
@@ -119,7 +118,7 @@ private fun Pages(
     endPage: Int,
 ) {
 
-    Row{
+    Row {
         for (i in startPage..endPage) {
             var selected = currentPage == i
             IconToggleButton(
@@ -129,7 +128,7 @@ private fun Pages(
                 }
             ) {
                 val color by animateColorAsState(if (selected) Color(0xFFB0BEC5) else MaterialTheme.colors.primary)
-                Text("$i", color = color,fontWeight = FontWeight.Bold)
+                Text("$i", color = color, fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -2,17 +2,13 @@ package data
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.res.ResourceLoader
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import state.getResourcesFile
 import java.io.File
-import java.io.InputStreamReader
-import java.nio.charset.StandardCharsets
 import javax.swing.JOptionPane
-import kotlin.Exception
 
 /**
  * 词库
@@ -56,9 +52,10 @@ fun getMutableStateList(wordList: MutableList<Word>): MutableList<Word> {
     list.addAll(wordList)
     return list
 }
+
 /**
- links 存储字幕链接,格式：(subtitlePath)[videoPath][subtitleTrackId][index]
- captions 字幕列表
+links 存储字幕链接,格式：(subtitlePath)[videoPath][subtitleTrackId][index]
+captions 字幕列表
  */
 @Serializable
 data class Word(
@@ -88,7 +85,6 @@ data class Word(
 }
 
 
-
 @Serializable
 data class Caption(var start: String, var end: String, var content: String) {
     override fun toString(): String {
@@ -105,23 +101,30 @@ data class Caption(var start: String, var end: String, var content: String) {
  * @param content 字幕内容
  */
 @Serializable
-data class ExternalCaption(val relateVideoPath: String,val subtitlesTrackId: Int,var subtitlesName: String,var start: String,var end: String,var content: String){
+data class ExternalCaption(
+    val relateVideoPath: String,
+    val subtitlesTrackId: Int,
+    var subtitlesName: String,
+    var start: String,
+    var end: String,
+    var content: String
+) {
     override fun toString(): String {
         return content
     }
 }
 
 
-fun loadMutableVocabulary(path: String):MutableVocabulary{
+fun loadMutableVocabulary(path: String): MutableVocabulary {
     val file = getResourcesFile(path)
     return if (file.exists()) {
 
         try {
-         val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
+            val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
             MutableVocabulary(vocabulary)
-        }catch (exception:Exception){
+        } catch (exception: Exception) {
             exception.printStackTrace()
-           val vocabulary = Vocabulary(
+            val vocabulary = Vocabulary(
                 name = "",
                 type = VocabularyType.DOCUMENT,
                 language = "",
@@ -130,11 +133,11 @@ fun loadMutableVocabulary(path: String):MutableVocabulary{
                 subtitlesTrackId = 0,
                 wordList = mutableListOf()
             )
-            JOptionPane.showMessageDialog(null,"词库解析错误：\n地址：$path\n"+exception.message)
+            JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：$path\n" + exception.message)
             MutableVocabulary(vocabulary)
         }
 
-    }else{
+    } else {
         val vocabulary = Vocabulary(
             name = "",
             type = VocabularyType.DOCUMENT,
@@ -144,23 +147,21 @@ fun loadMutableVocabulary(path: String):MutableVocabulary{
             subtitlesTrackId = 0,
             wordList = mutableListOf()
         )
-        JOptionPane.showMessageDialog(null,"找不到词库：\n$path")
+        JOptionPane.showMessageDialog(null, "找不到词库：\n$path")
         MutableVocabulary(vocabulary)
     }
 
 }
 
 
-
-
 @OptIn(ExperimentalComposeUiApi::class)
 fun loadVocabulary(path: String): Vocabulary {
     val file = getResourcesFile(path)
-    if(file.exists()){
-        return try{
+    if (file.exists()) {
+        return try {
             Json.decodeFromString(file.readText())
         } catch (exception: Exception) {
-            JOptionPane.showMessageDialog(null,"词库解析错误：\n地址：$path\n"+exception.message)
+            JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：$path\n" + exception.message)
             Vocabulary(
                 name = "",
                 type = VocabularyType.DOCUMENT,
@@ -171,7 +172,7 @@ fun loadVocabulary(path: String): Vocabulary {
                 wordList = mutableListOf()
             )
         }
-    }else{
+    } else {
 
         return Vocabulary(
             name = "",
@@ -213,7 +214,7 @@ fun saveVocabulary(vocabulary: Vocabulary, path: String) {
 }
 
 fun main() {
-    
+
 }
 
 /**

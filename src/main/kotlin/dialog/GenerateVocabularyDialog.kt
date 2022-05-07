@@ -214,7 +214,7 @@ fun GenerateVocabularyDialog(
                             }
                         }
                         "json" -> {
-                            if(title == "过滤词库"){
+                            if (title == "过滤词库") {
                                 selectedFilePath = file.absolutePath
                             }
                         }

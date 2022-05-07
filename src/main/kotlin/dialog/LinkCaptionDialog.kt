@@ -50,44 +50,46 @@ import javax.swing.filechooser.FileSystemView
 @Composable
 fun LinkCaptionDialog(
     word: Word,
-    state:AppState,
-    setLinkSize:(Int) ->Unit,
-    close:()->Unit
+    state: AppState,
+    setLinkSize: (Int) -> Unit,
+    close: () -> Unit
 ) {
     Dialog(
         title = "链接字幕",
         icon = painterResource("logo/logo.svg"),
-        onCloseRequest = {close()},
+        onCloseRequest = { close() },
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(610.dp,700.dp)
+            size = DpSize(610.dp, 700.dp)
         ),
     ) {
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
         ) {
-            Box(modifier = Modifier.fillMaxSize()){
+            Box(modifier = Modifier.fillMaxSize()) {
 
                 val scope = rememberCoroutineScope()
-                var wordList = remember{ mutableStateListOf<Word>() }
+                var wordList = remember { mutableStateListOf<Word>() }
                 var subtitleVocabularyPath by remember { mutableStateOf("") }
                 var relateVideoPath by remember { mutableStateOf("") }
                 var subtitlesTrackId by remember { mutableStateOf(0) }
                 var subtitlesName by remember { mutableStateOf("") }
                 var selectedCaptionContent by remember { mutableStateOf("") }
-                var selectedCaption by remember{ mutableStateOf<Caption?>(null)}
-                Column (Modifier.width(IntrinsicSize.Max).align(Alignment.Center)){
+                var selectedCaption by remember { mutableStateOf<Caption?>(null) }
+                Column(Modifier.width(IntrinsicSize.Max).align(Alignment.Center)) {
                     EditingCaptions(
                         state = state,
-                        setLinkSize = {setLinkSize(it)},
+                        setLinkSize = { setLinkSize(it) },
                         word = word
                     )
                     Divider(Modifier.padding(start = 10.dp))
-                    Row( verticalAlignment = Alignment.CenterVertically,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp)){
+                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp)
+                    ) {
                         Text("选择字幕词库：")
                         BasicTextField(
                             value = subtitleVocabularyPath,
@@ -118,10 +120,10 @@ fun LinkCaptionDialog(
                                     val file = fileChooser.selectedFile
                                     subtitleVocabularyPath = file.absolutePath
                                     wordList.clear()
-                                    val vocabulary= loadVocabulary(file.absolutePath)
+                                    val vocabulary = loadVocabulary(file.absolutePath)
                                     wordList.addAll(vocabulary.wordList)
                                     relateVideoPath = vocabulary.relateVideoPath
-                                    if(vocabulary.type == VocabularyType.SUBTITLES){
+                                    if (vocabulary.type == VocabularyType.SUBTITLES) {
                                         subtitlesName = vocabulary.name
                                     }
                                     subtitlesTrackId = vocabulary.subtitlesTrackId
@@ -130,35 +132,40 @@ fun LinkCaptionDialog(
                                 state.loadingFileChooserVisible = false
                             }).start()
 
-                        }){
+                        }) {
                             Icon(
                                 Icons.Filled.FolderOpen,
                                 contentDescription = "",
-                                tint = MaterialTheme.colors.onBackground)
+                                tint = MaterialTheme.colors.onBackground
+                            )
                         }
                     }
 
 
                     if (wordList.isNotEmpty()) {
                         val index = wordList.indexOf(word)
-                        if(index != -1){
+                        if (index != -1) {
                             val subtitleWord = wordList[index]
-                            if(subtitleWord.captions.size>0){
-                                Row(verticalAlignment = Alignment.CenterVertically,
+                            if (subtitleWord.captions.size > 0) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Start,
-                                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp)){
-                                    Text("选择字幕：",
+                                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp)
+                                ) {
+                                    Text(
+                                        "选择字幕：",
                                         color = MaterialTheme.colors.onBackground,
                                         textAlign = TextAlign.Start,
-                                    modifier = Modifier.width(116.dp))
-                                    Box(Modifier.width(IntrinsicSize.Max)){
+                                        modifier = Modifier.width(116.dp)
+                                    )
+                                    Box(Modifier.width(IntrinsicSize.Max)) {
                                         var expanded by remember { mutableStateOf(false) }
                                         OutlinedButton(
-                                            onClick = {expanded = true},
+                                            onClick = { expanded = true },
                                             modifier = Modifier.width(IntrinsicSize.Max)
                                                 .background(Color.Transparent)
                                                 .border(1.dp, Color.Transparent)
-                                        ){
+                                        ) {
                                             Text(
                                                 text = selectedCaptionContent.ifEmpty { "" },
                                                 color = MaterialTheme.colors.onBackground
@@ -166,15 +173,15 @@ fun LinkCaptionDialog(
                                             Icon(
                                                 Icons.Default.ExpandMore,
                                                 contentDescription = "",
-                                                modifier = Modifier.size(20.dp,20.dp)
+                                                modifier = Modifier.size(20.dp, 20.dp)
                                             )
                                         }
                                         DropdownMenu(
                                             expanded = expanded,
-                                            onDismissRequest = {expanded = false},
+                                            onDismissRequest = { expanded = false },
                                             modifier = Modifier.width(500.dp).height(140.dp)
-                                        ){
-                                            subtitleWord.captions.forEachIndexed{ _, caption ->
+                                        ) {
+                                            subtitleWord.captions.forEachIndexed { _, caption ->
                                                 DropdownMenuItem(
                                                     onClick = {
                                                         selectedCaptionContent = caption.content
@@ -182,7 +189,7 @@ fun LinkCaptionDialog(
                                                         expanded = false
                                                     },
                                                     modifier = Modifier.width(500.dp).height(40.dp)
-                                                ){
+                                                ) {
                                                     Text(
                                                         text = caption.content,
                                                         fontSize = 12.sp,
@@ -208,7 +215,7 @@ fun LinkCaptionDialog(
                                                                 val location =
                                                                     pointerEvent.awtEventOrNull?.locationOnScreen
                                                                 if (location != null) {
-                                                                    if(!isPlaying){
+                                                                    if (!isPlaying) {
                                                                         isPlaying = true
                                                                         playerBounds.x = location.x - 270 + 24
                                                                         playerBounds.y = location.y - 320
@@ -218,11 +225,11 @@ fun LinkCaptionDialog(
                                                                             scope.launch {
                                                                                 play(
                                                                                     window = state.videoPlayerWindow,
-                                                                                    setIsPlaying = {isPlaying = it},
+                                                                                    setIsPlaying = { isPlaying = it },
                                                                                     volume = state.global.videoVolume,
                                                                                     playTriple = playTriple,
-                                                                                    videoPlayerComponent= state.videoPlayerComponent,
-                                                                                    bounds =playerBounds
+                                                                                    videoPlayerComponent = state.videoPlayerComponent,
+                                                                                    bounds = playerBounds
                                                                                 )
                                                                             }
 
@@ -244,41 +251,52 @@ fun LinkCaptionDialog(
                                     }
 
                                     OutlinedButton(onClick = {
-                                        if(subtitleVocabularyPath.isNotEmpty() && selectedCaptionContent.isNotEmpty()){
-                                            if(selectedCaption != null){
-                                                val externalCaption = ExternalCaption(relateVideoPath,subtitlesTrackId,subtitlesName,
-                                                    selectedCaption!!.start, selectedCaption!!.end, selectedCaption!!.content)
+                                        if (subtitleVocabularyPath.isNotEmpty() && selectedCaptionContent.isNotEmpty()) {
+                                            if (selectedCaption != null) {
+                                                val externalCaption = ExternalCaption(
+                                                    relateVideoPath,
+                                                    subtitlesTrackId,
+                                                    subtitlesName,
+                                                    selectedCaption!!.start,
+                                                    selectedCaption!!.end,
+                                                    selectedCaption!!.content
+                                                )
 
-                                                if (word.externalCaptions.size <3 && !word.externalCaptions.contains(externalCaption)) {
+                                                if (word.externalCaptions.size < 3 && !word.externalCaptions.contains(
+                                                        externalCaption
+                                                    )
+                                                ) {
                                                     word.externalCaptions.add(externalCaption)
                                                 }
                                             }
-                                            setLinkSize( word.externalCaptions.size)
+                                            setLinkSize(word.externalCaptions.size)
                                             state.vocabulary.wordList.removeAt(index)
                                             state.vocabulary.wordList.add(index, word)
                                         }
-                                    },modifier = Modifier.padding(start = 10.dp)){
+                                    }, modifier = Modifier.padding(start = 10.dp)) {
                                         Text("添加")
                                     }
 
                                 }
                             }
-                        }else{
-                            Text("所选择的词库没有与 ${word.value} 相等的单词，请重新选择字幕词库",color = Color.Red)
+                        } else {
+                            Text("所选择的词库没有与 ${word.value} 相等的单词，请重新选择字幕词库", color = Color.Red)
                         }
 
                     }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp)
+                ) {
                     OutlinedButton(onClick = {
 
                         close()
-                    }){
+                    }) {
                         Text("确定")
                     }
                     Spacer(Modifier.width(10.dp))
-                    OutlinedButton(onClick = { close() }){
+                    OutlinedButton(onClick = { close() }) {
                         Text("取消")
                     }
                 }

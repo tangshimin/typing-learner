@@ -30,7 +30,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
 import components.createTransferHandler
-import components.parseTrackList
 import components.play
 import data.Caption
 import data.ExternalCaption
@@ -61,6 +60,7 @@ fun LinkVocabularyDialog(
      * 协程构建器
      */
     val scope = rememberCoroutineScope()
+
     /**
      * 预览的单词列表
      */
@@ -84,7 +84,7 @@ fun LinkVocabularyDialog(
     /**
      * 字幕名称
      */
-    var subtitlesName by remember{ mutableStateOf("")}
+    var subtitlesName by remember { mutableStateOf("") }
 
     /**
      * 字幕轨道 ID
@@ -93,6 +93,7 @@ fun LinkVocabularyDialog(
     var vocabularyType by remember { mutableStateOf(VocabularyType.DOCUMENT) }
     var vocabularyWrong by remember { mutableStateOf(false) }
     var extractCaptionResultInfo by remember { mutableStateOf("") }
+
     /**
      * 点击【链接】后执行的回调函数
      */
@@ -128,7 +129,7 @@ fun LinkVocabularyDialog(
             val selectedVocabulary = loadVocabulary(it.absolutePath)
             if (selectedVocabulary.type != VocabularyType.DOCUMENT) {
                 relateVideoPath = selectedVocabulary.relateVideoPath
-                subtitlesName = if(selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
+                subtitlesName = if (selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
                 subtitlesTrackId = selectedVocabulary.subtitlesTrackId
                 vocabularyType = selectedVocabulary.type
                 var linkedCounter = 0
@@ -147,8 +148,14 @@ fun LinkVocabularyDialog(
                         if (counter in 1..3) {
                             captions?.forEachIndexed { _, caption ->
 
-                                val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
-                                    caption.start, caption.end, caption.content)
+                                val externalCaption = ExternalCaption(
+                                    selectedVocabulary.relateVideoPath,
+                                    selectedVocabulary.subtitlesTrackId,
+                                    subtitlesName,
+                                    caption.start,
+                                    caption.end,
+                                    caption.content
+                                )
 
                                 if (counter != 0) {
                                     if (!word.externalCaptions.contains(externalCaption)) {
@@ -164,8 +171,14 @@ fun LinkVocabularyDialog(
 
                             // 字幕已经有3条了，查询是否有一样的
                             captions?.forEachIndexed { _, caption ->
-                                val externalCaption = ExternalCaption(selectedVocabulary.relateVideoPath,selectedVocabulary.subtitlesTrackId,subtitlesName,
-                                    caption.start, caption.end, caption.content)
+                                val externalCaption = ExternalCaption(
+                                    selectedVocabulary.relateVideoPath,
+                                    selectedVocabulary.subtitlesTrackId,
+                                    subtitlesName,
+                                    caption.start,
+                                    caption.end,
+                                    caption.content
+                                )
 
                                 if (word.externalCaptions.contains(externalCaption)) {
                                     linkedCounter++
@@ -251,7 +264,7 @@ fun LinkVocabularyDialog(
                             state.vocabulary.wordList.forEach { word ->
                                 word.externalCaptions.forEach { externalCaption ->
                                     // 视频词库
-                                    if(externalCaption.relateVideoPath.isNotEmpty()){
+                                    if (externalCaption.relateVideoPath.isNotEmpty()) {
                                         var counter = externalNameMap[externalCaption.relateVideoPath]
                                         if (counter == null) {
                                             externalNameMap[externalCaption.relateVideoPath] = 1
@@ -260,7 +273,7 @@ fun LinkVocabularyDialog(
                                             externalNameMap[externalCaption.relateVideoPath] = counter
                                         }
                                         // 字幕词库
-                                    }else if (externalCaption.subtitlesName.isNotEmpty()){
+                                    } else if (externalCaption.subtitlesName.isNotEmpty()) {
                                         var counter = externalNameMap[externalCaption.subtitlesName]
                                         if (counter == null) {
                                             externalNameMap[externalCaption.subtitlesName] = 1
@@ -306,13 +319,13 @@ fun LinkVocabularyDialog(
                                                             state.vocabulary.wordList.forEach { word ->
                                                                 val tempList = mutableListOf<ExternalCaption>()
                                                                 word.externalCaptions.forEach { externalCaption ->
-                                                                    if(externalCaption.relateVideoPath == path || externalCaption.subtitlesName == path){
+                                                                    if (externalCaption.relateVideoPath == path || externalCaption.subtitlesName == path) {
                                                                         tempList.add(externalCaption)
                                                                     }
                                                                 }
                                                                 word.externalCaptions.removeAll(tempList)
                                                             }
-                                                            if(relateVideoPath == path || subtitlesName == path){
+                                                            if (relateVideoPath == path || subtitlesName == path) {
                                                                 vocabularyWrong = false
                                                             }
                                                             showConfirmationDialog = false
@@ -337,7 +350,7 @@ fun LinkVocabularyDialog(
                                         modifier = Modifier.width(360.dp).padding(top = 20.dp, bottom = 20.dp)
                                     )
                                 }
-                                if(vocabularyType == VocabularyType.DOCUMENT){
+                                if (vocabularyType == VocabularyType.DOCUMENT) {
                                     Text(
                                         "词库的类型错误，请选择从 SRT 或 MKV 生成的词库文件",
                                         color = Color.Red,
@@ -355,7 +368,7 @@ fun LinkVocabularyDialog(
                                     vocabularyWrong = false
                                     state.loadingFileChooserVisible = true
                                     Thread(Runnable {
-                                        val fileChooser =  state.futureFileChooser.get()
+                                        val fileChooser = state.futureFileChooser.get()
                                         fileChooser.dialogTitle = "选择有字幕的词库"
                                         fileChooser.fileSystemView = FileSystemView.getFileSystemView()
                                         fileChooser.currentDirectory = getResourcesFile("vocabulary")
@@ -442,20 +455,22 @@ fun LinkVocabularyDialog(
                                                                         val location =
                                                                             pointerEvent.awtEventOrNull?.locationOnScreen
                                                                         if (location != null) {
-                                                                            if(!isPlaying){
+                                                                            if (!isPlaying) {
                                                                                 isPlaying = true
                                                                                 playerBounds.x = location.x - 270 + 24
                                                                                 playerBounds.y = location.y - 320
                                                                                 val file = File(relateVideoPath)
                                                                                 if (file.exists()) {
-                                                                                    scope.launch{
+                                                                                    scope.launch {
                                                                                         play(
                                                                                             window = state.videoPlayerWindow,
-                                                                                            setIsPlaying = {isPlaying = it},
+                                                                                            setIsPlaying = {
+                                                                                                isPlaying = it
+                                                                                            },
                                                                                             volume = state.global.videoVolume,
                                                                                             playTriple = playTriple,
-                                                                                            videoPlayerComponent= state.videoPlayerComponent,
-                                                                                            bounds =playerBounds
+                                                                                            videoPlayerComponent = state.videoPlayerComponent,
+                                                                                            bounds = playerBounds
                                                                                         )
                                                                                     }
                                                                                 }

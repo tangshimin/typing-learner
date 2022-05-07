@@ -43,12 +43,12 @@ data class GlobalData(
     val keystrokeVolume: Float = 0.75F,
     val isPlayKeystrokeSound: Boolean = true,
     val wrongColorValue: ULong = 18446462598732840960UL,
-    val primaryColorValue:ULong = 18377412168996880384UL
+    val primaryColorValue: ULong = 18377412168996880384UL
 )
 
 /** 全局的可观察状态 */
 @OptIn(ExperimentalSerializationApi::class)
-class GlobalState(globalData :GlobalData){
+class GlobalState(globalData: GlobalData) {
     /**
      * 练习的类型
      */
@@ -109,12 +109,12 @@ class AppState {
     /**
      * 应用程序的全局状态
      */
-    var global:GlobalState = loadGlobalState()
+    var global: GlobalState = loadGlobalState()
 
     /**
      * Material 颜色
      */
-    var colors by mutableStateOf(createColors(global.isDarkTheme,global.primaryColor))
+    var colors by mutableStateOf(createColors(global.isDarkTheme, global.primaryColor))
 
     /**
      * 记忆单词的配置文件保存的状态
@@ -160,6 +160,7 @@ class AppState {
      * 最近生成的词库列表
      */
     var recentList = readRecentList()
+
     /**
      * 是否是默写模式
      */
@@ -224,10 +225,12 @@ class AppState {
      * 是否显示【合并词库】窗口
      */
     var mergeVocabulary by mutableStateOf(false)
+
     /**
      * 是否显示【过滤词库】窗口
      */
     var filterVocabulary by mutableStateOf(false)
+
     /**
      * 是否显示【从文档生成词库】窗口
      */
@@ -250,19 +253,19 @@ class AppState {
     var speed = MutableSpeedState()
 
 
-    private fun loadGlobalState():GlobalState{
+    private fun loadGlobalState(): GlobalState {
 
-       val globalSettings = getGlobalSettingsFile()
-        return if(globalSettings.exists()){
+        val globalSettings = getGlobalSettingsFile()
+        return if (globalSettings.exists()) {
             try {
                 val globalData = Json.decodeFromString<GlobalData>(globalSettings.readText())
                 GlobalState(globalData)
-            }catch (exception:Exception){
+            } catch (exception: Exception) {
                 FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$globalSettings")
+                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$globalSettings")
                 GlobalState(GlobalData())
             }
-        }else{
+        } else {
             GlobalState(GlobalData())
         }
     }
@@ -272,18 +275,18 @@ class AppState {
      * 载入应用程序设置信息
      */
     private fun loadTypingWordState(): TypingWordState {
-        val typingWordSettings =  getWordSettingsFile()
+        val typingWordSettings = getWordSettingsFile()
         return if (typingWordSettings.exists()) {
-            try{
+            try {
                 val typingWordData = Json.decodeFromString<TypingWordData>(typingWordSettings.readText())
                 TypingWordState(typingWordData)
-            }catch (exception:Exception){
+            } catch (exception: Exception) {
                 FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$typingWordSettings")
+                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingWordSettings")
                 TypingWordState(TypingWordData())
             }
 
-        }else{
+        } else {
             TypingWordState(TypingWordData())
         }
     }
@@ -291,18 +294,18 @@ class AppState {
     /**
      * 载入抄写字幕的配置信息
      */
-    private fun loadTypingSubtitlesState():TypingSubtitlesState{
+    private fun loadTypingSubtitlesState(): TypingSubtitlesState {
         val typingSubtitlesSetting = getSubtitlesSettingsFile()
-        return if(typingSubtitlesSetting.exists()){
-            try{
+        return if (typingSubtitlesSetting.exists()) {
+            try {
                 val typingSubtitlesData = Json.decodeFromString<TypingSubtitlesData>(typingSubtitlesSetting.readText())
                 TypingSubtitlesState(typingSubtitlesData)
-            }catch (exception:Exception){
+            } catch (exception: Exception) {
                 FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null,"设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
+                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
                 TypingSubtitlesState(TypingSubtitlesData())
             }
-        }else{
+        } else {
             TypingSubtitlesState(TypingSubtitlesData())
         }
     }
@@ -398,6 +401,7 @@ class AppState {
             }
         }
     }
+
     /**
      * 获得当前单词
      */
@@ -516,7 +520,7 @@ class AppState {
     /**
      * 改变词库
      */
-    fun changeVocabulary(file:File){
+    fun changeVocabulary(file: File) {
         vocabulary = loadMutableVocabulary(file.absolutePath)
         typingWord.vocabularyName = file.nameWithoutExtension
         typingWord.vocabularyPath = file.absolutePath
@@ -530,6 +534,7 @@ class AppState {
         wordWrongTime = 0
         saveTypingWordState()
     }
+
     /**
      * 保存当前的词库
      */
@@ -548,14 +553,14 @@ class AppState {
      */
     private fun readRecentList(): SnapshotStateList<RecentItem> {
         val recentListFile = getRecentListFile()
-        var list =  if(recentListFile.exists()){
-             try {
+        var list = if (recentListFile.exists()) {
+            try {
                 Json.decodeFromString<List<RecentItem>>(recentListFile.readText())
-            }catch (exception:Exception){
+            } catch (exception: Exception) {
                 listOf()
             }
 
-        }else{
+        } else {
             listOf()
         }
         list = list.sortedByDescending { it.time }
@@ -563,9 +568,10 @@ class AppState {
         mutableStateList.addAll(list)
         return mutableStateList
     }
-    private fun getRecentListFile():File{
-        val settingsDir =getSettingsDirectory()
-        return  File(settingsDir,"recentList.json")
+
+    private fun getRecentListFile(): File {
+        val settingsDir = getSettingsDirectory()
+        return File(settingsDir, "recentList.json")
     }
 
     fun saveToRecentList(name: String, path: String) {
@@ -591,6 +597,7 @@ class AppState {
         }
 
     }
+
     fun removeInvalidRecentItem(recentItem: RecentItem) {
         runBlocking {
             launch {
@@ -644,7 +651,8 @@ fun composeAppResource(path: String): File {
         file
     }
 }
-fun getAudioDirectory():File{
+
+fun getAudioDirectory(): File {
     val homeDir = File(System.getProperty("user.home"))
     val audioDir = File(homeDir, ".qwerty-learner/audio")
     if (!audioDir.exists()) {
@@ -654,7 +662,7 @@ fun getAudioDirectory():File{
 }
 
 /** 获取应用程序的配置文件的目录 */
-fun getSettingsDirectory():File{
+fun getSettingsDirectory(): File {
     val homeDir = File(System.getProperty("user.home"))
     val applicationDir = File(homeDir, ".qwerty-learner")
     if (!applicationDir.exists()) {
@@ -662,11 +670,13 @@ fun getSettingsDirectory():File{
     }
     return applicationDir
 }
+
 /** 获取全局的配置文件 */
 private fun getGlobalSettingsFile(): File {
     val settingsDir = getSettingsDirectory()
     return File(settingsDir, "AppSettings.json")
 }
+
 /** 获取记忆单词的配置文件 */
 private fun getWordSettingsFile(): File {
     val settingsDir = getSettingsDirectory()

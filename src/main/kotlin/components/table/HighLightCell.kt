@@ -4,5 +4,5 @@ interface HighLightCell {
     fun addHighlightCell(cell: Cell, highlightSpans: MutableMap<Int, Int>)
     fun clear()
     fun setSearchTime(lastTime: Long)
-    fun setKeyword(keyword:String)
+    fun setKeyword(keyword: String)
 }

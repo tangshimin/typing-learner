@@ -70,15 +70,15 @@ import javax.swing.filechooser.FileSystemView
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun TypingSubtitles(
-    typingSubtitles : TypingSubtitlesState,
+    typingSubtitles: TypingSubtitlesState,
     globalState: GlobalState,
-    saveSubtitlesState:() -> Unit,
-    saveGlobalState:() -> Unit,
+    saveSubtitlesState: () -> Unit,
+    saveGlobalState: () -> Unit,
     toTypingWord: () -> Unit,
     isOpenSettings: Boolean,
     setIsOpenSettings: (Boolean) -> Unit,
     window: ComposeWindow,
-    title:String,
+    title: String,
     playerWindow: JFrame,
     videoVolume: Float,
     mediaPlayerComponent: Component,
@@ -89,7 +89,7 @@ fun TypingSubtitles(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
-    val captionList = remember{ mutableStateListOf<Caption>()}
+    val captionList = remember { mutableStateListOf<Caption>() }
     var isPlaying by remember { mutableStateOf(false) }
     var showOpenFile by remember { mutableStateOf(false) }
     var selectedPath by remember { mutableStateOf("") }
@@ -180,7 +180,7 @@ fun TypingSubtitles(
     }
 
     /** 保存轨道 ID 时被调用的回调函数 */
-    val saveTrackID:(Int) -> Unit =  {
+    val saveTrackID: (Int) -> Unit = {
         scope.launch {
             typingSubtitles.trackID = it
             saveSubtitlesState()
@@ -188,7 +188,7 @@ fun TypingSubtitles(
     }
 
     /** 保存轨道名称时被调用的回调函数 */
-    val saveTrackDescription:(String) -> Unit = {
+    val saveTrackDescription: (String) -> Unit = {
         scope.launch {
             typingSubtitles.trackDescription = it
             saveSubtitlesState()
@@ -196,7 +196,7 @@ fun TypingSubtitles(
     }
 
     /** 保存轨道数量时被调用的回调函数 */
-    val saveTrackSize:(Int) -> Unit = {
+    val saveTrackSize: (Int) -> Unit = {
         scope.launch {
             typingSubtitles.trackSize = it
             saveSubtitlesState()
@@ -204,13 +204,13 @@ fun TypingSubtitles(
     }
 
     /** 保存视频路径时被调用的回调函数 */
-    val saveVideoPath:(String) -> Unit = {
+    val saveVideoPath: (String) -> Unit = {
         typingSubtitles.videoPath = it
         saveSubtitlesState()
     }
 
     /** 保存一个新的字幕时被调用的回调函数 */
-    val saveSubtitlesPath:(String) -> Unit = {
+    val saveSubtitlesPath: (String) -> Unit = {
         scope.launch {
             typingSubtitles.subtitlesPath = it
             typingSubtitles.firstVisibleItemIndex = 0
@@ -223,7 +223,7 @@ fun TypingSubtitles(
     }
 
     /** 保存是否时深色模式时被调用的回调函数 */
-    val saveIsDarkTheme:(Boolean) -> Unit = {
+    val saveIsDarkTheme: (Boolean) -> Unit = {
         scope.launch {
             globalState.isDarkTheme = it
             saveGlobalState()
@@ -231,7 +231,7 @@ fun TypingSubtitles(
     }
 
     /** 保存是否启用击键音效时被调用的回调函数 */
-    val saveIsPlayKeystrokeSound:(Boolean) -> Unit = {
+    val saveIsPlayKeystrokeSound: (Boolean) -> Unit = {
         scope.launch {
             globalState.isPlayKeystrokeSound = it
             saveGlobalState
@@ -309,10 +309,9 @@ fun TypingSubtitles(
                         JOptionPane.showMessageDialog(window, "文件已打开")
                     }
 
-                } else if(file.extension == "json"){
+                } else if (file.extension == "json") {
                     JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
-                }
-                else {
+                } else {
                     JOptionPane.showMessageDialog(window, "暂时只能读取 mkv 格式的视频文件")
                 }
 
@@ -367,7 +366,8 @@ fun TypingSubtitles(
                     val startPadding = 150.dp
                     val startTimeWidth = 141.dp
                     val endPadding = 10.dp
-                    val maxWidth = startPadding + startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
+                    val maxWidth =
+                        startPadding + startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -475,9 +475,10 @@ fun TypingSubtitles(
                                                 .onKeyEvent { textFieldKeyEvent(it) }
                                                 .onFocusChanged {
                                                     if (it.isFocused) {
-                                                        scope.launch{
+                                                        scope.launch {
                                                             typingSubtitles.currentIndex = index
-                                                            typingSubtitles.firstVisibleItemIndex = listState.firstVisibleItemIndex
+                                                            typingSubtitles.firstVisibleItemIndex =
+                                                                listState.firstVisibleItemIndex
                                                             saveSubtitlesState()
                                                         }
                                                     } else if (textFieldValue.isNotEmpty()) {
@@ -624,7 +625,7 @@ fun TypingSubtitles(
                     HorizontalScrollbar(
                         modifier = Modifier.align(Alignment.BottomStart)
                             .fillMaxWidth(),
-                        adapter =  rememberScrollbarAdapter(stateHorizontal)
+                        adapter = rememberScrollbarAdapter(stateHorizontal)
                     )
                     if (!isAtTop) {
                         FloatingActionButton(
@@ -710,7 +711,7 @@ fun TypingSubtitles(
 
         }
 
-        if(isMacOS()){
+        if (isMacOS()) {
             MacOSTitle(
                 title = title,
                 window = window,
@@ -750,9 +751,11 @@ fun OpenFileComponent(
             modifier = Modifier.width(IntrinsicSize.Max).align(Alignment.Center)
         ) {
 
-           Text(text = "可以拖放 MKV 文件到这里",
-               color = MaterialTheme.colors.primary,
-           modifier = Modifier.padding(end = 20.dp))
+            Text(
+                text = "可以拖放 MKV 文件到这里",
+                color = MaterialTheme.colors.primary,
+                modifier = Modifier.padding(end = 20.dp)
+            )
             OutlinedButton(
                 modifier = Modifier.padding(end = 20.dp),
                 onClick = { openFileChooser() }) {
@@ -1023,13 +1026,13 @@ fun SubtitlesSidebar(
     }
 }
 
- /** 创建拖放处理器
-  * @param singleFile 是否只接收单个文件
-  * @param parseImportFile 处理导入的文件的函数
-  * @param showWrongMessage 显示提示信息的函数
-  */
+/** 创建拖放处理器
+ * @param singleFile 是否只接收单个文件
+ * @param parseImportFile 处理导入的文件的函数
+ * @param showWrongMessage 显示提示信息的函数
+ */
 fun createTransferHandler(
-    singleFile:Boolean = true,
+    singleFile: Boolean = true,
     parseImportFile: (List<File>) -> Unit,
     showWrongMessage: (String) -> Unit,
 ): TransferHandler {
@@ -1048,13 +1051,13 @@ fun createTransferHandler(
             val transferable = support.transferable
             try {
                 val files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
-                if(singleFile){
+                if (singleFile) {
                     if (files.size == 1) {
                         parseImportFile(files)
                     } else {
                         showWrongMessage("一次只能读取一个文件")
                     }
-                }else{
+                } else {
                     parseImportFile(files)
                 }
 
@@ -1117,14 +1120,14 @@ fun parseTrackList(
  * @param setCaptionList 用于设置字幕列表的回调函数
  */
 fun parseSubtitles(
-    subtitlesPath:String,
-    setMaxLength:(Int) -> Unit,
-    setCaptionList:(List<Caption>) -> Unit,
-){
+    subtitlesPath: String,
+    setMaxLength: (Int) -> Unit,
+    setCaptionList: (List<Caption>) -> Unit,
+) {
     val formatSRT = FormatSRT()
     val file = File(subtitlesPath)
     val inputStream: InputStream = FileInputStream(file)
-    val timedTextObject: TimedTextObject =  formatSRT.parseFile(file.name, inputStream)
+    val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
     val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
     val captionList = mutableListOf<Caption>()
     var maxLength = 0

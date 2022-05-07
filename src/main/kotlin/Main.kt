@@ -20,13 +20,18 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.*
+import components.TypingSubtitles
+import components.TypingWord
+import components.computeVideoBounds
 import components.flatlaf.UpdateFlatLaf
 import data.VocabularyType
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.*
+import player.LocalMediaPlayerComponent
+import player.isMacOS
+import player.mediaPlayer
+import player.rememberMediaPlayerComponent
 import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
@@ -38,7 +43,8 @@ import javax.swing.filechooser.FileSystemView
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
-@OptIn(ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalComposeUiApi::class,
     ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
 )
@@ -74,8 +80,8 @@ fun main() = application {
                     WindowMenuBar(state)
                     MenuDialogs(state)
                     // 视频播放器的位置，大小
-                    val videoBounds = computeVideoBounds(windowState,state.openSettings)
-                    when(state.global.type){
+                    val videoBounds = computeVideoBounds(windowState, state.openSettings)
+                    when (state.global.type) {
                         WORD -> {
                             TypingWord(
                                 window = window,
@@ -92,12 +98,12 @@ fun main() = application {
                                 typingSubtitles = typingSubtitles,
                                 globalState = state.global,
                                 saveSubtitlesState = {
-                                    scope.launch{
+                                    scope.launch {
                                         state.saveTypingSubtitlesState()
                                     }
                                 },
                                 saveGlobalState = {
-                                    scope.launch{
+                                    scope.launch {
                                         state.saveGlobalState()
                                     }
                                 },
@@ -119,7 +125,8 @@ fun main() = application {
                                 wrongColor = state.global.wrongColor
                             )
                         }
-                        ANKI ->{}
+                        ANKI -> {
+                        }
                     }
 
                 }
@@ -131,12 +138,11 @@ fun main() = application {
 }
 
 
-
 @OptIn(ExperimentalSerializationApi::class)
-private fun computeTitle(state: AppState):String {
+private fun computeTitle(state: AppState): String {
     when (state.global.type) {
         WORD -> {
-            return  if(state.vocabulary.wordList.isNotEmpty()){
+            return if (state.vocabulary.wordList.isNotEmpty()) {
                 val suffix = if (state.isDictation) {
                     if (state.isReviewWrongList) {
                         "复习错误单词 - ${state.dictationIndex + 1}"
@@ -145,12 +151,12 @@ private fun computeTitle(state: AppState):String {
                     "${state.typingWord.index + 1}"
                 }
                 "${state.typingWord.vocabularyName} - $suffix"
-            }else{
+            } else {
                 "请选择词库"
             }
         }
         SUBTITLES -> {
-            val fileName =  File(state.typingSubtitles.videoPath).nameWithoutExtension
+            val fileName = File(state.typingSubtitles.videoPath).nameWithoutExtension
             return fileName + " - " + state.typingSubtitles.trackDescription
         }
         else -> {
@@ -159,6 +165,7 @@ private fun computeTitle(state: AppState):String {
     }
 
 }
+
 /**
  * 菜单栏
  */
@@ -166,10 +173,10 @@ private fun computeTitle(state: AppState):String {
 @Composable
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
-        Item("打开词库(O)", mnemonic = 'O',onClick = {
+        Item("打开词库(O)", mnemonic = 'O', onClick = {
             state.loadingFileChooserVisible = true
             Thread(Runnable {
-                val fileChooser =  state.futureFileChooser.get()
+                val fileChooser = state.futureFileChooser.get()
                 fileChooser.dialogTitle = "选择词库"
                 fileChooser.fileSystemView = FileSystemView.getFileSystemView()
                 fileChooser.currentDirectory = getResourcesFile("vocabulary")
@@ -188,19 +195,19 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
 
         })
 
-        if(state.recentList.isNotEmpty()){
-            Menu("打开最近生成的词库(R)", mnemonic = 'R'){
+        if (state.recentList.isNotEmpty()) {
+            Menu("打开最近生成的词库(R)", mnemonic = 'R') {
                 state.recentList.forEach { recentItem ->
                     val recentFile = File(recentItem.path)
-                    if(recentFile.exists()){
-                        Item(text = recentItem.name,onClick = {
+                    if (recentFile.exists()) {
+                        Item(text = recentItem.name, onClick = {
                             val file = File(recentItem.path)
                             state.changeVocabulary(file)
                             state.global.type = WORD
                             state.saveGlobalState()
                             state.loadingFileChooserVisible = false
                         })
-                    }else{
+                    } else {
                         state.removeInvalidRecentItem(recentItem)
                     }
 
@@ -209,27 +216,27 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         }
 
         Separator()
-        Item("合并词库(M)", mnemonic = 'M',onClick = {
+        Item("合并词库(M)", mnemonic = 'M', onClick = {
             state.mergeVocabulary = true
         })
-        Item("过滤词库(F)", mnemonic = 'F',onClick = {
+        Item("过滤词库(F)", mnemonic = 'F', onClick = {
             state.filterVocabulary = true
         })
         Separator()
-        Item("从文档生成词库(D)", mnemonic = 'D',onClick = {
+        Item("从文档生成词库(D)", mnemonic = 'D', onClick = {
             state.generateVocabularyFromDocument = true
         })
-        Item("从字幕生成词库(S)", mnemonic = 'S',onClick = {
+        Item("从字幕生成词库(S)", mnemonic = 'S', onClick = {
             state.generateVocabularyFromSubtitles = true
         })
-        Item("从 MKV 视频生成词库(V)", mnemonic = 'V',onClick = {
+        Item("从 MKV 视频生成词库(V)", mnemonic = 'V', onClick = {
             state.generateVocabularyFromMKV = true
         })
     }
-    Menu("字幕(S)",mnemonic = 'S'){
+    Menu("字幕(S)", mnemonic = 'S') {
         val enableTypingSubtitles = (state.global.type == WORD)
         Item(
-            "抄写字幕(T)",mnemonic = 'T',
+            "抄写字幕(T)", mnemonic = 'T',
             enabled = enableTypingSubtitles,
             onClick = {
                 state.global.type = SUBTITLES
@@ -247,7 +254,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         //如果当前词库类型为文档就启用
         val enableLinkVocabulary = (state.vocabulary.type == VocabularyType.DOCUMENT && state.global.type == WORD)
         Item(
-            "链接字幕词库(L)",mnemonic = 'L',
+            "链接字幕词库(L)", mnemonic = 'L',
             enabled = enableLinkVocabulary,
             onClick = { showLinkVocabulary = true },
         )
@@ -255,7 +262,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("章节(C)", mnemonic = 'C') {
         val enable = state.global.type == WORD
         Item(
-            "选择章节(C)",mnemonic = 'C',
+            "选择章节(C)", mnemonic = 'C',
             enabled = enable,
             onClick = {
                 state.openSelectChapter = true
@@ -265,10 +272,10 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     var aboutDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
         Item("检查更新(U)", mnemonic = 'U', onClick = { println("点击 检查更新") })
-        Item("关于(A)", mnemonic = 'A', onClick = {aboutDialogVisible = true })
-        if(aboutDialogVisible){
+        Item("关于(A)", mnemonic = 'A', onClick = { aboutDialogVisible = true })
+        if (aboutDialogVisible) {
             AboutDialog(
-                close = {aboutDialogVisible = false}
+                close = { aboutDialogVisible = false }
             )
         }
 
@@ -278,26 +285,27 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
 /**
  * 设置
  */
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
+@OptIn(
+    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
     ExperimentalSerializationApi::class
 )
 @Composable
 fun Settings(
-    isOpen:Boolean,
-    setIsOpen:(Boolean) -> Unit,
+    isOpen: Boolean,
+    setIsOpen: (Boolean) -> Unit,
     modifier: Modifier
 ) {
     Box(modifier = modifier) {
-        val topPadding = if(isMacOS()) 30.dp else 0.dp
-        Column (Modifier.width(IntrinsicSize.Max).padding(top = topPadding)){
-            if(isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
+        val topPadding = if (isMacOS()) 30.dp else 0.dp
+        Column(Modifier.width(IntrinsicSize.Max).padding(top = topPadding)) {
+            if (isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .width(if (isOpen) 217.dp else 48.dp)
                     .shadow(
-                        elevation =  0.dp,
+                        elevation = 0.dp,
                         shape = if (isOpen) RectangleShape else RoundedCornerShape(50)
                     )
                     .background(MaterialTheme.colors.background)
@@ -336,7 +344,7 @@ fun Settings(
                     Divider(Modifier.height(48.dp).width(1.dp))
                 }
             }
-            if(isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
+            if (isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
         }
     }
 }
@@ -370,17 +378,18 @@ fun MenuDialogs(state: AppState) {
         SelectChapterDialog(state)
     }
 
-    if(state.loadingFileChooserVisible){
+    if (state.loadingFileChooserVisible) {
         LoadingDialog()
     }
-    if(state.mergeVocabulary){
+    if (state.mergeVocabulary) {
         MergeVocabularyDialog(
             futureFileChooser = state.futureFileChooser,
-            saveToRecentList = {name,path ->
-                state.saveToRecentList(name,path)},
-            close = {state.mergeVocabulary = false})
+            saveToRecentList = { name, path ->
+                state.saveToRecentList(name, path)
+            },
+            close = { state.mergeVocabulary = false })
     }
-    if(state.filterVocabulary){
+    if (state.filterVocabulary) {
         GenerateVocabularyDialog(
             state = state,
             title = "过滤词库",
@@ -425,7 +434,7 @@ fun LoadingDialog() {
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(300.dp,300.dp)
+            size = DpSize(300.dp, 300.dp)
         ),
     ) {
         Surface(

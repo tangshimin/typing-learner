@@ -25,6 +25,7 @@ data class TypingWordData(
     var vocabularyName: String = "四级",
     var vocabularyPath: String = "vocabulary/大学英语/四级.json",
 )
+
 /** 记忆单词的可观察状态 */
 @OptIn(ExperimentalSerializationApi::class)
 class TypingWordState(typingWordData: TypingWordData) {

@@ -63,21 +63,22 @@ import kotlin.concurrent.schedule
 )
 @Composable
 fun TypingWord(
-    window:ComposeWindow,
-    title:String,
-    audioPlayer:Component,
+    window: ComposeWindow,
+    title: String,
+    audioPlayer: Component,
     state: AppState,
     videoBounds: Rectangle,
 ) {
     /** 当前正在学习的单词 */
     val currentWord = state.getCurrentWord()
     val scope = rememberCoroutineScope()
+
     /**
      * 用快捷键播放视频时被调用的回调函数
      * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
      */
     @OptIn(ExperimentalSerializationApi::class)
-    val shortcutPlay : (playTriple: Triple<Caption, String, Int>?) -> Unit =  {playTriple ->
+    val shortcutPlay: (playTriple: Triple<Caption, String, Int>?) -> Unit = { playTriple ->
         if (playTriple != null) {
             if (!state.isPlaying) {
                 val file = File(playTriple.second)
@@ -105,13 +106,14 @@ fun TypingWord(
 
     /** 是否正在播放单词发音 */
     var isPlayingAudio by remember { mutableStateOf(false) }
+
     /** 处理全局快捷键的回调函数 */
     val keyEvent: (KeyEvent) -> Boolean = {
         when {
             (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.isAuto = !state.typingWord.isAuto
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -120,7 +122,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.global.isDarkTheme = !state.global.isDarkTheme
-                    state.colors = createColors(state.global.isDarkTheme,state.global.primaryColor)
+                    state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
                     state.saveGlobalState()
                 }
                 true
@@ -128,7 +130,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -137,7 +139,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -146,7 +148,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.definitionVisible = !state.typingWord.definitionVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -155,7 +157,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.translationVisible = !state.typingWord.translationVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -171,7 +173,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.wordVisible = !state.typingWord.wordVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -179,13 +181,13 @@ fun TypingWord(
             }
 
             (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
-                if(!isPlayingAudio){
+                if (!isPlayingAudio) {
                     playAudio(
                         word = currentWord.value,
                         volume = state.global.audioVolume,
                         pronunciation = state.typingWord.pronunciation,
                         mediaPlayerComponent = audioPlayer,
-                        changePlayerState = {isPlaying -> isPlayingAudio = isPlaying},
+                        changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
                         setIsAutoPlay = {}
                     )
                 }
@@ -197,30 +199,33 @@ fun TypingWord(
                     shortcutPlay(playTriple)
                 } else {
                     val caption = state.getCurrentWord().captions[0]
-                    val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                    val playTriple =
+                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
                     shortcutPlay(playTriple)
                 }
                 true
             }
-            (it.isCtrlPressed &&  it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
+            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 2) {
                     val playTriple = getPayTriple(currentWord, 1)
                     shortcutPlay(playTriple)
 
                 } else if (state.getCurrentWord().captions.size >= 2) {
                     val caption = state.getCurrentWord().captions[1]
-                    val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                    val playTriple =
+                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
                     shortcutPlay(playTriple)
                 }
                 true
             }
-            (it.isCtrlPressed &&  it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
+            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
                 if (state.getCurrentWord().externalCaptions.size >= 3) {
                     val playTriple = getPayTriple(currentWord, 2)
                     shortcutPlay(playTriple)
                 } else if (state.getCurrentWord().captions.size >= 3) {
                     val caption = state.getCurrentWord().captions[2]
-                    val playTriple = Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                    val playTriple =
+                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
                     shortcutPlay(playTriple)
                 }
                 true
@@ -228,7 +233,7 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
                 scope.launch {
                     state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
-                    if(!state.isDictation){
+                    if (!state.isDictation) {
                         state.saveTypingWordState()
                     }
                 }
@@ -282,10 +287,9 @@ fun TypingWord(
                         JOptionPane.showMessageDialog(window, "词库已打开")
                     }
 
-                } else if (file.extension == "mkv"){
+                } else if (file.extension == "mkv") {
                     JOptionPane.showMessageDialog(window, "如果想打开 MKV 视频文件抄写字幕，\n需要先切换到抄写字幕界面，\n如果想生成词库需要先打开生成词库界面。")
-                }
-                else {
+                } else {
                     JOptionPane.showMessageDialog(window, "只能读取 json 格式的词库")
                 }
 
@@ -301,12 +305,12 @@ fun TypingWord(
         Row {
             TypingWordSidebar(state)
             if (state.openSettings) {
-                val topPadding = if(isMacOS()) 30.dp else 0.dp
+                val topPadding = if (isMacOS()) 30.dp else 0.dp
                 Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
             }
             Box(Modifier.fillMaxSize()) {
                 val endPadding = 0.dp
-                if(isMacOS()){
+                if (isMacOS()) {
                     MacOSTitle(
                         title = title,
                         window = window,
@@ -315,8 +319,10 @@ fun TypingWord(
                 }
 
                 if (state.vocabulary.wordList.isNotEmpty()) {
-                    Box(Modifier.align(Alignment.Center)
-                        .padding(end = endPadding)) {
+                    Box(
+                        Modifier.align(Alignment.Center)
+                            .padding(end = endPadding)
+                    ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
@@ -673,7 +679,9 @@ fun TypingWord(
                                 modifier = captionsModifier,
                                 wrongColor = state.global.wrongColor
                             )
-                            if (state.isPlaying) Spacer(Modifier.height((videoSize.height).dp).width(videoSize.width.dp))
+                            if (state.isPlaying) Spacer(
+                                Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
+                            )
                         }
 
                     }
@@ -701,7 +709,7 @@ fun TypingWord(
         }
         Settings(
             isOpen = state.openSettings,
-            setIsOpen = {state.openSettings = it},
+            setIsOpen = { state.openSettings = it },
             modifier = Modifier.align(Alignment.TopStart)
         )
     }
@@ -719,9 +727,9 @@ fun MacOSTitle(
         color = MaterialTheme.colors.onBackground,
         modifier = modifier
     )
-    window.rootPane.putClientProperty("apple.awt.fullWindowContent",true)
-    window.rootPane.putClientProperty("apple.awt.transparentTitleBar",true)
-    window.rootPane.putClientProperty("apple.awt.windowTitleVisible",false)
+    window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+    window.rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
 }
 
 /**
@@ -904,7 +912,7 @@ fun Morphology(
 @Composable
 fun Definition(
     word: Word,
-    wrongColor:Color,
+    wrongColor: Color,
     definitionVisible: Boolean,
     isPlaying: Boolean,
     textFieldValue: String,
@@ -1090,7 +1098,7 @@ fun Captions(
     checkTyping: (Int, String, String) -> Unit,
     playKeySound: () -> Unit,
     modifier: Modifier,
-    wrongColor :Color
+    wrongColor: Color
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1156,7 +1164,7 @@ fun getPlayTripleMap(state: AppState, word: Word): MutableMap<Int, Triple<Captio
     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
         if (word.externalCaptions.isNotEmpty()) {
             word.externalCaptions.forEachIndexed { index, externalCaption ->
-                val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
+                val caption = Caption(externalCaption.start, externalCaption.end, externalCaption.content)
                 val playTriple =
                     Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
                 playTripleMap[index] = playTriple
@@ -1334,28 +1342,28 @@ fun Caption(
                 )
             ) {
                 IconButton(onClick = {
-                   if(!isPlaying){
-                       val file = File(relativeVideoPath)
-                       if (file.exists()) {
-                           setIsPlaying(true)
-                           scope.launch {
-                               play(
-                                   videoPlayerWindow,
-                                   setIsPlaying = { setIsPlaying(it) },
-                                   volume,
-                                   playTriple,
-                                   videoPlayerComponent,
-                                   bounds
-                               )
-                           }
+                    if (!isPlaying) {
+                        val file = File(relativeVideoPath)
+                        if (file.exists()) {
+                            setIsPlaying(true)
+                            scope.launch {
+                                play(
+                                    videoPlayerWindow,
+                                    setIsPlaying = { setIsPlaying(it) },
+                                    volume,
+                                    playTriple,
+                                    videoPlayerComponent,
+                                    bounds
+                                )
+                            }
 
-                       } else {
-                           isPathWrong = true
-                           Timer("恢复状态", false).schedule(2000) {
-                               isPathWrong = false
-                           }
-                       }
-                   }
+                        } else {
+                            isPathWrong = true
+                            Timer("恢复状态", false).schedule(2000) {
+                                isPathWrong = false
+                            }
+                        }
+                    }
 
 
                 }) {
@@ -1366,8 +1374,8 @@ fun Caption(
                     )
                 }
             }
-            if(isPathWrong){
-                Text("视频地址错误",color = Color.Red)
+            if (isPathWrong) {
+                Text("视频地址错误", color = Color.Red)
             }
 
         }
@@ -1482,11 +1490,11 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
 @OptIn(ExperimentalSerializationApi::class)
 fun getPayTriple(currentWord: Word, index: Int): Triple<Caption, String, Int>? {
 
-    return if(index < currentWord.externalCaptions.size){
+    return if (index < currentWord.externalCaptions.size) {
         val externalCaption = currentWord.externalCaptions[index]
-        val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
+        val caption = Caption(externalCaption.start, externalCaption.end, externalCaption.content)
         Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
-    }else{
+    } else {
         null
     }
 }

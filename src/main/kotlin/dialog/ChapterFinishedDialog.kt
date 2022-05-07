@@ -56,14 +56,14 @@ fun ChapterFinishedDialog(
     resetIndex: (Boolean) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
-    val width = if(isVocabularyFinished) 550.dp else 400.dp
+    val width = if (isVocabularyFinished) 550.dp else 400.dp
     val height = (180 + ((dictationWrongWords.size * 18) + 10)).dp
     Dialog(
         title = "",
         onCloseRequest = { close() },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(width,height )
+            size = DpSize(width, height)
         ),
     ) {
 
@@ -114,10 +114,10 @@ fun ChapterFinishedDialog(
 
                     val title = if (isVocabularyFinished) {
                         "您已完成最后一个章节"
-                    } else if (isDictation){
-                        if(isReviewWrongList){
+                    } else if (isDictation) {
+                        if (isReviewWrongList) {
                             "您已复习完错误单词"
-                        }else "您已默写完本章节"
+                        } else "您已默写完本章节"
 
                     } else "您已学习完本章节"
                     Text(text = "$title", color = MaterialTheme.colors.onBackground)
@@ -132,26 +132,28 @@ fun ChapterFinishedDialog(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(text = "正确率 ",color = MaterialTheme.colors.onBackground)
-                            Text(text = "$correctRate%",color = MaterialTheme.colors.primary)
+                            Text(text = "正确率 ", color = MaterialTheme.colors.onBackground)
+                            Text(text = "$correctRate%", color = MaterialTheme.colors.primary)
                         }
 
                         Column(Modifier.width(IntrinsicSize.Max).padding(top = 10.dp)) {
-                            if(correctRate < 100F){
+                            if (correctRate < 100F) {
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(text = "单词", color = MaterialTheme.colors.onBackground)
-                                    Text(text = "错误数", textAlign = TextAlign.Center,
+                                    Text(
+                                        text = "错误数", textAlign = TextAlign.Center,
                                         color = MaterialTheme.colors.onBackground,
-                                        modifier = Modifier.width(50.dp))
+                                        modifier = Modifier.width(50.dp)
+                                    )
                                 }
                             }
 
-                            if(dictationWrongWords.isNotEmpty()) Divider(Modifier.fillMaxWidth())
+                            if (dictationWrongWords.isNotEmpty()) Divider(Modifier.fillMaxWidth())
                             var list = dictationWrongWords.toList()
-                            list = list.sortedBy { pair->
+                            list = list.sortedBy { pair ->
                                 pair.second
                             }
                             list.forEach {
@@ -161,12 +163,17 @@ fun ChapterFinishedDialog(
                                 ) {
                                     Text(text = it.first.value, color = MaterialTheme.colors.onBackground)
                                     Spacer(Modifier.width(30.dp))
-                                    Text(text = "${it.second}",textAlign = TextAlign.Center, color = Color.Red,modifier = Modifier.width(50.dp))
+                                    Text(
+                                        text = "${it.second}",
+                                        textAlign = TextAlign.Center,
+                                        color = Color.Red,
+                                        modifier = Modifier.width(50.dp)
+                                    )
                                 }
                             }
                         }
                     }
-                }else{
+                } else {
                     Spacer(modifier = Modifier.height(33.dp))
                 }
 
@@ -222,7 +229,7 @@ fun ChapterFinishedDialog(
                                 alignment = Alignment.TopCenter,
                                 offset = DpOffset.Zero
                             )
-                        ){
+                        ) {
                             OutlinedButton(onClick = {
                                 reviewWrongWords()
                             }) { Text("复习错误单词", color = textColor) }
