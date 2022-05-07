@@ -10,6 +10,9 @@ import components.flatlaf.InitializeFileChooser
 import data.Word
 import data.loadMutableVocabulary
 import dialog.RecentItem
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -324,73 +327,87 @@ class AppState {
 
     /** 保存全局的设置信息 */
     fun saveGlobalState() {
-        val globalData = GlobalData(
-            global.type,
-            global.isDarkTheme,
-            global.audioVolume,
-            global.videoVolume,
-            global.keystrokeVolume,
-            global.isPlayKeystrokeSound,
-            global.wrongColor.value,
-            global.primaryColor.value
-        )
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
+        runBlocking {
+            launch {
+                val globalData = GlobalData(
+                    global.type,
+                    global.isDarkTheme,
+                    global.audioVolume,
+                    global.videoVolume,
+                    global.keystrokeVolume,
+                    global.isPlayKeystrokeSound,
+                    global.wrongColor.value,
+                    global.primaryColor.value
+                )
+                val format = Json {
+                    prettyPrint = true
+                    encodeDefaults = true
+                }
+                val json = format.encodeToString(globalData)
+                val settings = getGlobalSettingsFile()
+                settings.writeText(json)
+            }
         }
-        val json = format.encodeToString(globalData)
-        val settings = getGlobalSettingsFile()
-        settings.writeText(json)
     }
+
     /**
      * 保存记忆单词的设置信息
      */
     @OptIn(ExperimentalComposeUiApi::class)
     fun saveTypingWordState() {
-        val typingWordData = TypingWordData(
-            typingWord.wordVisible,
-            typingWord.phoneticVisible,
-            typingWord.morphologyVisible,
-            typingWord.definitionVisible,
-            typingWord.translationVisible,
-            typingWord.subtitlesVisible,
-            typingWord.speedVisible,
-            typingWord.isPlaySoundTips,
-            typingWord.soundTipsVolume,
-            typingWord.pronunciation,
-            typingWord.isAuto,
-            typingWord.index,
-            typingWord.vocabularyName,
-            typingWord.vocabularyPath,
-        )
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
+        runBlocking {
+            launch {
+                val typingWordData = TypingWordData(
+                    typingWord.wordVisible,
+                    typingWord.phoneticVisible,
+                    typingWord.morphologyVisible,
+                    typingWord.definitionVisible,
+                    typingWord.translationVisible,
+                    typingWord.subtitlesVisible,
+                    typingWord.speedVisible,
+                    typingWord.isPlaySoundTips,
+                    typingWord.soundTipsVolume,
+                    typingWord.pronunciation,
+                    typingWord.isAuto,
+                    typingWord.index,
+                    typingWord.vocabularyName,
+                    typingWord.vocabularyPath,
+                )
+                val format = Json {
+                    prettyPrint = true
+                    encodeDefaults = true
+                }
+                val json = format.encodeToString(typingWordData)
+                val settings = getWordSettingsFile()
+                settings.writeText(json)
+            }
         }
-        val json = format.encodeToString(typingWordData)
-        val settings =  getWordSettingsFile()
-        settings.writeText(json)
+
     }
 
     /** 保存抄写字幕的配置信息 */
     fun saveTypingSubtitlesState() {
-        val typingSubtitlesData = TypingSubtitlesData(
-            typingSubtitles.videoPath,
-            typingSubtitles.subtitlesPath,
-            typingSubtitles.trackID,
-            typingSubtitles.trackDescription,
-            typingSubtitles.trackSize,
-            typingSubtitles.currentIndex,
-            typingSubtitles.firstVisibleItemIndex,
-            typingSubtitles.sentenceMaxLength,
-        )
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
+        runBlocking {
+            launch {
+                val typingSubtitlesData = TypingSubtitlesData(
+                    typingSubtitles.videoPath,
+                    typingSubtitles.subtitlesPath,
+                    typingSubtitles.trackID,
+                    typingSubtitles.trackDescription,
+                    typingSubtitles.trackSize,
+                    typingSubtitles.currentIndex,
+                    typingSubtitles.firstVisibleItemIndex,
+                    typingSubtitles.sentenceMaxLength,
+                )
+                val format = Json {
+                    prettyPrint = true
+                    encodeDefaults = true
+                }
+                val json = format.encodeToString(typingSubtitlesData)
+                val typingSubtitlesSetting = getSubtitlesSettingsFile()
+                typingSubtitlesSetting.writeText(json)
+            }
         }
-         val json = format.encodeToString(typingSubtitlesData)
-        val typingSubtitlesSetting = getSubtitlesSettingsFile()
-         typingSubtitlesSetting.writeText(json)
     }
     /**
      * 获得当前单词
@@ -528,15 +545,16 @@ class AppState {
      * 保存当前的词库
      */
     fun saveCurrentVocabulary() {
-        val format = Json {
-            prettyPrint = true
-            encodeDefaults = true
-        }
-        Thread(Runnable {
-            val json = format.encodeToString(vocabulary.serializeVocabulary)
-            val file = getResourcesFile(typingWord.vocabularyPath)
-            file.writeText(json)
-        }).start()
+        runBlocking {
+            launch {
+                val format = Json {
+                    prettyPrint = true
+                    encodeDefaults = true
+                }
+                    val json = format.encodeToString(vocabulary.serializeVocabulary)
+                    val file = getResourcesFile(typingWord.vocabularyPath)
+                    file.writeText(json)
+            }}
     }
 
     /**
@@ -564,37 +582,40 @@ class AppState {
         return  File(settingsDir,"recentList.json")
     }
 
-    fun saveToRecentList(name:String, path: String) {
-
-        Thread(Runnable {
-            val item = RecentItem(LocalDateTime.now().toString(),name,path)
-            if (!recentList.contains(item)) {
-                if(recentList.size==30){
-                    recentList.removeAt(29)
+    fun saveToRecentList(name: String, path: String) {
+        runBlocking {
+            launch {
+                val item = RecentItem(LocalDateTime.now().toString(), name, path)
+                if (!recentList.contains(item)) {
+                    if (recentList.size == 30) {
+                        recentList.removeAt(29)
+                    }
+                    recentList.add(0, item)
+                } else {
+                    recentList.remove(item)
+                    recentList.add(0, item)
                 }
-                recentList.add(0,item)
-            }else{
-                recentList.remove(item)
-                recentList.add(0,item)
-            }
-            val serializeList = mutableListOf<RecentItem>()
-            serializeList.addAll(recentList)
+                val serializeList = mutableListOf<RecentItem>()
+                serializeList.addAll(recentList)
 
-            val json = jsonBuilder.encodeToString(serializeList)
-            val recentListFile = getRecentListFile()
-            recentListFile.writeText(json)
-        }).start()
+                val json = jsonBuilder.encodeToString(serializeList)
+                val recentListFile = getRecentListFile()
+                recentListFile.writeText(json)
+            }
+        }
 
     }
-    fun removeInvalidRecentItem(recentItem: RecentItem){
-        Thread(Runnable {
-            recentList.remove(recentItem)
-            val serializeList = mutableListOf<RecentItem>()
-            serializeList.addAll(recentList)
-            val json = jsonBuilder.encodeToString(recentList)
-            val recentListFile = getRecentListFile()
-            recentListFile.writeText(json)
-        }).start()
+    fun removeInvalidRecentItem(recentItem: RecentItem) {
+        runBlocking {
+            launch {
+                recentList.remove(recentItem)
+                val serializeList = mutableListOf<RecentItem>()
+                serializeList.addAll(recentList)
+                val json = jsonBuilder.encodeToString(recentList)
+                val recentListFile = getRecentListFile()
+                recentListFile.writeText(json)
+            }
+        }
 
     }
 }
