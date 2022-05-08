@@ -194,9 +194,10 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
 
         })
 
-        if (state.recentList.isNotEmpty()) {
-            Menu("打开最近生成的词库(R)", mnemonic = 'R') {
-                state.recentList.forEach { recentItem ->
+        Menu("打开最近生成的词库(R)",enabled = state.recentList.isNotEmpty(), mnemonic = 'R') {
+            for (i in 0 until state.recentList.size){
+                val recentItem = state.recentList.getOrNull(i)
+                if(recentItem!= null){
                     val recentFile = File(recentItem.path)
                     if (recentFile.exists()) {
                         Item(text = recentItem.name, onClick = {
@@ -209,7 +210,6 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     } else {
                         state.removeInvalidRecentItem(recentItem)
                     }
-
                 }
             }
         }
