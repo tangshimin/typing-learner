@@ -15,7 +15,7 @@ data class TypingWordData(
     val morphologyVisible: Boolean = true,
     val definitionVisible: Boolean = true,
     val translationVisible: Boolean = true,
-    val subtitlesVisible: Boolean = false,
+    val subtitlesVisible: Boolean = true,
     val speedVisible: Boolean = false,
     val isPlaySoundTips: Boolean = true,
     val soundTipsVolume: Float = 0.6F,
