@@ -449,7 +449,7 @@ class AppState {
                 recentList.remove(recentItem)
                 val serializeList = mutableListOf<RecentItem>()
                 serializeList.addAll(recentList)
-                val json = jsonBuilder.encodeToString(recentList)
+                val json = jsonBuilder.encodeToString(serializeList)
                 val recentListFile = getRecentListFile()
                 recentListFile.writeText(json)
             }
