@@ -322,7 +322,7 @@ fun TypingWord(
                 if (state.vocabulary.wordList.isNotEmpty()) {
                     Box(
                         Modifier.align(Alignment.Center)
-                            .padding(end = endPadding)
+                            .padding(end = endPadding,bottom = 58.dp)
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
