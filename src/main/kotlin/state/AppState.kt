@@ -367,18 +367,21 @@ class AppState {
 
     /** 改变词库 */
     fun changeVocabulary(file: File) {
-        vocabulary = loadMutableVocabulary(file.absolutePath)
-        typingWord.vocabularyName = file.nameWithoutExtension
-        typingWord.vocabularyPath = file.absolutePath
-        if (isDictation) {
-            exitDictationMode()
-            resetChapterTime()
+        val newVocabulary = loadMutableVocabulary(file.absolutePath)
+        if(newVocabulary.wordList.size>0){
+            vocabulary = newVocabulary
+            typingWord.vocabularyName = file.nameWithoutExtension
+            typingWord.vocabularyPath = file.absolutePath
+            if (isDictation) {
+                exitDictationMode()
+                resetChapterTime()
+            }
+            typingWord.chapter = 1
+            typingWord.index = 0
+            wordCorrectTime = 0
+            wordWrongTime = 0
+            saveTypingWordState()
         }
-        typingWord.chapter = 1
-        typingWord.index = 0
-        wordCorrectTime = 0
-        wordWrongTime = 0
-        saveTypingWordState()
     }
 
     /** 保存当前的词库 */
