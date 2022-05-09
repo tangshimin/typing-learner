@@ -279,6 +279,7 @@ class AppState {
         return if (index in 0..size) {
             vocabulary.wordList[index]
         } else {
+            // 如果用户使用编辑器修改了索引，并且不在单词列表的范围以内，就把索引改成0。
             typingWord.index = 0
             saveTypingWordState()
             vocabulary.wordList[0]
