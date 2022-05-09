@@ -118,6 +118,8 @@ class AppState {
     /** 是否显示【从 MKV 生成词库】 窗口 */
     var generateVocabularyFromMKV by mutableStateOf(false)
 
+    /** 本地缓存的单词发音列表 */
+    var audioSet = loadAudioSet()
 
     /** 速度组件的状态 */
     var speed = MutableSpeedState()
@@ -454,7 +456,16 @@ class AppState {
                 recentListFile.writeText(json)
             }
         }
+    }
 
+    private fun loadAudioSet(): MutableSet<String> {
+        val audioDir = getAudioDirectory()
+        if (!audioDir.exists()) {
+            audioDir.mkdir()
+        }
+        var set = mutableSetOf<String>()
+        set.addAll(audioDir.list())
+        return set
     }
 }
 

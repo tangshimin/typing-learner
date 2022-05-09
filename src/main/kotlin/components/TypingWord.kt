@@ -33,6 +33,7 @@ import data.VocabularyType
 import data.Word
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import player.getAudioPath
 import player.isMacOS
 import player.mediaPlayer
 import player.playAudio
@@ -182,10 +183,15 @@ fun TypingWord(
             (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
                 if (!isPlayingAudio) {
                     val currentWord = state.getCurrentWord()
-                    playAudio(
+                    val audioPath = getAudioPath(
                         word = currentWord.value,
+                        audioSet = state.audioSet,
+                        addToAudioSet = {name -> state.audioSet.add(name)},
+                        pronunciation = state.typingWord.pronunciation
+                    )
+                    playAudio(
+                        audioPath = audioPath,
                         volume = state.global.audioVolume,
-                        pronunciation = state.typingWord.pronunciation,
                         mediaPlayerComponent = audioPlayer,
                         changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
                         setIsAutoPlay = {}

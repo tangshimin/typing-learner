@@ -33,7 +33,7 @@ import java.net.URL
 @OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun AudioButton(
-    word: String,
+    audioPath: String,
     volume: Float,
     pronunciation: String,
 ) {
@@ -48,7 +48,7 @@ fun AudioButton(
         var isAutoPlay by remember { mutableStateOf(true) }
 
         val playAudio = {
-            playAudio(word, volume, pronunciation, audioPlayerComponent,
+            playAudio(audioPath, volume,  audioPlayerComponent,
                 changePlayerState = { isPlaying = it },
                 setIsAutoPlay = { isAutoPlay = it })
         }
@@ -123,15 +123,13 @@ fun AudioButton(
 }
 
 fun playAudio(
-    word: String,
+    audioPath: String,
     volume: Float,
-    pronunciation: String,
     mediaPlayerComponent: Component,
     changePlayerState: (Boolean) -> Unit,
     setIsAutoPlay: (Boolean) -> Unit,
 ) {
-    val path = getAudioPath(word, pronunciation)
-    if (path.isNotEmpty()) {
+    if (audioPath.isNotEmpty()) {
         changePlayerState(true)
         setIsAutoPlay(false)
         mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
@@ -145,17 +143,18 @@ fun playAudio(
                 mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
             }
         })
-        mediaPlayerComponent.mediaPlayer().media().play(path)
+        mediaPlayerComponent.mediaPlayer().media().play(audioPath)
     }
 
 }
 
-fun getAudioPath(word: String, pronunciation: String): String {
+fun getAudioPath(
+    word: String,
+    audioSet:Set<String>,
+    addToAudioSet:(String) -> Unit,
+    pronunciation: String
+): String {
     val audioDir = getAudioDirectory()
-    if (!audioDir.exists()) {
-        audioDir.mkdir()
-    }
-
     var path = ""
     val type: Any = when (pronunciation) {
         "us" -> "type=2"
@@ -163,26 +162,25 @@ fun getAudioPath(word: String, pronunciation: String): String {
         "jp" -> "le=jap"
         else -> println(pronunciation)
     }
-    val fileName = word + "_" + pronunciation
-    if (audioDir.listFiles().isNotEmpty()) {
-        audioDir.listFiles().forEach { file ->
-            if (file.nameWithoutExtension == fileName) {
-                path = file.absolutePath
-            }
-        }
+    val fileName = word + "_" + pronunciation + ".mp3"
+    // 先查询本地有没有
+    if (audioSet.contains(fileName)) {
+        path = File(audioDir, fileName).absolutePath
     }
-    var mutableWord = word
-    if (pronunciation == "us" || pronunciation == "uk") {
-        mutableWord = mutableWord.replace(" ", "-")
-    }
-    // 这里从服务器读了一次，返回 URL player 会再读一次
+    // 没有就从有道服务器下载
     if (path.isEmpty()) {
+        // 如果单词有空格，查询单词发音会失败,所以要把单词的空格替换成短横。
+        var mutableWord = word
+        if (pronunciation == "us" || pronunciation == "uk") {
+            mutableWord = mutableWord.replace(" ", "-")
+        }
         val audioURL = "https://dict.youdao.com/dictvoice?audio=${mutableWord}&${type}"
         try {
             val audioBytes = URL(audioURL).readBytes()
-            val file = File(audioDir, "$fileName.mp3")
+            val file = File(audioDir, fileName)
             file.writeBytes(audioBytes)
             path = file.absolutePath
+            addToAudioSet(file.name)
         } catch (exception: Exception) {
             exception.printStackTrace()
         }
