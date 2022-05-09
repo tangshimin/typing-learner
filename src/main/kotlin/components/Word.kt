@@ -71,6 +71,7 @@ import kotlin.concurrent.fixedRateTimer
 fun Word(
     state: AppState,
     word: Word,
+    audioPath: String,
     correctTime: Int,
     wrongTime: Int,
     toNext: () -> Unit,
@@ -271,14 +272,9 @@ fun Word(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "${if (wrongTime > 0) wrongTime else ""}", color = state.global.wrongColor)
             }
-            val path = getAudioPath(
-                word = wordValue,
-                audioSet = state.audioSet,
-                addToAudioSet = {name -> state.audioSet.add(name)},
-                pronunciation = state.typingWord.pronunciation
-            )
+
             AudioButton(
-                audioPath = path,
+                audioPath = audioPath,
                 volume = state.global.audioVolume,
                 pronunciation = state.typingWord.pronunciation,
             )

@@ -71,215 +71,8 @@ fun TypingWord(
     videoBounds: Rectangle,
 ) {
 
+    /** 协程构建器 */
     val scope = rememberCoroutineScope()
-
-    /**
-     * 用快捷键播放视频时被调用的回调函数
-     * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
-     */
-    @OptIn(ExperimentalSerializationApi::class)
-    val shortcutPlay: (playTriple: Triple<Caption, String, Int>?) -> Unit = { playTriple ->
-        if (playTriple != null) {
-            if (!state.isPlaying) {
-                val file = File(playTriple.second)
-                if (file.exists()) {
-                    state.isPlaying = true
-                    Thread(Runnable {
-                        EventQueue.invokeLater {
-                            play(
-                                window = state.videoPlayerWindow,
-                                setIsPlaying = { state.isPlaying = it },
-                                state.global.videoVolume,
-                                playTriple,
-                                state.videoPlayerComponent,
-                                videoBounds
-                            )
-                        }
-
-                    }).start()
-                }
-            } else {
-                println("通知用户，视频地址错误")
-            }
-        }
-    }
-
-    /** 是否正在播放单词发音 */
-    var isPlayingAudio by remember { mutableStateOf(false) }
-
-    /** 处理全局快捷键的回调函数 */
-    val keyEvent: (KeyEvent) -> Boolean = {
-        when {
-            (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.isAuto = !state.typingWord.isAuto
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.global.isDarkTheme = !state.global.isDarkTheme
-                    state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
-                    state.saveGlobalState()
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.definitionVisible = !state.typingWord.definitionVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.translationVisible = !state.typingWord.translationVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.global.type = TypingType.SUBTITLES
-                    state.saveGlobalState()
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.wordVisible = !state.typingWord.wordVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-
-            (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
-                if (!isPlayingAudio) {
-                    val currentWord = state.getCurrentWord()
-                    val audioPath = getAudioPath(
-                        word = currentWord.value,
-                        audioSet = state.audioSet,
-                        addToAudioSet = {name -> state.audioSet.add(name)},
-                        pronunciation = state.typingWord.pronunciation
-                    )
-                    playAudio(
-                        audioPath = audioPath,
-                        volume = state.global.audioVolume,
-                        mediaPlayerComponent = audioPlayer,
-                        changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
-                        setIsAutoPlay = {}
-                    )
-                }
-                true
-            }
-            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
-                if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                    val currentWord = state.getCurrentWord()
-                    val playTriple = getPayTriple(currentWord, 0)
-                    shortcutPlay(playTriple)
-                } else {
-                    val caption = state.getCurrentWord().captions[0]
-                    val playTriple =
-                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(playTriple)
-                }
-                true
-            }
-            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
-                if (state.getCurrentWord().externalCaptions.size >= 2) {
-                    val currentWord = state.getCurrentWord()
-                    val playTriple = getPayTriple(currentWord, 1)
-                    shortcutPlay(playTriple)
-
-                } else if (state.getCurrentWord().captions.size >= 2) {
-                    val caption = state.getCurrentWord().captions[1]
-                    val playTriple =
-                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(playTriple)
-                }
-                true
-            }
-            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
-                if (state.getCurrentWord().externalCaptions.size >= 3) {
-                    val currentWord = state.getCurrentWord()
-                    val playTriple = getPayTriple(currentWord, 2)
-                    shortcutPlay(playTriple)
-                } else if (state.getCurrentWord().captions.size >= 3) {
-                    val caption = state.getCurrentWord().captions[2]
-                    val playTriple =
-                        Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
-                    shortcutPlay(playTriple)
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
-                    if (!state.isDictation) {
-                        state.saveTypingWordState()
-                    }
-                }
-                true
-            }
-
-            (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.global.isPlayKeystrokeSound = !state.global.isPlayKeystrokeSound
-                    state.saveGlobalState()
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
-                    state.saveTypingWordState()
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.One && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.openSettings = !state.openSettings
-                }
-                true
-            }
-            (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
-                scope.launch {
-                    state.typingWord.speedVisible = !state.typingWord.speedVisible
-                    state.saveTypingWordState()
-                }
-                true
-            }
-            else -> false
-        }
-
-    }
 
     /**  处理拖放文件的函数 */
     val transferHandler = createTransferHandler(
@@ -304,11 +97,9 @@ fun TypingWord(
             }
         }
     )
-
     window.transferHandler = transferHandler
 
-    Box(Modifier.background(MaterialTheme.colors.background)
-        .onKeyEvent { keyEvent(it) }) {
+    Box(Modifier.background(MaterialTheme.colors.background)) {
         Row {
             TypingWordSidebar(state)
             if (state.openSettings) {
@@ -330,17 +121,222 @@ fun TypingWord(
                         Modifier.align(Alignment.Center)
                             .padding(end = endPadding,bottom = 58.dp)
                     ) {
+
+                        /** 当前正在学习的单词 */
+                        val currentWord = state.getCurrentWord()
+
+                        /** 单词发音的本地路径 */
+                        val audioPath = getAudioPath(
+                            word = currentWord.value,
+                            audioSet = state.audioSet,
+                            addToAudioSet = {state.audioSet.add(it)},
+                            pronunciation = state.typingWord.pronunciation
+                        )
+
+                        /** 是否正在播放单词发音 */
+                        var isPlayingAudio by remember { mutableStateOf(false) }
+
+                        /**
+                         * 用快捷键播放视频时被调用的回调函数
+                         * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+                         */
+                        @OptIn(ExperimentalSerializationApi::class)
+                        val shortcutPlay: (playTriple: Triple<Caption, String, Int>?) -> Unit = { playTriple ->
+                            if (playTriple != null) {
+                                if (!state.isPlaying) {
+                                    scope.launch {
+                                        val file = File(playTriple.second)
+                                        if (file.exists()) {
+                                            state.isPlaying = true
+                                            play(
+                                                window = state.videoPlayerWindow,
+                                                setIsPlaying = { state.isPlaying = it },
+                                                state.global.videoVolume,
+                                                playTriple,
+                                                state.videoPlayerComponent,
+                                                videoBounds
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+
+                        /** 处理全局快捷键的回调函数 */
+                        val keyEvent: (KeyEvent) -> Boolean = {
+                            when {
+                                (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.isAuto = !state.typingWord.isAuto
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.D && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.global.isDarkTheme = !state.global.isDarkTheme
+                                        state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
+                                        state.saveGlobalState()
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.definitionVisible = !state.typingWord.definitionVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.translationVisible = !state.typingWord.translationVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.global.type = TypingType.SUBTITLES
+                                        state.saveGlobalState()
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.wordVisible = !state.typingWord.wordVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+
+                                (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
+                                    if (!isPlayingAudio) {
+                                        playAudio(
+                                            audioPath = audioPath,
+                                            volume = state.global.audioVolume,
+                                            mediaPlayerComponent = audioPlayer,
+                                            changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
+                                            setIsAutoPlay = {}
+                                        )
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
+                                    if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                        val playTriple = getPayTriple(currentWord, 0)
+                                        shortcutPlay(playTriple)
+                                    } else {
+                                        val caption = state.getCurrentWord().captions[0]
+                                        val playTriple =
+                                            Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        shortcutPlay(playTriple)
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
+                                    if (state.getCurrentWord().externalCaptions.size >= 2) {
+                                        val playTriple = getPayTriple(currentWord, 1)
+                                        shortcutPlay(playTriple)
+
+                                    } else if (state.getCurrentWord().captions.size >= 2) {
+                                        val caption = state.getCurrentWord().captions[1]
+                                        val playTriple =
+                                            Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        shortcutPlay(playTriple)
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
+                                    if (state.getCurrentWord().externalCaptions.size >= 3) {
+                                        val playTriple = getPayTriple(currentWord, 2)
+                                        shortcutPlay(playTriple)
+                                    } else if (state.getCurrentWord().captions.size >= 3) {
+                                        val caption = state.getCurrentWord().captions[2]
+                                        val playTriple =
+                                            Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        shortcutPlay(playTriple)
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                    true
+                                }
+
+                                (it.isCtrlPressed && it.key == Key.M && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.global.isPlayKeystrokeSound = !state.global.isPlayKeystrokeSound
+                                        state.saveGlobalState()
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
+                                        state.saveTypingWordState()
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.One && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.openSettings = !state.openSettings
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        state.typingWord.speedVisible = !state.typingWord.speedVisible
+                                        state.saveTypingWordState()
+                                    }
+                                    true
+                                }
+                                else -> false
+                            }
+
+                        }
+
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
+                                .onKeyEvent { keyEvent(it) }
                                 .width(intrinsicSize = IntrinsicSize.Max)
                                 .background(MaterialTheme.colors.background)
                                 .focusable(true)
                         ) {
 
-                            /** 当前正在学习的单词 */
-                            val currentWord = state.getCurrentWord()
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
@@ -573,6 +569,7 @@ fun TypingWord(
                             Word(
                                 state = state,
                                 word = currentWord,
+                                audioPath = audioPath,
                                 correctTime = state.wordCorrectTime,
                                 wrongTime = state.wordWrongTime,
                                 toNext = { toNext() },
