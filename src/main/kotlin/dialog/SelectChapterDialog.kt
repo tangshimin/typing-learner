@@ -135,7 +135,6 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
                         .padding(7.5.dp)
                         .clickable {
                             onChapterChanged(if (checkedState) 0 else chapter)
-                            println(if (checkedState) 0 else chapter)
                         },
                     backgroundColor = MaterialTheme.colors.surface,
                     elevation = 3.dp
