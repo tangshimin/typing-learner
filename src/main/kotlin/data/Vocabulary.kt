@@ -207,11 +207,9 @@ fun saveVocabulary(vocabulary: Vocabulary, path: String) {
         prettyPrint = true
         encodeDefaults = true
     }
-    Thread(Runnable {
-        val json = format.encodeToString(vocabulary)
-        val file = getResourcesFile(path)
-        file.writeText(json)
-    }).start()
+    val json = format.encodeToString(vocabulary)
+    val file = getResourcesFile(path)
+    file.writeText(json)
 }
 
 fun main() {

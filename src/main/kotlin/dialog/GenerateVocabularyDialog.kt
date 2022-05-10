@@ -160,6 +160,10 @@ fun GenerateVocabularyDialog(
          */
         val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
 
+        /**
+         * 这个 filterState 有四个状态：Idle、"Parse"、"Filtering"、"End"
+         */
+        var filterState by remember { mutableStateOf(Idle) }
 
         /**  处理拖放文件的函数 */
         val transferHandler = createTransferHandler(
@@ -261,10 +265,7 @@ fun GenerateVocabularyDialog(
                      */
                     var replaceToLemma by remember { mutableStateOf(false) }
 
-                    /**
-                     * 这个 filterState 有四个状态：Idle、"Parse"、"Filtering"、"End"
-                     */
-                    var filterState by remember { mutableStateOf(Idle) }
+
 
                     Divider()
                     Row(Modifier.fillMaxWidth()) {
@@ -461,28 +462,40 @@ fun GenerateVocabularyDialog(
                         OutlinedButton(
                             enabled = previewList.size > 0,
                             onClick = {
-                                val fileChooser = state.futureFileChooser.get()
-                                fileChooser.dialogType = JFileChooser.SAVE_DIALOG
-                                fileChooser.dialogTitle = "保存词库"
-                                val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
-                                val fileName = File(selectedFilePath).nameWithoutExtension
-                                fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
-                                val userSelection = fileChooser.showSaveDialog(window)
-                                if (userSelection == JFileChooser.APPROVE_OPTION) {
-                                    val fileToSave = fileChooser.selectedFile
-                                    val vocabulary = Vocabulary(
-                                        name = fileToSave.nameWithoutExtension,
-                                        type = if (title == "过滤词库") filteringType else type,
-                                        language = "english",
-                                        size = previewList.size,
-                                        relateVideoPath = relateVideoPath,
-                                        subtitlesTrackId = selectedTrackId,
-                                        wordList = previewList
-                                    )
-                                    saveVocabulary(vocabulary, fileToSave.absolutePath)
-                                    state.saveToRecentList(vocabulary.name, fileToSave.absolutePath)
-                                    onCloseRequest(state, title)
+                                scope.launch {
+                                    val fileChooser = state.futureFileChooser.get()
+                                    fileChooser.dialogType = JFileChooser.SAVE_DIALOG
+                                    fileChooser.dialogTitle = "保存词库"
+                                    val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
+                                    val fileName = File(selectedFilePath).nameWithoutExtension
+                                    fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
+                                    val userSelection = fileChooser.showSaveDialog(window)
+                                    if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                        val fileToSave = fileChooser.selectedFile
+                                        val vocabulary = Vocabulary(
+                                            name = fileToSave.nameWithoutExtension,
+                                            type = if (title == "过滤词库") filteringType else type,
+                                            language = "english",
+                                            size = previewList.size,
+                                            relateVideoPath = relateVideoPath,
+                                            subtitlesTrackId = selectedTrackId,
+                                            wordList = previewList
+                                        )
+                                        state.saveToRecentList(vocabulary.name, fileToSave.absolutePath)
+                                        saveVocabulary(vocabulary, fileToSave.absolutePath)
+
+                                        // 清理状态
+                                        selectedFilePath = ""
+                                        selectedSubtitlesName = ""
+                                        previewList.clear()
+                                        relateVideoPath = ""
+                                        selectedTrackId = 0
+                                        filteringType = DOCUMENT
+                                        trackList.clear()
+                                        filterState = Idle
+                                    }
                                 }
+
                             }) {
                             Text("保存")
                         }
