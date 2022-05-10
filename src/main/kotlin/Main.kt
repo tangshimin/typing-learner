@@ -194,7 +194,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
 
         })
 
-        Menu("打开最近生成的词库(R)",enabled = state.recentList.isNotEmpty(), mnemonic = 'R') {
+        Menu("打开最近词库(R)",enabled = state.recentList.isNotEmpty(), mnemonic = 'R') {
             for (i in 0 until state.recentList.size){
                 val recentItem = state.recentList.getOrNull(i)
                 if(recentItem!= null){

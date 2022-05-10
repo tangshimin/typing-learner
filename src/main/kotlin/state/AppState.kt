@@ -384,6 +384,7 @@ class AppState {
             wordCorrectTime = 0
             wordWrongTime = 0
             saveTypingWordState()
+            saveToRecentList(vocabulary.name, file.absolutePath)
         }
     }
 
