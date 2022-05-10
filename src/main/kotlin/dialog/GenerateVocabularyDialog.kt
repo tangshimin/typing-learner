@@ -165,6 +165,36 @@ fun GenerateVocabularyDialog(
          */
         var filterState by remember { mutableStateOf(Idle) }
 
+        /**
+         * 摘要词库
+         */
+        val summaryVocabulary = loadSummaryVocabulary()
+
+        /**
+         * 分析之后得到的单词
+         */
+        val documentWords = remember { mutableStateListOf<Word>() }
+
+        /**
+         * 用于过滤的词库列表
+         */
+        val selectedFileList = remember { mutableStateListOf<File>() }
+
+        /**
+         * 是否过滤 BNC 词频为0的单词
+         */
+        var notBncFilter by remember { mutableStateOf(false) }
+
+        /**
+         * 是否过滤 FRQ 词频为0的单词
+         */
+        var notFrqFilter by remember { mutableStateOf(false) }
+
+        /**
+         * 是否替换索引派生词
+         */
+        var replaceToLemma by remember { mutableStateOf(false) }
+
         /**  处理拖放文件的函数 */
         val transferHandler = createTransferHandler(
             showWrongMessage = { message ->
@@ -235,35 +265,7 @@ fun GenerateVocabularyDialog(
         contentPanel.setContent {
             MaterialTheme(colors = state.colors) {
                 Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
-                    /**
-                     * 摘要词库
-                     */
-                    val summaryVocabulary = loadSummaryVocabulary()
 
-                    /**
-                     * 分析之后得到的单词
-                     */
-                    val documentWords = remember { mutableStateListOf<Word>() }
-
-                    /**
-                     * 用于过滤的词库列表
-                     */
-                    val selectedFileList = remember { mutableStateListOf<File>() }
-
-                    /**
-                     * 是否过滤 BNC 词频为0的单词
-                     */
-                    var notBncFilter by remember { mutableStateOf(false) }
-
-                    /**
-                     * 是否过滤 FRQ 词频为0的单词
-                     */
-                    var notFrqFilter by remember { mutableStateOf(false) }
-
-                    /**
-                     * 是否替换索引派生词
-                     */
-                    var replaceToLemma by remember { mutableStateOf(false) }
 
 
 
@@ -493,6 +495,12 @@ fun GenerateVocabularyDialog(
                                         filteringType = DOCUMENT
                                         trackList.clear()
                                         filterState = Idle
+                                        documentWords.clear()
+                                        selectedFileList.clear()
+                                        notBncFilter = false
+                                        notFrqFilter = false
+                                        replaceToLemma = false
+
                                     }
                                 }
 
