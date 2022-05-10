@@ -1443,7 +1443,8 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
     }
     var x = (mainWidth - size.width).div(2)
     // 232 是单词 + 字幕的高度 ，再加一个文本输入框48 == 280
-    var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15
+    // 58 是内容的 bottom padding
+    var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15-58
     x += mainX
     y += mainY
     if (openSettings) x += 109
