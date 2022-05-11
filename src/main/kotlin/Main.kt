@@ -295,8 +295,8 @@ fun Settings(
     modifier: Modifier
 ) {
     Box(modifier = modifier) {
-        val topPadding = if (isMacOS()) 30.dp else 0.dp
-        Column(Modifier.width(IntrinsicSize.Max).padding(top = topPadding)) {
+        Column(Modifier.width(IntrinsicSize.Max)) {
+            Spacer(Modifier.fillMaxWidth().height(if (isMacOS()) 30.dp else 0.dp).background(MaterialTheme.colors.background))
             if (isOpen && isMacOS()) Divider(Modifier.fillMaxWidth())
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
