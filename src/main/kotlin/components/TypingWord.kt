@@ -5,6 +5,7 @@ import Settings
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
@@ -1444,7 +1445,7 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
     var x = (mainWidth - size.width).div(2)
     // 232 是单词 + 字幕的高度 ，再加一个文本输入框48 == 280
     // 58 是内容的 bottom padding
-    var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15-58
+    var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15-48
     x += mainX
     y += mainY
     if (openSettings) x += 109
