@@ -2,6 +2,7 @@ package dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import player.isWindows
 import state.getResourcesFile
 
 /**
@@ -101,7 +103,7 @@ fun AboutDialog(close: () -> Unit) {
                                     }
                                 }
                                 VerticalScrollbar(
-                                    style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                    style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                                     modifier = Modifier.align(Alignment.CenterEnd)
                                         .fillMaxHeight(),
                                     adapter = rememberScrollbarAdapter(stateVertical)

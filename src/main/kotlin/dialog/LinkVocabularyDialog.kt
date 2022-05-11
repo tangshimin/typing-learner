@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -37,6 +38,7 @@ import data.VocabularyType
 import data.loadVocabulary
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import player.isWindows
 import state.AppState
 import state.getResourcesFile
 import java.awt.Rectangle
@@ -496,7 +498,7 @@ fun LinkVocabularyDialog(
                                 VerticalScrollbar(
                                     modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                                     adapter = rememberScrollbarAdapter(scrollState = scrollState),
-                                    style = LocalScrollbarStyle.current.copy(shape = RectangleShape)
+                                    style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                                 )
                             }
 

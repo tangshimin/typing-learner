@@ -3,6 +3,7 @@ package dialog
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
+import player.isWindows
 import state.AppState
 import state.composeAppResource
 import subtitleFile.FormatASS
@@ -920,7 +922,7 @@ fun VocabularyFilter(
                             }
 
                             VerticalScrollbar(
-                                style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                                 modifier = Modifier.align(Alignment.CenterEnd)
                                     .fillMaxHeight(),
                                 adapter = rememberScrollbarAdapter(
@@ -1524,7 +1526,7 @@ fun PreviewWords(
             }
 
             VerticalScrollbar(
-                style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                 modifier = Modifier.align(Alignment.CenterEnd)
                     .fillMaxHeight(),
                 adapter = rememberScrollbarAdapter(

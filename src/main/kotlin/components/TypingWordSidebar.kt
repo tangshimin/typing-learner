@@ -3,6 +3,7 @@ package components
 import LocalCtrl
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import player.isMacOS
+import player.isWindows
 import state.AppState
 import state.TypingType
 import theme.createColors
@@ -613,7 +615,7 @@ fun TypingWordSidebar(state: AppState) {
             }
 
             VerticalScrollbar(
-                style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                 modifier = Modifier.align(Alignment.CenterEnd)
                     .fillMaxHeight(),
                 adapter = rememberScrollbarAdapter(stateVertical)

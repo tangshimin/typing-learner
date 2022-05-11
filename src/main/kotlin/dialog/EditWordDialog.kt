@@ -2,6 +2,7 @@ package dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,7 @@ import data.Dictionary
 import data.VocabularyType
 import data.Word
 import kotlinx.coroutines.launch
+import player.isWindows
 import state.AppState
 import java.awt.Component
 import java.awt.Rectangle
@@ -134,6 +136,7 @@ fun EditWordDialog(
                         }
                     }
                     val boxModifier = Modifier.fillMaxWidth().height(115.dp).border(border = border)
+                    val isWindows = isWindows()
                     Column(modifier = modifier) {
                         Text("中文释义：")
                         Box(modifier = boxModifier) {
@@ -153,7 +156,7 @@ fun EditWordDialog(
                             VerticalScrollbar(
                                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                                 adapter = rememberScrollbarAdapter(stateVertical),
-                                style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                style = LocalScrollbarStyle.current.copy(shape = if(isWindows) RectangleShape else RoundedCornerShape(4.dp)),
                             )
                         }
 
@@ -177,7 +180,7 @@ fun EditWordDialog(
                             VerticalScrollbar(
                                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                                 adapter = rememberScrollbarAdapter(stateVertical),
-                                style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                style = LocalScrollbarStyle.current.copy(shape = if(isWindows) RectangleShape else RoundedCornerShape(4.dp)),
                             )
                         }
                     }

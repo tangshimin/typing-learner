@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import kotlinx.serialization.ExperimentalSerializationApi
+import player.isWindows
 import state.AppState
 
 /**
@@ -166,8 +168,8 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
         }
 
         VerticalScrollbar(
-            modifier = Modifier.align(Alignment.CenterEnd)
-                .fillMaxHeight(),
+            style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             adapter = rememberScrollbarAdapter(
                 scrollState = listState
             )

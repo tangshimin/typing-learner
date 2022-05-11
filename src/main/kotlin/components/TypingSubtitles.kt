@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -44,6 +45,7 @@ import dialog.removeLocationInfo
 import dialog.replaceNewLine
 import kotlinx.coroutines.launch
 import player.isMacOS
+import player.isWindows
 import player.mediaPlayer
 import state.GlobalState
 import state.TypingSubtitlesState
@@ -619,10 +621,12 @@ fun TypingSubtitles(
                     }
 
                     VerticalScrollbar(
+                        style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                         modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                         adapter = rememberScrollbarAdapter(scrollState = listState)
                     )
                     HorizontalScrollbar(
+                        style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                         modifier = Modifier.align(Alignment.BottomStart)
                             .fillMaxWidth(),
                         adapter = rememberScrollbarAdapter(stateHorizontal)

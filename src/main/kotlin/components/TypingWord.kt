@@ -34,10 +34,7 @@ import data.VocabularyType
 import data.Word
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.getAudioPath
-import player.isMacOS
-import player.mediaPlayer
-import player.playAudio
+import player.*
 import state.AppState
 import state.TypingType
 import theme.createColors
@@ -986,7 +983,7 @@ fun Definition(
                 }
                 if (rows > 5) {
                     VerticalScrollbar(
-                        style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                        style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                         modifier = Modifier.align(Alignment.CenterEnd)
                             .fillMaxHeight(),
                         adapter = rememberScrollbarAdapter(stateVertical)

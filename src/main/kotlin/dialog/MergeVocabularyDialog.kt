@@ -2,6 +2,7 @@ package dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -20,6 +21,7 @@ import androidx.compose.ui.window.rememberDialogState
 import components.createTransferHandler
 import data.*
 import kotlinx.coroutines.launch
+import player.isWindows
 import java.io.File
 import java.util.*
 import java.util.concurrent.FutureTask
@@ -157,7 +159,7 @@ fun MergeVocabularyDialog(
                             }
                             if (selectedFileList.size >= 9) {
                                 VerticalScrollbar(
-                                    style = LocalScrollbarStyle.current.copy(shape = RectangleShape),
+                                    style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
                                     modifier = Modifier.align(Alignment.CenterEnd)
                                         .fillMaxHeight(),
                                     adapter = rememberScrollbarAdapter(stateVertical)
