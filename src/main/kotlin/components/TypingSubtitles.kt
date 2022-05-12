@@ -32,6 +32,9 @@ import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -98,7 +101,7 @@ fun TypingSubtitles(
     var showSelectTrack by remember { mutableStateOf(false) }
     val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
-
+    val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
         parseSubtitles(
             subtitlesPath = typingSubtitles.subtitlesPath,
@@ -466,7 +469,7 @@ fun TypingSubtitles(
                                             cursorBrush = SolidColor(MaterialTheme.colors.primary),
                                             textStyle = MaterialTheme.typography.h5.copy(
                                                 color = Color.Transparent,
-                                                fontFamily = FontFamily.Monospace
+                                                fontFamily = monospace
                                             ),
 
                                             modifier = Modifier
@@ -499,7 +502,7 @@ fun TypingSubtitles(
                                                             color = MaterialTheme.colors.primary,
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
-                                                            fontFamily = FontFamily.Monospace,
+                                                            fontFamily = monospace,
                                                         )
                                                     ) {
                                                         append(char)
@@ -510,7 +513,7 @@ fun TypingSubtitles(
                                                             color = wrongColor,
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
-                                                            fontFamily = FontFamily.Monospace,
+                                                            fontFamily = monospace,
                                                         )
                                                     ) {
                                                         if (char == ' ') {
@@ -528,7 +531,7 @@ fun TypingSubtitles(
                                                     color = MaterialTheme.colors.onBackground,
                                                     fontSize = MaterialTheme.typography.h5.fontSize,
                                                     letterSpacing = MaterialTheme.typography.h5.letterSpacing,
-                                                    fontFamily = FontFamily.Monospace,
+                                                    fontFamily = monospace,
                                                 )
                                             ) {
                                                 append(remainChars)

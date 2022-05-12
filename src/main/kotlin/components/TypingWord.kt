@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -49,6 +50,9 @@ import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 import kotlin.concurrent.schedule
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 
 /**
  * 应用程序的核心组件
@@ -363,6 +367,8 @@ fun TypingWord(
                             /** 显示编辑单词对话框 */
                             var showEditWordDialog by remember { mutableStateOf(false) }
 
+                            val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+
                             /** 播放错误音效 */
                             val playBeepSound = {
                                 if (state.typingWord.isPlaySoundTips) {
@@ -567,6 +573,7 @@ fun TypingWord(
                             Word(
                                 state = state,
                                 word = currentWord,
+                                fontFamily = monospace,
                                 audioPath = audioPath,
                                 correctTime = state.wordCorrectTime,
                                 wrongTime = state.wordWrongTime,

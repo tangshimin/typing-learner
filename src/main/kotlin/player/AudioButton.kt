@@ -53,9 +53,9 @@ fun AudioButton(
                 setIsAutoPlay = { isAutoPlay = it })
         }
         Column(
+            verticalArrangement = Arrangement.Center,
             modifier = Modifier
                 .height(66.dp)
-                .padding(top = 13.dp)
                 .width(IntrinsicSize.Max)
         ) {
             TooltipArea(
@@ -79,6 +79,7 @@ fun AudioButton(
                 val tint by animateColorAsState(if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground)
                 IconToggleButton(
                     checked = isPlaying,
+                     modifier = Modifier.padding(top = 8.dp),
                     onCheckedChange = {
                         if (!isPlaying) {
                             scope.launch {

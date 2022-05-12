@@ -33,7 +33,6 @@ import dialog.ChapterFinishedDialog
 import dialog.EditWordDialog
 import kotlinx.coroutines.launch
 import player.AudioButton
-import player.getAudioPath
 import state.AppState
 import state.getResourcesFile
 import java.math.BigDecimal
@@ -71,6 +70,7 @@ import kotlin.concurrent.fixedRateTimer
 fun Word(
     state: AppState,
     word: Word,
+    fontFamily: FontFamily,
     audioPath: String,
     correctTime: Int,
     wrongTime: Int,
@@ -175,7 +175,7 @@ fun Word(
                             color = Color.Transparent,
                             fontSize = 3.5.em,
                             letterSpacing = 5.sp,
-                            fontFamily = FontFamily.Monospace
+                            fontFamily =fontFamily
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -197,7 +197,7 @@ fun Word(
                                         color = MaterialTheme.colors.primary,
                                         fontSize = 3.5.em,
                                         letterSpacing = 5.sp,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily = fontFamily,
                                     )
                                 ) {
                                     append(char)
@@ -208,7 +208,7 @@ fun Word(
                                         color = state.global.wrongColor,
                                         fontSize = 3.5.em,
                                         letterSpacing = 5.sp,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily =fontFamily,
                                     )
                                 ) {
                                     if (char == ' ') {
@@ -226,7 +226,7 @@ fun Word(
                                     color = MaterialTheme.colors.onBackground,
                                     fontSize = 3.5.em,
                                     letterSpacing = 5.sp,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = fontFamily,
                                 )
                             ) {
                                 repeat(remainChars.length) {
@@ -241,7 +241,7 @@ fun Word(
                                         color = MaterialTheme.colors.onBackground,
                                         fontSize = 3.5.em,
                                         letterSpacing = 5.sp,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily =fontFamily,
                                     )
                                 ) {
                                     append(remainChars)
@@ -252,7 +252,7 @@ fun Word(
                                         color = MaterialTheme.colors.onBackground,
                                         fontSize = 3.5.em,
                                         letterSpacing = 5.sp,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily = fontFamily,
                                     )
                                 ) {
                                     repeat(remainChars.length) {
