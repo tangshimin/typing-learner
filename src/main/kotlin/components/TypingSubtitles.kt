@@ -55,6 +55,7 @@ import state.TypingSubtitlesState
 import state.getSettingsDirectory
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
+import theme.createColors
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.*
@@ -79,6 +80,7 @@ fun TypingSubtitles(
     globalState: GlobalState,
     saveSubtitlesState: () -> Unit,
     saveGlobalState: () -> Unit,
+    saveIsDarkTheme: (Boolean) -> Unit,
     toTypingWord: () -> Unit,
     isOpenSettings: Boolean,
     setIsOpenSettings: (Boolean) -> Unit,
@@ -227,14 +229,6 @@ fun TypingSubtitles(
         }
     }
 
-    /** 保存是否时深色模式时被调用的回调函数 */
-    val saveIsDarkTheme: (Boolean) -> Unit = {
-        scope.launch {
-            globalState.isDarkTheme = it
-            saveGlobalState()
-        }
-    }
-
     /** 保存是否启用击键音效时被调用的回调函数 */
     val saveIsPlayKeystrokeSound: (Boolean) -> Unit = {
         scope.launch {
@@ -354,10 +348,7 @@ fun TypingSubtitles(
                 val topPadding = if (isMacOS()) 30.dp else 0.dp
                 Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
             }
-            Box(
-                Modifier.fillMaxSize()
-                    .background(MaterialTheme.colors.background)
-            ) {
+            Box(Modifier.fillMaxSize()) {
 
                 if (captionList.isNotEmpty()) {
 

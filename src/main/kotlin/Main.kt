@@ -36,6 +36,7 @@ import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
 import state.rememberAppState
+import theme.createColors
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
@@ -104,6 +105,13 @@ fun main() = application {
                                 },
                                 saveGlobalState = {
                                     scope.launch {
+                                        state.saveGlobalState()
+                                    }
+                                },
+                                saveIsDarkTheme = {
+                                    scope.launch {
+                                        state.global.isDarkTheme = it
+                                        state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
                                         state.saveGlobalState()
                                     }
                                 },
