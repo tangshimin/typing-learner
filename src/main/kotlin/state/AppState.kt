@@ -515,7 +515,7 @@ fun composeAppResource(path: String): File {
         }
         // macOS 操作系统专用资源
         if (!file.exists() && isMacOS()) {
-            file = File("resources/macOS/$path")
+            file = File("resources/macos/$path")
         }
         file
     }
