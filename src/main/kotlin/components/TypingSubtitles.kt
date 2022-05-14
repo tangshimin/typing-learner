@@ -344,11 +344,11 @@ fun TypingSubtitles(
                 isPlayKeystrokeSound = globalState.isPlayKeystrokeSound,
                 setIsPlayKeystrokeSound = { saveIsPlayKeystrokeSound(it) },
             )
+            val topPadding = if (isMacOS()) 30.dp else 0.dp
             if (isOpenSettings) {
-                val topPadding = if (isMacOS()) 30.dp else 0.dp
                 Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
             }
-            Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().padding(top = topPadding)) {
 
                 if (captionList.isNotEmpty()) {
 
