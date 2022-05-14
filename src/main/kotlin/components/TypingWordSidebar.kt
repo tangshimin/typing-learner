@@ -1,5 +1,7 @@
 package components
 
+//import androidx.compose.ui.text.font.FontStyle
+//import androidx.compose.ui.text.font.FontWeight
 import LocalCtrl
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -10,16 +12,28 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import dialog.ColorChooserDialog
 import kotlinx.coroutines.launch
 import player.isMacOS
 import player.isWindows
 import state.AppState
 import state.TypingType
 import theme.createColors
+import java.awt.Dimension
 import javax.swing.JColorChooser
+import javax.swing.JDialog
 
 /**
  * 侧边菜单
@@ -411,7 +425,6 @@ fun TypingWordSidebar(state: AppState) {
                                 state.saveGlobalState()
                             }
                         }
-
                     }) {
                         Icon(
                             Icons.Default.Colorize,
@@ -426,6 +439,14 @@ fun TypingWordSidebar(state: AppState) {
                     modifier = Modifier.fillMaxWidth()
                         .clickable { }.padding(start = 16.dp, end = 8.dp)
                 ) {
+                    var showColorChooser by remember { mutableStateOf(false) }
+                    if(showColorChooser){
+                        ColorChooserDialog(
+                            close = {showColorChooser = false},
+                            state = state
+                        )
+                    }
+
                     Row {
                         Text("主色调", color = MaterialTheme.colors.onBackground)
                         Spacer(Modifier.width(10.dp))
@@ -437,13 +458,7 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     IconButton(onClick = {
                         scope.launch {
-                            val initialColor = state.global.primaryColor.toAwt()
-                            val selectedColor = JColorChooser.showDialog(null, "选择颜色", initialColor)
-                            if (selectedColor != null) {
-                                state.global.primaryColor = selectedColor.toCompose()
-                                state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
-                                state.saveGlobalState()
-                            }
+                            showColorChooser = true
                         }
 
                     }) {
