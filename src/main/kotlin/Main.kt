@@ -130,7 +130,6 @@ fun main() = application {
                                 mediaPlayerComponent = state.videoPlayerComponent,
                                 futureFileChooser = state.futureFileChooser,
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                wrongColor = state.global.wrongColor
                             )
                         }
 

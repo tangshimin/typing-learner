@@ -17,7 +17,6 @@ data class GlobalData(
     val videoVolume: Float = 0.8F,
     val keystrokeVolume: Float = 0.75F,
     val isPlayKeystrokeSound: Boolean = true,
-    val wrongColorValue: ULong = 18446462598732840960UL,
     val primaryColorValue: ULong = 18377412168996880384UL
 )
 
@@ -53,11 +52,6 @@ class GlobalState(globalData: GlobalData) {
      * 是否播放按键音效
      */
     var isPlayKeystrokeSound by mutableStateOf(globalData.isPlayKeystrokeSound)
-
-    /**
-     * 错误颜色
-     */
-    var wrongColor by mutableStateOf(Color(globalData.wrongColorValue))
 
     /**
      * 主色调，默认为绿色

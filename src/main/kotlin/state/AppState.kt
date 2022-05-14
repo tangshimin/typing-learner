@@ -203,7 +203,6 @@ class AppState {
                     global.videoVolume,
                     global.keystrokeVolume,
                     global.isPlayKeystrokeSound,
-                    global.wrongColor.value,
                     global.primaryColor.value
                 )
                 val json = jsonBuilder.encodeToString(globalData)

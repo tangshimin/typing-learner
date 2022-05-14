@@ -407,38 +407,6 @@ fun TypingWordSidebar(state: AppState) {
                     modifier = Modifier.fillMaxWidth()
                         .clickable { }.padding(start = 16.dp, end = 8.dp)
                 ) {
-                    Row {
-                        Text("错误颜色", color = MaterialTheme.colors.onBackground)
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = "",
-                            color = MaterialTheme.colors.onBackground
-                        )
-                    }
-                    Spacer(Modifier.width(15.dp))
-                    IconButton(onClick = {
-                        scope.launch {
-                            val initialColor = state.global.wrongColor.toAwt()
-                            val selectedColor = JColorChooser.showDialog(null, "选择错误字符的颜色", initialColor)
-                            if (selectedColor != null) {
-                                state.global.wrongColor = selectedColor.toCompose()
-                                state.saveGlobalState()
-                            }
-                        }
-                    }) {
-                        Icon(
-                            Icons.Default.Colorize,
-                            contentDescription = "",
-                            tint = state.global.wrongColor
-                        )
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                        .clickable { }.padding(start = 16.dp, end = 8.dp)
-                ) {
                     var showColorChooser by remember { mutableStateOf(false) }
                     if(showColorChooser){
                         ColorChooserDialog(
