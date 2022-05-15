@@ -416,7 +416,7 @@ fun TypingWordSidebar(state: AppState) {
                     }
 
                     Row {
-                        Text("主色调", color = MaterialTheme.colors.onBackground)
+                        Text("选择主色", color = MaterialTheme.colors.onBackground)
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = "",
