@@ -58,6 +58,7 @@ import subtitleFile.FormatASS
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Desktop
 import java.io.File
 import java.io.FileInputStream
@@ -235,6 +236,7 @@ fun GenerateVocabularyDialog(
                                 selectedSubtitlesName = "    "
                                 parseTrackList(
                                     state.videoPlayerComponent,
+                                    window,
                                     state.videoPlayerWindow,
                                     file.absolutePath,
                                     setTrackList = {
@@ -325,6 +327,7 @@ fun GenerateVocabularyDialog(
 
                             SelectFile(
                                 state = state,
+                                parentWindow = window,
                                 type = type,
                                 title = title,
                                 selectedFilePath = selectedFilePath,
@@ -440,7 +443,6 @@ fun GenerateVocabularyDialog(
                                 }
 
                             }
-
                         }
                     }
 
@@ -1086,6 +1088,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
 @OptIn(ExperimentalSerializationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SelectFile(
+    parentWindow: Component,
     state: AppState,
     type: VocabularyType,
     title: String,
@@ -1172,10 +1175,12 @@ fun SelectFile(
                             setRelateVideoPath(file.absolutePath)
                             parseTrackList(
                                 state.videoPlayerComponent,
+                                parentWindow,
                                 state.videoPlayerWindow,
                                 file.absolutePath,
                                 setTrackList = { setTrackList(it) },
                             )
+                            isReading = false
                         }
 //                        setSelectFileName(file.nameWithoutExtension)
                         fileChooser.selectedFile = File("")
@@ -1271,9 +1276,7 @@ fun SelectFile(
                         modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
                     ) {
                         if (isReading) {
-                            Text("正在读取字幕列表", color = MaterialTheme.colors.onBackground)
-                        } else {
-                            Text("选择的视频没有字幕", color = Color.Red)
+                            Text("正在读取字幕列表", color = MaterialTheme.colors.primary)
                         }
                     }
                 }

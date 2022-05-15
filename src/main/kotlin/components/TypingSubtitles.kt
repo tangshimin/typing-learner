@@ -41,7 +41,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.matthewn4444.ebml.EBMLParsingException
 import com.matthewn4444.ebml.EBMLReader
+import com.matthewn4444.ebml.subtitles.SSASubtitles
 import data.Caption
 import dialog.removeItalicSymbol
 import dialog.removeLocationInfo
@@ -139,18 +141,19 @@ fun TypingSubtitles(
         fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
         fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
         fileChooser.selectedFile = null
-        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
             val file = fileChooser.selectedFile
             if (typingSubtitles.videoPath != file.absolutePath) {
                 selectedPath = file.absolutePath
                 parseTrackList(
                     mediaPlayerComponent,
+                    window,
                     playerWindow,
                     file.absolutePath,
                     setTrackList = { setTrackList(it) },
                 )
             } else {
-                JOptionPane.showMessageDialog(null, "文件已打开")
+                JOptionPane.showMessageDialog(window, "文件已打开")
             }
 
             closeLoadingDialog()
@@ -298,6 +301,7 @@ fun TypingSubtitles(
                         selectedPath = file.absolutePath
                         parseTrackList(
                             mediaPlayerComponent,
+                            window,
                             playerWindow,
                             file.absolutePath,
                             setTrackList = { setTrackList(it) },
@@ -747,6 +751,7 @@ fun TypingSubtitles(
                             if (trackList.isEmpty()) {
                                 parseTrackList(
                                     mediaPlayerComponent,
+                                    window,
                                     playerWindow,
                                     typingSubtitles.videoPath,
                                     setTrackList = { setTrackList(it) },
@@ -1151,36 +1156,120 @@ fun createTransferHandler(
  */
 fun parseTrackList(
     mediaPlayerComponent: Component,
+    parentComponent: Component,
     playerWindow: JFrame,
     videoPath: String,
     setTrackList: (List<Pair<Int, String>>) -> Unit,
 ) {
-    mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
-        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-            val list = mutableListOf<Pair<Int, String>>()
-            mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
-                if (index != 0) {
-                    list.add(Pair(index - 1, trackDescription.description()))
+    val result = checkSubtitles(videoPath,parentComponent)
+    if(result){
+        mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+            override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+                val list = mutableListOf<Pair<Int, String>>()
+                mediaPlayer.subpictures().trackDescriptions().forEachIndexed { index, trackDescription ->
+                    if (index != 0) {
+                        list.add(Pair(index - 1, trackDescription.description()))
+                    }
                 }
+                mediaPlayer.controls().pause()
+                playerWindow.isAlwaysOnTop = true
+                playerWindow.title = "视频播放窗口"
+                playerWindow.isVisible = false
+                setTrackList(list)
+                mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
             }
-            mediaPlayer.controls().pause()
-            playerWindow.isAlwaysOnTop = true
-            playerWindow.title = "视频播放窗口"
-            playerWindow.isVisible = false
-            setTrackList(list)
-            mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+        })
+        playerWindow.title = "正在读取字幕列表"
+        playerWindow.isAlwaysOnTop = false
+        playerWindow.toBack()
+        playerWindow.size = Dimension(10, 10)
+        playerWindow.location = Point(0, 0)
+        playerWindow.layout = null
+        playerWindow.contentPane.add(mediaPlayerComponent)
+        playerWindow.isVisible = true
+        // 打开了一个 ASS 字幕为默认轨道的 MKV 文件，再打开另一个 MKV 文件会可能出现 `Invalid memory access` 错误
+        mediaPlayerComponent.mediaPlayer().media().play(videoPath)
+    }else{
+        println("读取失败 返回 false")
+    }
+}
+
+/**
+ * 现在 libVLC 有一个bug,停止一个包含 ASS 格式的字幕的 mkv 格式的视频会崩溃，
+ * 所以要先检查一下是否有 ASS 格式的字幕
+ */
+fun checkSubtitles(
+    videoPath: String,
+    parentComponent: Component):Boolean{
+    var reader: EBMLReader? = null
+
+    try {
+        reader = EBMLReader(videoPath)
+        /**
+         * Check to see if this is a valid MKV file
+         * The header contains information for where all the segments are located
+         */
+        if (!reader.readHeader()) {
+            JOptionPane.showMessageDialog(parentComponent, "这不是一个 mkv 格式的视频")
+            return false
         }
-    })
-    playerWindow.title = "正在读取字幕列表"
-    playerWindow.isAlwaysOnTop = false
-    playerWindow.toBack()
-    playerWindow.size = Dimension(10, 10)
-    playerWindow.location = Point(0, 0)
-    playerWindow.layout = null
-    playerWindow.contentPane.add(mediaPlayerComponent)
-    playerWindow.isVisible = true
-    // 打开了一个 ASS 字幕为默认轨道的 MKV 文件，再打开另一个 MKV 文件会可能出现 `Invalid memory access` 错误
-    mediaPlayerComponent.mediaPlayer().media().play(videoPath)
+
+        /**
+         * Read the tracks. This contains the details of video, audio and subtitles
+         * in this file
+         */
+        reader.readTracks()
+
+        /**
+         * Check if there are any subtitles in this file
+         */
+        val numSubtitles: Int = reader.subtitles.size
+        if (numSubtitles == 0) {
+            JOptionPane.showMessageDialog(parentComponent, "这个视频没有字幕")
+            return false
+        }
+
+        /**
+         * You need this to find the clusters scattered across the file to find
+         * video, audio and subtitle data
+         */
+        reader.readCues()
+
+        /**
+         *  Read all the subtitles from the file each from cue index.
+         *  Once a cue is parsed, it is cached, so if you read the same cue again,
+         *  it will not waste time.
+         *  Performance-wise, this will take some time because it needs to read
+         *  most of the file.
+         */
+        for (i in 0 until reader.cuesCount) {
+            reader.readSubtitlesInCueFrame(i)
+        }
+
+        for (subtitle in reader.subtitles) {
+            if(subtitle is SSASubtitles){
+                JOptionPane.showMessageDialog(parentComponent, "暂时不能处理有 ASS 格式字幕的 MKV 文件")
+                return false
+            }
+        }
+    }catch (exception : EBMLParsingException){
+        println("catch EBMLParsingException message:${exception.message}")
+
+        exception.printStackTrace()
+    }
+    catch (exception: IOException) {
+        println("catch IOException message:${exception.message}")
+        exception.printStackTrace()
+    } finally {
+        try {
+            reader?.close()
+        } catch (exception: Exception) {
+            println("finally catch message:${exception.message}")
+            exception.printStackTrace()
+        }
+
+    }
+    return true
 }
 
 /**
