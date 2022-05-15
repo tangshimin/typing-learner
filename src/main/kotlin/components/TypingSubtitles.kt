@@ -55,7 +55,6 @@ import state.TypingSubtitlesState
 import state.getSettingsDirectory
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
-import theme.createColors
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import java.awt.*
@@ -260,7 +259,7 @@ fun TypingSubtitles(
                 saveIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
                 true
             }
-            (keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.key == Key.Z && keyEvent.type == KeyEventType.KeyUp) -> {
+            ((keyEvent.key == Key.Tab) && keyEvent.type == KeyEventType.KeyUp) -> {
                 val caption = captionList[typingSubtitles.currentIndex]
                 val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
                 if (!isPlaying) {
@@ -358,17 +357,16 @@ fun TypingSubtitles(
                             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
                         }
                     }
-                    val startPadding = 150.dp
-                    val startTimeWidth = 141.dp
+                    val startTimeWidth = 50.dp
                     val endPadding = 10.dp
-                    val maxWidth =
-                        startPadding + startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
+                    val maxWidth = startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
+                    val indexWidth = (captionList.size.toString().length * 14).dp
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .fillMaxWidth()
+                            .width(1050.dp)
                             .fillMaxHeight()
                             .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp)
                             .horizontalScroll(stateHorizontal),
@@ -377,13 +375,39 @@ fun TypingSubtitles(
                             val captionContent = caption.content
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
+                            val next :() -> Unit = {
+                                scope.launch {
+                                    val end =
+                                        listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size - 2
+                                    if (index >= end) {
+                                        listState.scrollToItem(index)
+                                    }
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                }
+                            }
+                            val previous :() -> Unit = {
+                                scope.launch {
+                                    if(index == listState.firstVisibleItemIndex+1){
+                                        val top = index - listState.layoutInfo.visibleItemsInfo.size
+                                        listState.scrollToItem(top)
+                                        typingSubtitles.currentIndex = index-1
 
+                                    }else{
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                    }
+
+                                }
+                            }
                             /** 检查输入的回调函数 */
                             val checkTyping: (String) -> Unit = { input ->
                                 scope.launch {
                                     if (textFieldValue.length > captionContent.length) {
                                         typingResult.clear()
                                         textFieldValue = ""
+
                                     } else if (input.length <= captionContent.length) {
                                         textFieldValue = input
                                         typingResult.clear()
@@ -400,58 +424,100 @@ fun TypingSubtitles(
                                                 typingResult.add(Pair(inputChar, false))
                                             }
                                         }
+                                        if(input.length >= captionContent.length){
+                                            next()
+                                        }
 
+                                    }else{
+                                        next()
                                     }
                                 }
                             }
+
                             val textFieldKeyEvent: (KeyEvent) -> Boolean = { it: KeyEvent ->
-                                if ((it.key != Key.ShiftLeft && it.key != Key.ShiftRight) && it.type == KeyEventType.KeyDown) {
-                                    playKeySound()
-                                }
-                                if ((it.key == Key.Enter || it.key == Key.NumPadEnter)
-                                    && it.type == KeyEventType.KeyUp
-                                ) {
-                                    scope.launch {
-                                        typingResult.clear()
-                                        textFieldValue = ""
-                                        val end =
-                                            listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size - 1
-                                        if (index >= end) {
-                                            listState.scrollToItem(index)
-                                        }
-                                        focusManager.moveFocus(FocusDirection.Next)
-                                        focusManager.moveFocus(FocusDirection.Next)
-                                        focusManager.moveFocus(FocusDirection.Next)
+                                when {
+                                    ((it.key != Key.ShiftLeft && it.key != Key.ShiftRight) && it.type == KeyEventType.KeyDown) -> {
+                                        playKeySound()
+                                        true
                                     }
-                                    true
-                                } else false
+                                    ((it.key == Key.Enter ||it.key == Key.NumPadEnter || it.key == Key.DirectionDown) && it.type == KeyEventType.KeyUp) -> {
+                                        next()
+                                        true
+                                    }
+
+                                    ((it.key == Key.DirectionUp) && it.type == KeyEventType.KeyUp) -> {
+                                        previous()
+                                        true
+                                    }
+                                    ((it.key == Key.DirectionLeft) && it.type == KeyEventType.KeyUp) -> {
+                                        scope.launch {
+                                            val current = stateHorizontal.value
+                                            stateHorizontal.scrollTo(current-20)
+                                        }
+                                        true
+                                    }
+                                    ((it.key == Key.DirectionRight) && it.type == KeyEventType.KeyUp) -> {
+                                        scope.launch {
+                                            val current = stateHorizontal.value
+                                            stateHorizontal.scrollTo(current+20)
+                                        }
+                                        true
+                                    }
+                                    ((it.key == Key.Backspace) && it.type == KeyEventType.KeyUp) -> {
+                                        scope.launch {
+                                            if(textFieldValue.isEmpty()){
+                                                previous()
+                                            }
+                                        }
+                                        true
+                                    }
+                                    else -> false
+                                }
+
                             }
                             Row(
                                 horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .width(maxWidth)
-                                    .padding(start = 150.dp, top = 5.dp, bottom = 5.dp)
+                                    .padding(start = 150.dp)
                             ) {
-                                Text(
-                                    text = buildAnnotatedString {
-                                        withStyle(
-                                            style = SpanStyle(
-                                                color = Color.DarkGray,
-                                                fontSize = MaterialTheme.typography.h5.fontSize,
-                                                letterSpacing = MaterialTheme.typography.h5.letterSpacing,
-                                                fontFamily = MaterialTheme.typography.h5.fontFamily,
-                                            )
-                                        ) {
-                                            append(caption.start)
-                                        }
-                                    },
-                                    modifier = Modifier.padding(end = 10.dp)
-                                )
+                                val alpha = if(typingSubtitles.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
+                                val lineColor =  if(index <  typingSubtitles.currentIndex){
+                                    MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
+                                }else{
+                                    MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                }
+                                val indexColor =  if(index <=  typingSubtitles.currentIndex){
+                                    MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
+                                }else{
+                                    MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                }
+
+                                Row(modifier = Modifier.width(indexWidth)){
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = indexColor,
+                                                    fontSize = MaterialTheme.typography.h5.fontSize,
+                                                    letterSpacing = MaterialTheme.typography.h5.letterSpacing,
+                                                    fontFamily = MaterialTheme.typography.h5.fontFamily,
+                                                )
+                                            ) {
+                                                append("$index")
+                                            }
+                                        },
+                                    )
+                                }
+
+                                Spacer(Modifier.width(20.dp))
                                 Box(Modifier.width(IntrinsicSize.Max)) {
                                     CompositionLocalProvider(
                                         LocalTextInputService provides null
                                     ) {
+
+
                                         BasicTextField(
                                             value = textFieldValue,
                                             onValueChange = { checkTyping(it) },
@@ -461,7 +527,6 @@ fun TypingSubtitles(
                                                 color = Color.Transparent,
                                                 fontFamily = monospace
                                             ),
-
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(32.dp)
@@ -482,17 +547,21 @@ fun TypingSubtitles(
                                                     }
                                                 }
                                         )
+
                                     }
                                     Text(
                                         text = buildAnnotatedString {
+
+//                                            val textDecoration = if(typingSubtitles.currentIndex == index) TextDecoration.Underline else TextDecoration.None
                                             typingResult.forEach { (char, correct) ->
                                                 if (correct) {
                                                     withStyle(
                                                         style = SpanStyle(
-                                                            color = MaterialTheme.colors.primary,
+                                                            color = MaterialTheme.colors.primary.copy(alpha = alpha),
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                             fontFamily = monospace,
+//                                                            textDecoration = textDecoration,
                                                         )
                                                     ) {
                                                         append(char)
@@ -504,6 +573,7 @@ fun TypingSubtitles(
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                             fontFamily = monospace,
+//                                                            textDecoration = textDecoration,
                                                         )
                                                     ) {
                                                         if (char == ' ') {
@@ -516,12 +586,15 @@ fun TypingSubtitles(
                                                 }
                                             }
                                             var remainChars = captionContent.substring(typingResult.size)
+
+
                                             withStyle(
                                                 style = SpanStyle(
-                                                    color = MaterialTheme.colors.onBackground,
+                                                    color = lineColor,
                                                     fontSize = MaterialTheme.typography.h5.fontSize,
                                                     letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                     fontFamily = monospace,
+//                                                    textDecoration = textDecoration,
                                                 )
                                             ) {
                                                 append(remainChars)
@@ -541,7 +614,7 @@ fun TypingSubtitles(
                                     }
                                 }
 
-                                Row(Modifier.width(48.dp).height(48.dp)) {
+                                Row(Modifier.width(48.dp).height(IntrinsicSize.Max)) {
                                     if (typingSubtitles.currentIndex == index) {
                                         TooltipArea(
                                             tooltip = {

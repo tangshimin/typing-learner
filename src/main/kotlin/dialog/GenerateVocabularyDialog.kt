@@ -1838,10 +1838,15 @@ fun replaceNewLine(content: String): String {
     var string = content
     if (string.contains("\r\n")) {
         string = string.replace("\r\n", " ")
-    } else if (string.contains("\n")) {
+    }
+    if (string.contains("\n")) {
         string = string.replace("\n", " ")
-    } else if (string.contains("<br />")) {
+    }
+    if (string.contains("<br />")) {
         string = string.replace("<br />", " ")
+    }
+    if (string.endsWith(" ")){
+        string = string.substring(0,string.length-1)
     }
     return string
 }
