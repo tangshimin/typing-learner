@@ -509,7 +509,7 @@ fun TypingSubtitles(
                                                     fontFamily = MaterialTheme.typography.h5.fontFamily,
                                                 )
                                             ) {
-                                                append("$index")
+                                                append("${index+1}")
                                             }
                                         },
                                     )
