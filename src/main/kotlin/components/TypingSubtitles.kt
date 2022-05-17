@@ -105,6 +105,8 @@ fun TypingSubtitles(
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
+
+    /** 读取字幕文件*/
     if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
         parseSubtitles(
             subtitlesPath = typingSubtitles.subtitlesPath,
@@ -198,7 +200,7 @@ fun TypingSubtitles(
             }
 
         } else {
-            println("视频地址错误")
+            JOptionPane.showMessageDialog(window, "视频地址错误")
         }
 
     }
@@ -322,44 +324,82 @@ fun TypingSubtitles(
             }
             else -> false
         }
-
-
     }
 
 
     /**  处理拖放文件的函数 */
     val transferHandler = createTransferHandler(
+        singleFile = false,
         showWrongMessage = { message ->
             JOptionPane.showMessageDialog(window, message)
         },
         parseImportFile = { files ->
-            val file = files.first()
-            loading = true
-            scope.launch {
-                Thread(Runnable{
-                    if (file.extension == "mkv") {
-                        if (typingSubtitles.videoPath != file.absolutePath) {
-                            selectedPath = file.absolutePath
-                            parseTrackList(
-                                mediaPlayerComponent,
-                                window,
-                                playerWindow,
-                                file.absolutePath,
-                                setTrackList = { setTrackList(it) },
-                            )
+            if(files.size == 1){
+                val file = files.first()
+                loading = true
+                scope.launch {
+                    Thread(Runnable{
+                        if (file.extension == "mkv") {
+                            if (typingSubtitles.videoPath != file.absolutePath) {
+                                selectedPath = file.absolutePath
+                                parseTrackList(
+                                    mediaPlayerComponent,
+                                    window,
+                                    playerWindow,
+                                    file.absolutePath,
+                                    setTrackList = { setTrackList(it) },
+                                )
 
+                            } else {
+                                JOptionPane.showMessageDialog(window, "文件已打开")
+                            }
+
+                        }else if (file.extension == "json") {
+                            JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
                         } else {
-                            JOptionPane.showMessageDialog(window, "文件已打开")
+                            JOptionPane.showMessageDialog(window, "拖放一个文件，只支持 mkv 格式的视频")
                         }
-
-                    } else if (file.extension == "json") {
-                        JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
-                    } else {
-                        JOptionPane.showMessageDialog(window, "暂时只能读取 mkv 格式的视频文件")
-                    }
-                    loading = false
-                }).start()
+                        loading = false
+                    }).start()
+                }
+            }else if(files.size == 2){
+                val first = files.first()
+                val last = files.last()
+                if(first.extension == "srt" && (last.extension == "mp4"||last.extension == "mkv")){
+                    typingSubtitles.trackID = 0
+                    typingSubtitles.trackSize = 0
+                    typingSubtitles.currentIndex = 0
+                    typingSubtitles.firstVisibleItemIndex = 0
+                    typingSubtitles.subtitlesPath = first.absolutePath
+                    typingSubtitles.videoPath = last.absolutePath
+                    typingSubtitles.trackDescription = first.nameWithoutExtension
+                    captionList.clear()
+                }else if((first.extension == "mp4"||first.extension == "mkv") && last.extension == "srt"){
+                    typingSubtitles.trackID = 0
+                    typingSubtitles.trackSize = 0
+                    typingSubtitles.currentIndex = 0
+                    typingSubtitles.firstVisibleItemIndex = 0
+                    typingSubtitles.videoPath = first.absolutePath
+                    typingSubtitles.subtitlesPath = last.absolutePath
+                    typingSubtitles.trackDescription = last.nameWithoutExtension
+                    captionList.clear()
+                }else if(first.extension == "mp4" && last.extension == "mp4"){
+                    JOptionPane.showMessageDialog(window, "拖拽了两个 MP4 格式的视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
+                }else if(first.extension == "mkv" && last.extension == "mkv"){
+                    JOptionPane.showMessageDialog(window, "拖拽了两个 MKV 格式的视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
+                }else if(first.extension == "mkv" && last.extension == "mp4"){
+                    JOptionPane.showMessageDialog(window, "拖拽了两个视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
+                }else if(first.extension == "mp4" && last.extension == "mkv"){
+                    JOptionPane.showMessageDialog(window, "拖拽了两个视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
+                }else if(first.extension == "srt" && last.extension == "srt"){
+                    JOptionPane.showMessageDialog(window, "拖拽了两个字幕，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
+                }else {
+                    JOptionPane.showMessageDialog(window, "文件格式不支持")
+                }
+            }else{
+                JOptionPane.showMessageDialog(window, "不能超过两个文件")
             }
+
         }
     )
 
@@ -950,7 +990,6 @@ fun SelectTrack(
                             setIsLoading(true)
                             Thread(Runnable {
                                 expanded = false
-
                                 val subtitles = writeToFile(selectedPath, trackId,parentComponent)
                                 if (subtitles != null) {
                                     setSubtitlesPath(subtitles.absolutePath)
