@@ -562,7 +562,6 @@ fun TypingSubtitles(
                                     Text(
                                         text = buildAnnotatedString {
 
-//                                            val textDecoration = if(typingSubtitles.currentIndex == index) TextDecoration.Underline else TextDecoration.None
                                             typingResult.forEach { (char, correct) ->
                                                 if (correct) {
                                                     withStyle(
@@ -571,7 +570,6 @@ fun TypingSubtitles(
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                             fontFamily = monospace,
-//                                                            textDecoration = textDecoration,
                                                         )
                                                     ) {
                                                         append(char)
@@ -583,7 +581,6 @@ fun TypingSubtitles(
                                                             fontSize = MaterialTheme.typography.h5.fontSize,
                                                             letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                             fontFamily = monospace,
-//                                                            textDecoration = textDecoration,
                                                         )
                                                     ) {
                                                         if (char == ' ') {
@@ -604,7 +601,6 @@ fun TypingSubtitles(
                                                     fontSize = MaterialTheme.typography.h5.fontSize,
                                                     letterSpacing = MaterialTheme.typography.h5.letterSpacing,
                                                     fontFamily = monospace,
-//                                                    textDecoration = textDecoration,
                                                 )
                                             ) {
                                                 append(remainChars)
@@ -757,7 +753,6 @@ fun TypingSubtitles(
                             .align(Alignment.Center)
                             .background(MaterialTheme.colors.background)
                     ) {
-//                        var loading by remember { mutableStateOf(false) }
                         if (loading || trackList.isEmpty()) {
                             CircularProgressIndicator(
                                 Modifier.width(60.dp).align(Alignment.Center).padding(bottom = 200.dp)
