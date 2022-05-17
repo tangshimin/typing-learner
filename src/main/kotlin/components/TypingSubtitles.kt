@@ -117,6 +117,16 @@ fun TypingSubtitles(
             setCaptionList = {
                 captionList.clear()
                 captionList.addAll(it)
+            },
+            resetSubtitlesState = {
+                typingSubtitles.videoPath = ""
+                typingSubtitles.subtitlesPath = ""
+                typingSubtitles.trackID = 0
+                typingSubtitles.trackDescription = ""
+                typingSubtitles.trackSize = 0
+                typingSubtitles.currentIndex = 0
+                typingSubtitles.firstVisibleItemIndex = 0
+                typingSubtitles.sentenceMaxLength = 0
             }
         )
     }
@@ -1290,37 +1300,51 @@ fun checkSubtitles(
  * @param subtitlesPath 字幕的路径
  * @param setMaxLength 用于设置字幕的最大字符数的回调函数
  * @param setCaptionList 用于设置字幕列表的回调函数
+ * @param resetSubtitlesState 字幕文件删除，或者被修改，导致不能解析，就重置
  */
 fun parseSubtitles(
     subtitlesPath: String,
     setMaxLength: (Int) -> Unit,
     setCaptionList: (List<Caption>) -> Unit,
+    resetSubtitlesState:() -> Unit,
 ) {
     val formatSRT = FormatSRT()
     val file = File(subtitlesPath)
-    val inputStream: InputStream = FileInputStream(file)
-    val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
-    val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
-    val captionList = mutableListOf<Caption>()
-    var maxLength = 0
-    for (caption in captions.values) {
-        var content = removeLocationInfo(caption.content)
-        content = removeItalicSymbol(content)
-        content = replaceNewLine(content)
+    if(file.exists()){
+        try {
+            val inputStream: InputStream = FileInputStream(file)
+            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
+            val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
+            val captionList = mutableListOf<Caption>()
+            var maxLength = 0
+            for (caption in captions.values) {
+                var content = removeLocationInfo(caption.content)
+                content = removeItalicSymbol(content)
+                content = replaceNewLine(content)
 
-        val newCaption = Caption(
-            start = caption.start.getTime("hh:mm:ss.ms"),
-            end = caption.end.getTime("hh:mm:ss.ms"),
-            content = content
-        )
-        if (caption.content.length > maxLength) {
-            maxLength = caption.content.length
+                val newCaption = Caption(
+                    start = caption.start.getTime("hh:mm:ss.ms"),
+                    end = caption.end.getTime("hh:mm:ss.ms"),
+                    content = content
+                )
+                if (caption.content.length > maxLength) {
+                    maxLength = caption.content.length
+                }
+                captionList.add(newCaption)
+            }
+
+            setMaxLength(maxLength)
+            setCaptionList(captionList)
+        }catch (exception:IOException){
+            exception.printStackTrace()
+            resetSubtitlesState()
         }
-        captionList.add(newCaption)
+
+    }else{
+        println("找不到正在抄写的字幕")
+        resetSubtitlesState()
     }
 
-    setMaxLength(maxLength)
-    setCaptionList(captionList)
 }
 
 /**
