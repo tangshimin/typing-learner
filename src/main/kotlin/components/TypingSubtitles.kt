@@ -1,5 +1,6 @@
 package components
 
+import IOClass
 import LocalCtrl
 import Settings
 import androidx.compose.foundation.*
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matthewn4444.ebml.EBMLParsingException
 import com.matthewn4444.ebml.EBMLReader
+import com.matthewn4444.ebml.subtitles.SRTSubtitles
 import com.matthewn4444.ebml.subtitles.SSASubtitles
 import data.Caption
 import dialog.removeItalicSymbol
@@ -55,6 +57,7 @@ import player.mediaPlayer
 import state.GlobalState
 import state.TypingSubtitlesState
 import state.getSettingsDirectory
+import subtitleFile.FormatASS
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import uk.co.caprica.vlcj.player.base.MediaPlayer
@@ -104,6 +107,7 @@ fun TypingSubtitles(
     val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+    var loading by remember { mutableStateOf(false) }
     if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
         parseSubtitles(
             subtitlesPath = typingSubtitles.subtitlesPath,
@@ -295,6 +299,7 @@ fun TypingSubtitles(
         },
         parseImportFile = { files ->
             val file = files.first()
+            loading = true
             scope.launch {
                 if (file.extension == "mkv") {
                     if (typingSubtitles.videoPath != file.absolutePath) {
@@ -306,6 +311,7 @@ fun TypingSubtitles(
                             file.absolutePath,
                             setTrackList = { setTrackList(it) },
                         )
+                        loading = false
                     } else {
                         JOptionPane.showMessageDialog(window, "文件已打开")
                     }
@@ -726,6 +732,7 @@ fun TypingSubtitles(
 
                 if (showOpenFile || selectedPath.isNotEmpty() || captionList.isEmpty()) {
                     OpenFileComponent(
+                        parentComponent = window,
                         cancel = { showOpenFile = false },
                         openFileChooser = { openFileChooser() },
                         showCancel = captionList.isNotEmpty(),
@@ -746,19 +753,31 @@ fun TypingSubtitles(
                             .align(Alignment.Center)
                             .background(MaterialTheme.colors.background)
                     ) {
-                        var loading by remember { mutableStateOf(false) }
+//                        var loading by remember { mutableStateOf(false) }
+                        if (loading || trackList.isEmpty()) {
+                            CircularProgressIndicator(
+                                Modifier.width(60.dp).align(Alignment.Center).padding(bottom = 200.dp)
+                            )
+                        }
                         Row(Modifier.align(Alignment.Center)) {
                             if (trackList.isEmpty()) {
-                                parseTrackList(
-                                    mediaPlayerComponent,
-                                    window,
-                                    playerWindow,
-                                    typingSubtitles.videoPath,
-                                    setTrackList = { setTrackList(it) },
-                                )
+                                loading = true
+                                scope.launch {
+                                    parseTrackList(
+                                        mediaPlayerComponent,
+                                        window,
+                                        playerWindow,
+                                        typingSubtitles.videoPath,
+                                        setTrackList = {
+                                            setTrackList(it)
+                                        },
+                                    )
+                                    loading = false
+                                }
                             }
                             SelectTrack(
                                 close = { showSelectTrack = false },
+                                parentComponent = window,
                                 setTrackId = { saveTrackID(it) },
                                 setTrackDescription = { saveTrackDescription(it) },
                                 trackList = trackList,
@@ -774,11 +793,7 @@ fun TypingSubtitles(
                                 Text("取消")
                             }
                         }
-                        if (loading || trackList.isEmpty()) {
-                            CircularProgressIndicator(
-                                Modifier.width(60.dp).align(Alignment.Center).padding(bottom = 200.dp)
-                            )
-                        }
+
                     }
 
                 }
@@ -805,6 +820,7 @@ fun TypingSubtitles(
 
 @Composable
 fun OpenFileComponent(
+    parentComponent: Component,
     cancel: () -> Unit,
     openFileChooser: () -> Unit,
     showCancel: Boolean,
@@ -839,6 +855,7 @@ fun OpenFileComponent(
 
             SelectTrack(
                 close = { cancel() },
+                parentComponent = parentComponent,
                 setTrackId = { setTrackId(it) },
                 setTrackDescription = { setTrackDescription(it) },
                 trackList = trackList,
@@ -870,6 +887,7 @@ fun OpenFileComponent(
 @Composable
 fun SelectTrack(
     close: () -> Unit,
+    parentComponent: Component,
     setTrackId: (Int) -> Unit,
     setTrackDescription: (String) -> Unit,
     trackList: List<Pair<Int, String>>,
@@ -916,7 +934,7 @@ fun SelectTrack(
                                 setTrackId(trackId)
                                 setTrackDescription(description)
                                 setVideoPath(selectedPath)
-                                val subtitles = writeToFile(selectedPath, trackId)
+                                val subtitles = writeToFile(selectedPath, trackId,parentComponent)
                                 if (subtitles != null) {
                                     setSubtitlesPath(subtitles.absolutePath)
                                 }
@@ -1187,10 +1205,7 @@ fun parseTrackList(
         playerWindow.layout = null
         playerWindow.contentPane.add(mediaPlayerComponent)
         playerWindow.isVisible = true
-        // 打开了一个 ASS 字幕为默认轨道的 MKV 文件，再打开另一个 MKV 文件会可能出现 `Invalid memory access` 错误
         mediaPlayerComponent.mediaPlayer().media().play(videoPath)
-    }else{
-        println("读取失败 返回 false")
     }
 }
 
@@ -1246,28 +1261,14 @@ fun checkSubtitles(
             reader.readSubtitlesInCueFrame(i)
         }
 
-        for (subtitle in reader.subtitles) {
-            if(subtitle is SSASubtitles){
-                JOptionPane.showMessageDialog(parentComponent, "暂时不能处理有 ASS 格式字幕的 MKV 文件")
-                return false
-            }
-        }
-    }catch (exception : EBMLParsingException){
-        println("catch EBMLParsingException message:${exception.message}")
-
-        exception.printStackTrace()
-    }
-    catch (exception: IOException) {
-        println("catch IOException message:${exception.message}")
+    } catch (exception: IOException) {
         exception.printStackTrace()
     } finally {
         try {
             reader?.close()
         } catch (exception: Exception) {
-            println("finally catch message:${exception.message}")
             exception.printStackTrace()
         }
-
     }
     return true
 }
@@ -1316,6 +1317,7 @@ fun parseSubtitles(
 private fun writeToFile(
     videoPath: String,
     trackId: Int,
+    parentComponent: Component,
 ): File? {
     var reader: EBMLReader? = null
     val settingsDir = getSettingsDirectory()
@@ -1365,7 +1367,12 @@ private fun writeToFile(
 
         val subtitles = reader.subtitles[trackId]
         subtitlesFile = File(settingsDir, "subtitles.srt")
-        subtitles.writeFile(subtitlesFile.absolutePath)
+        if(subtitles is SSASubtitles){
+            JOptionPane.showMessageDialog(parentComponent, "暂时不支持 ASS 格式的字幕")
+        }else if(subtitles is SRTSubtitles){
+            subtitles.writeFile(subtitlesFile.absolutePath)
+        }
+
     } catch (exception: Exception) {
         exception.printStackTrace()
     } finally {

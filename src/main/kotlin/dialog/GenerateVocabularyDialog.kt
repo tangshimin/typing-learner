@@ -54,7 +54,6 @@ import org.apache.pdfbox.text.PDFTextStripper
 import player.isWindows
 import state.AppState
 import state.composeAppResource
-import subtitleFile.FormatASS
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import java.awt.BorderLayout
@@ -117,8 +116,8 @@ fun GenerateVocabularyDialog(
                 "txt",
             )
             "从字幕生成词库" -> FileNameExtensionFilter(
-                "SRT 和 ASS 格式的字幕文件",
-                "srt", "ass",
+                "SRT 格式的字幕文件",
+                "srt",
             )
 
             "从 MKV 视频生成词库" -> FileNameExtensionFilter(
@@ -218,7 +217,7 @@ fun GenerateVocabularyDialog(
                                 )
                             }
                         }
-                        "srt", "ass" -> {
+                        "srt" -> {
                             if (type == SUBTITLES) {
                                 selectedFilePath = file.absolutePath
                                 selectedSubtitlesName = "    "
@@ -269,10 +268,6 @@ fun GenerateVocabularyDialog(
         contentPanel.setContent {
             MaterialTheme(colors = state.colors) {
                 Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
-
-
-
-
                     Divider()
                     Row(Modifier.fillMaxWidth()) {
                         Column(Modifier.width(540.dp).fillMaxHeight()) {
@@ -319,10 +314,7 @@ fun GenerateVocabularyDialog(
 
                             var progressText by remember { mutableStateOf("") }
 
-                            /**
-                             * 暂时不读取 MKV 里的 ASS 字幕，
-                             * 因为我测试了一个 MKV 里的 ASS,生成词库后，只能播放一条字幕，然后程序就崩溃了。
-                             */
+                            /** 暂时不读取 MKV 里的 ASS 字幕 */
                             var isSelectedASS by remember { mutableStateOf(false) }
 
                             SelectFile(
@@ -1609,15 +1601,11 @@ private fun readSRT(
         val model = TokenizerModel(input)
         val tokenizer: Tokenizer = TokenizerME(model)
         val formatSRT = FormatSRT()
-        val formatASS = FormatASS()
         val file = File(pathName)
         val inputStream: InputStream = FileInputStream(file)
+
         setProgressText("正在解析字幕文件")
-        val timedTextObject: TimedTextObject = if (file.extension == "srt") {
-            formatSRT.parseFile(file.name, inputStream)
-        } else {
-            formatASS.parseFile(file.name, inputStream)
-        }
+        val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
 
         val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
         val captionList: Collection<subtitleFile.Caption> = captions.values
@@ -1625,25 +1613,24 @@ private fun readSRT(
         for (caption in captionList) {
             var content = replaceSpecialCharacter(caption.content)
             val tokenize = tokenizer.tokenize(content)
+            var text = caption.content.replace("<br />", "\n")
+            if (text.endsWith("\n")) {
+                text = text.substringBefore("\n")
+            }
+            val dataCaption = Caption(
+                // getTime(format) 返回的时间不能播放
+                start = caption.start.getTime("hh:mm:ss.ms"),
+                end = caption.end.getTime("hh:mm:ss.ms"),
+                content = text
+            )
             for (word in tokenize) {
-
-                var text = caption.content.replace("<br />", "\n")
-                if (text.endsWith("\n")) {
-                    text = text.substringBefore("\n")
-                }
-                val captionString = Caption(
-                    // getTime(format) 返回的时间不能播放
-                    start = caption.start.getTime("hh:mm:ss.ms"),
-                    end = caption.end.getTime("hh:mm:ss.ms"),
-                    content = text
-                )
                 val lowercase = word.lowercase(Locale.getDefault())
                 if (!map.containsKey(lowercase)) {
-                    val list = mutableListOf(captionString)
+                    val list = mutableListOf(dataCaption)
                     map[lowercase] = list
                 } else {
                     if (map[lowercase]!!.size < 3) {
-                        map[lowercase]?.add(captionString)
+                        map[lowercase]?.add(dataCaption)
                     }
                 }
             }
@@ -1730,8 +1717,6 @@ private fun readMKV(
             val model = TokenizerModel(inputStream)
             val tokenizer: Tokenizer = TokenizerME(model)
             val subtitle = reader.subtitles[trackId]
-            // 我测试了一个 MKV 里的 ASS,生成词库后，只能播放一条字幕，然后就崩溃，
-            // 这个 bug 可能跟 VLCJ 有关
             if (subtitle is SSASubtitles) {
                 setIsSelectedASS(true)
             } else {
@@ -1741,29 +1726,20 @@ private fun readMKV(
                     var content = replaceSpecialCharacter(caption.stringData)
                     content = content.lowercase(Locale.getDefault())
                     val tokenize = tokenizer.tokenize(content)
+                    val stringData = removeLocationInfo(caption.stringData)
+                    val dataCaption = Caption(
+                        start = caption.startTime.format().toString(),
+                        end = caption.endTime.format(),
+                        content = stringData
+                    )
                     for (word in tokenize) {
-
-                        val stringData = removeLocationInfo(caption.stringData)
                         if (!map.containsKey(word)) {
                             val list = ArrayList<Caption>()
-                            list.add(
-                                Caption(
-                                    start = caption.startTime.format().toString(),
-                                    end = caption.endTime.format(),
-                                    content = stringData
-                                )
-                            )
+                            list.add(dataCaption)
                             map[word] = list
                         } else {
                             if (map[word]!!.size < 3) {
-                                map[word]!!
-                                    .add(
-                                        Caption(
-                                            start = caption.startTime.format().toString(),
-                                            end = caption.endTime.format(),
-                                            content = stringData
-                                        )
-                                    )
+                                map[word]!!.add(dataCaption)
                             }
                         }
                     }
