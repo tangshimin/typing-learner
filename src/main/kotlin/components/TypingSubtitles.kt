@@ -636,9 +636,13 @@ fun TypingSubtitles(
                                                     ),
                                                     shape = RectangleShape
                                                 ) {
-                                                    val ctrl = LocalCtrl.current
-                                                    val shift = if (isMacOS()) "⇧" else "Shift"
-                                                    Text(text = "播放 $ctrl+$shift+Z", modifier = Modifier.padding(10.dp))
+                                                    Row(modifier = Modifier.padding(10.dp)){
+                                                        Text(text = "播放" )
+                                                        CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                                                            Text(text = " Tab")
+                                                        }
+                                                    }
+
                                                 }
                                             },
                                             delayMillis = 300,
