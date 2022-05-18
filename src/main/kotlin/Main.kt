@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
@@ -80,10 +81,13 @@ fun main() = application {
                 MaterialTheme(colors = state.colors) {
                     WindowMenuBar(state)
                     MenuDialogs(state)
-                    // 视频播放器的位置，大小
-                    val videoBounds = computeVideoBounds(windowState, state.openSettings)
+
                     when (state.global.type) {
                         WORD -> {
+                            // 显示器缩放
+                            val density = LocalDensity.current.density
+                            // 视频播放器的位置，大小
+                            val videoBounds = computeVideoBounds(windowState, state.openSettings,density)
                             TypingWord(
                                 window = window,
                                 title = title,

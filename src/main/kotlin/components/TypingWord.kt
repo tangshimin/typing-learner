@@ -1428,11 +1428,19 @@ fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
 /**
  * 计算视频播放窗口的位置和大小
  */
-fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectangle {
-    val mainX = windowState.position.x.value.toInt()
-    val mainY = windowState.position.y.value.toInt()
+fun computeVideoBounds(
+    windowState: WindowState,
+    openSettings: Boolean,
+    density:Float,
+): Rectangle {
+    var mainX = windowState.position.x.value.toInt()
+    var mainY = windowState.position.y.value.toInt()
+    mainX = (mainX).div(density).toInt()
+    mainY = (mainY).div(density).toInt()
+
     val mainWidth = windowState.size.width.value.toInt()
     val mainHeight = windowState.size.height.value.toInt()
+
     val size = if (mainWidth in 801..1079) {
         Dimension(642, 390)
     } else if (mainWidth > 1080) {
@@ -1440,9 +1448,13 @@ fun computeVideoBounds(windowState: WindowState, openSettings: Boolean): Rectang
     } else {
         Dimension(540, 304)
     }
+    if(density!=1f){
+        size.width = size.width.div(density).toInt()
+        size.height = size.height.div(density).toInt()
+    }
     var x = (mainWidth - size.width).div(2)
     // 232 是单词 + 字幕的高度 ，再加一个文本输入框48 == 280
-    // 58 是内容的 bottom padding
+    // 48 是内容的 bottom padding
     var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15-48
     x += mainX
     y += mainY

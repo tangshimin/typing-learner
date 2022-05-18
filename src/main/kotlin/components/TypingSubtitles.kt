@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
@@ -405,7 +406,6 @@ fun TypingSubtitles(
     )
 
     window.transferHandler = transferHandler
-
     Box(
         Modifier.fillMaxSize()
             .background(MaterialTheme.colors.background)
@@ -725,6 +725,7 @@ fun TypingSubtitles(
                                                 offset = DpOffset.Zero
                                             )
                                         ) {
+                                            val density = LocalDensity.current.density
                                             IconButton(onClick = {
                                                 buttonEventPlay(caption)
                                             },
@@ -737,23 +738,30 @@ fun TypingSubtitles(
                                                     }
                                                     .onGloballyPositioned { coordinates ->
                                                         val rect = coordinates.boundsInWindow()
-                                                        videoPlayerBounds.x = window.x + rect.left.toInt() + 48
-                                                        videoPlayerBounds.y = window.y + rect.top.toInt() - 100
+                                                        videoPlayerBounds.x = window.x + rect.left.toInt() + (48 * density).toInt()
+                                                        videoPlayerBounds.y = window.y + rect.top.toInt() - (100 * density).toInt()
 
                                                         // 判断屏幕边界
                                                         val graphicsDevice =
                                                             GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
+
                                                         val width = graphicsDevice.displayMode.width
                                                         val height = graphicsDevice.displayMode.height
-                                                        if (videoPlayerBounds.x + 540 > width) {
-                                                            videoPlayerBounds.x = width - 540
+                                                        val actualWidth = (540 * density).toInt()
+                                                        if (videoPlayerBounds.x + actualWidth > width) {
+                                                            videoPlayerBounds.x = width - actualWidth
                                                         }
-
+                                                        val actualHeight = (330 * density).toInt()
                                                         if (videoPlayerBounds.y < 0) videoPlayerBounds.y = 0
-                                                        if (videoPlayerBounds.y + 303 > height) {
-                                                            videoPlayerBounds.y = height - 303
+                                                        if (videoPlayerBounds.y + actualHeight > height) {
+                                                            videoPlayerBounds.y = height - actualHeight
                                                         }
 
+                                                        // 显示器缩放
+                                                        if(density != 1f){
+                                                            videoPlayerBounds.x = videoPlayerBounds.x.div(density).toInt()
+                                                            videoPlayerBounds.y =  videoPlayerBounds.y.div(density).toInt()
+                                                        }
                                                     }
                                             ) {
                                                 Icon(
