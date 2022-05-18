@@ -198,6 +198,8 @@ fun GenerateVocabularyDialog(
          */
         var replaceToLemma by remember { mutableStateOf(false) }
 
+        var loading by remember { mutableStateOf(false) }
+
         /**  处理拖放文件的函数 */
         val transferHandler = createTransferHandler(
             showWrongMessage = { message ->
@@ -205,61 +207,66 @@ fun GenerateVocabularyDialog(
             },
             parseImportFile = { files ->
                 val file = files.first()
+                loading = true
                 scope.launch {
-                    when (file.extension) {
-                        "pdf", "txt" -> {
-                            if (type == DOCUMENT) {
-                                selectedFilePath = file.absolutePath
-                                selectedSubtitlesName = "    "
-                            } else {
-                                JOptionPane.showMessageDialog(
-                                    window,
-                                    "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
-                                )
+                    Thread(Runnable {
+                        when (file.extension) {
+                            "pdf", "txt" -> {
+                                if (type == DOCUMENT) {
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        window,
+                                        "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
+                                    )
+                                }
+                            }
+                            "srt" -> {
+                                if (type == SUBTITLES) {
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        window,
+                                        "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
+                                    )
+                                }
+                            }
+                            "mkv" -> {
+                                if (type == MKV) {
+                                    selectedFilePath = file.absolutePath
+                                    relateVideoPath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                    parseTrackList(
+                                        state.videoPlayerComponent,
+                                        window,
+                                        state.videoPlayerWindow,
+                                        file.absolutePath,
+                                        setTrackList = {
+                                            trackList.clear()
+                                            trackList.addAll(it)
+                                        }
+                                    )
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        window,
+                                        "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
+                                    )
+                                }
+                            }
+                            "json" -> {
+                                if (title == "过滤词库") {
+                                    selectedFilePath = file.absolutePath
+                                }
+                            }
+                            else -> {
+                                JOptionPane.showMessageDialog(window, "格式不支持")
                             }
                         }
-                        "srt" -> {
-                            if (type == SUBTITLES) {
-                                selectedFilePath = file.absolutePath
-                                selectedSubtitlesName = "    "
-                            } else {
-                                JOptionPane.showMessageDialog(
-                                    window,
-                                    "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
-                                )
-                            }
-                        }
-                        "mkv" -> {
-                            if (type == MKV) {
-                                selectedFilePath = file.absolutePath
-                                relateVideoPath = file.absolutePath
-                                selectedSubtitlesName = "    "
-                                parseTrackList(
-                                    state.videoPlayerComponent,
-                                    window,
-                                    state.videoPlayerWindow,
-                                    file.absolutePath,
-                                    setTrackList = {
-                                        trackList.clear()
-                                        trackList.addAll(it)
-                                    }
-                                )
-                            } else {
-                                JOptionPane.showMessageDialog(
-                                    window,
-                                    "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
-                                )
-                            }
-                        }
-                        "json" -> {
-                            if (title == "过滤词库") {
-                                selectedFilePath = file.absolutePath
-                            }
-                        }
-                        else -> {
-                            JOptionPane.showMessageDialog(window, "格式不支持")
-                        }
-                    }
+                        loading = false
+                    }).start()
+
                 }
             }
         )
@@ -339,6 +346,7 @@ fun GenerateVocabularyDialog(
                                 },
                                 selectedTrackId = selectedTrackId,
                                 setSelectedTrackId = { selectedTrackId = it },
+                                setIsLoading = {loading = it},
                                 analysis = { pathName, trackId ->
                                     filterState = Parse
                                     selectedFileList.clear()
@@ -434,7 +442,18 @@ fun GenerateVocabularyDialog(
                                             })
                                     }
                                 }
-
+                                if(loading){
+                                    Column(
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.align(Alignment.Center).fillMaxSize()
+                                    ) {
+                                        CircularProgressIndicator(
+                                            Modifier.width(60.dp).padding(bottom = 60.dp)
+                                        )
+                                        Text(text = "正在读取字幕轨道列表", color = MaterialTheme.colors.onBackground)
+                                    }
+                                }
                             }
                         }
                     }
@@ -1098,12 +1117,11 @@ fun SelectFile(
     selectedTrackId: Int,
     setSelectedTrackId: (Int) -> Unit,
     fileFilter: FileNameExtensionFilter?,
+    setIsLoading:(Boolean) -> Unit,
     analysis: (String, Int) -> Unit
 ) {
 
     Column(Modifier.height(IntrinsicSize.Max)) {
-//        var selectedSubtitle by remember { mutableStateOf("    ") }
-        var isReading by remember { mutableStateOf(false) }
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
@@ -1130,9 +1148,7 @@ fun SelectFile(
             BasicTextField(
                 value = selectedFilePath,
                 onValueChange = {
-//                    absolutePath = it
                     setSelectedFilePath(it)
-//                    setSelectFileName(File(it).nameWithoutExtension)
                 },
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colors.primary),
@@ -1147,7 +1163,7 @@ fun SelectFile(
                     .height(35.dp)
                     .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
             )
-
+            val scope = rememberCoroutineScope()
             OutlinedButton(onClick = {
                 Thread(Runnable {
                     val fileChooser = state.futureFileChooser.get()
@@ -1158,25 +1174,27 @@ fun SelectFile(
                     fileChooser.isAcceptAllFileFilterUsed = false
                     fileChooser.addChoosableFileFilter(fileFilter)
                     if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        val file = fileChooser.selectedFile
-//                        absolutePath = file.absolutePath
-                        setSelectedFilePath(file.absolutePath)
-//                        selectedSubtitle = "    "
-                        setSelectedSubtitle("    ")
-                        if (type == MKV) {
-                            isReading = true
-                            setRelateVideoPath(file.absolutePath)
-                            parseTrackList(
-                                state.videoPlayerComponent,
-                                parentWindow,
-                                state.videoPlayerWindow,
-                                file.absolutePath,
-                                setTrackList = { setTrackList(it) },
-                            )
-                            isReading = false
+                        scope.launch {
+                            Thread(Runnable {
+                                val file = fileChooser.selectedFile
+                                setSelectedFilePath(file.absolutePath)
+                                setSelectedSubtitle("    ")
+                                if (type == MKV) {
+                                    setIsLoading(true)
+                                    setRelateVideoPath(file.absolutePath)
+                                    parseTrackList(
+                                        state.videoPlayerComponent,
+                                        parentWindow,
+                                        state.videoPlayerWindow,
+                                        file.absolutePath,
+                                        setTrackList = { setTrackList(it) },
+                                    )
+                                    setIsLoading(false)
+                                }
+                                fileChooser.selectedFile = File("")
+                            }).start()
                         }
-//                        setSelectFileName(file.nameWithoutExtension)
-                        fileChooser.selectedFile = File("")
+
                     }
                     fileChooser.removeChoosableFileFilter(fileFilter)
                 }).start()
@@ -1262,15 +1280,6 @@ fun SelectFile(
 
                         }
 
-                    }
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
-                    ) {
-                        if (isReading) {
-                            Text("正在读取字幕列表", color = MaterialTheme.colors.primary)
-                        }
                     }
                 }
                 if (selectedSubtitle != "    " && trackList.isNotEmpty()) {
