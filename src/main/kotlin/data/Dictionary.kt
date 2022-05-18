@@ -130,10 +130,10 @@ object Dictionary {
     }
 
     /**
-     * 查询一个集合
+     * 查询一个列表
      */
-    fun querySet(words: Set<String>): MutableSet<Word> {
-        val results = mutableSetOf<Word>()
+    fun queryList(words: List<String>): MutableList<Word> {
+        val results = mutableListOf<Word>()
         try {
             Class.forName(JDBC_DRIVER)
 //            val DB_URL = getURL()

@@ -75,6 +75,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
+import kotlin.collections.HashMap
 
 /**
  * 生成词库
@@ -351,7 +352,7 @@ fun GenerateVocabularyDialog(
                                                     filteringType = vocabulary.type
                                                     relateVideoPath = vocabulary.relateVideoPath
                                                     selectedTrackId = vocabulary.subtitlesTrackId
-                                                    vocabulary.wordList.toSet()
+                                                    vocabulary.wordList
                                                 } else {
                                                     readDocument(
                                                         pathName = pathName,
@@ -1346,47 +1347,64 @@ fun filterDocumentWords(
     val notFrqList = ArrayList<Word>()
 
     /**
-     * 派生词列表，需要转换为原型的单词
+     * Key 为需要转换为原型的单词，
+     *  Value 是 Key 的原型词，还没有查词典，有可能词典里面没有。
      */
-    val toLemmaList = ArrayList<Word>()
+    val lemmaMap = HashMap<Word,String>()
 
     /**
-     * 原型词列表
+     * 原型词 > 字幕列表  映射
      */
-    val lemmaList = ArrayList<Word>()
-
-    /**
-     * 准备批量查询的原型词映射
-     */
-    val queryMap = HashMap<String, MutableList<Caption>>()
+    val captionsMap = HashMap<String, MutableList<Caption>>()
     documentWords.forEach { word ->
         if (notBncFilter && word.bnc == 0) notBncList.add(word)
         if (notFrqFilter && word.frq == 0) notFrqList.add(word)
         val lemma = getWordLemma(word)
         if (replaceToLemma && !lemma.isNullOrEmpty()) {
-            toLemmaList.add(word)
-            if (queryMap[lemma].isNullOrEmpty()) {
-                queryMap[lemma] = word.captions
+            lemmaMap[word] = lemma
+            if (captionsMap[lemma].isNullOrEmpty()) {
+                captionsMap[lemma] = word.captions
             } else {
                 // do 有四个派生词，四个派生词可能在文件的不同位置，可能有四个不同的字幕列表
                 val list = mutableListOf<Caption>()
-                list.addAll(queryMap[lemma]!!)
-                list.addAll(word.captions)
-                queryMap[lemma] = list
+                list.addAll(captionsMap[lemma]!!)
+                for (caption in word.captions) {
+                    if(list.size<3){
+                        list.add(caption)
+                    }
+                }
+                captionsMap[lemma] = list
             }
         }
     }
     // 查询单词原型
-    val result = Dictionary.querySet(queryMap.keys)
+    val queryList = lemmaMap.values.toList()
+    val result = Dictionary.queryList(queryList)
+    val validLemmaMap = HashMap<String,Word>()
     result.forEach { word ->
-        val captions = queryMap[word.value]!!
+        val captions = captionsMap[word.value]!!
         word.captions = captions
-        lemmaList.add(word)
+        validLemmaMap[word.value] = word
     }
     previewList.removeAll(notBncList)
     previewList.removeAll(notFrqList)
-    previewList.removeAll(toLemmaList)
-    previewList.addAll(lemmaList)
+    val toLemmaList = lemmaMap.keys
+    for (word in toLemmaList) {
+        val index = previewList.indexOf(word)
+        // 有一些词可能 属于 BNC 或 FRQ 为 0 的词，已经被过滤了，所以 index 为 -1
+        if(index != -1){
+            val lemmaStr = lemmaMap[word]
+            val validLemma = validLemmaMap[lemmaStr]
+            if(validLemma != null){
+                previewList.remove(word)
+                if (!previewList.contains(validLemma)){
+                    previewList.add(index,validLemma)
+                }
+            }
+
+        }
+
+    }
     return previewList
 }
 
@@ -1540,7 +1558,8 @@ fun PreviewWords(
 fun readDocument(
     pathName: String,
     setProgressText: (String) -> Unit
-): Set<Word> {
+): List<Word> {
+    var start = System.currentTimeMillis()
     val file = File(pathName)
     var text = ""
     val extension = file.extension
@@ -1548,6 +1567,7 @@ fun readDocument(
     if (extension == "pdf") {
         setProgressText("正在加载文档")
         val document: PDDocument = PDDocument.load(file)
+        print("${file.name},page:${document.pages.count}")
         //Instantiate PDFTextStripper class
         val pdfStripper = PDFTextStripper()
         text = pdfStripper.getText(document)
@@ -1557,6 +1577,7 @@ fun readDocument(
     }
 
     val set: MutableSet<String> = HashSet()
+    val list = mutableListOf<String>()
     ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { inputStream ->
         val model = TokenizerModel(inputStream)
         setProgressText("正在分词")
@@ -1568,12 +1589,28 @@ fun readDocument(
             // 在代码片段里的关键字之间用.符号分隔
             if (lowercase.contains(".")) {
                 val split = lowercase.split("\\.").toTypedArray()
+                for (str in split) {
+                    if (!set.contains(str)) {
+                        list.add(str)
+                        set.add(str)
+                    }
+                }
                 set.addAll(split.toList())
             }
             // 还有一些关键字之间用 _ 符号分隔
             if (lowercase.matches(Regex("_"))) {
                 val split = lowercase.split("_").toTypedArray()
+                for (str in split) {
+                    if (!set.contains(str)) {
+                        list.add(str)
+                        set.add(str)
+                    }
+                }
                 set.addAll(split.toList())
+            }
+            if (!set.contains(lowercase)) {
+                list.add(lowercase)
+                set.add(lowercase)
             }
             set.add(lowercase)
         }
@@ -1581,10 +1618,12 @@ fun readDocument(
     }
 
     setProgressText("从文档提取出 ${set.size} 个单词，正在批量查询单词，如果词典里没有的就丢弃")
-    val validSet = Dictionary.querySet(set)
-    setProgressText("${validSet.size} 个有效单词")
+    val validList = Dictionary.queryList(list)
+    setProgressText("${validList.size} 个有效单词")
     setProgressText("")
-    return validSet
+    val end = System.currentTimeMillis()
+    println(": ${(end - start).div(1000)} 秒")
+    return validList
 }
 
 
@@ -1594,9 +1633,10 @@ fun readDocument(
 private fun readSRT(
     pathName: String,
     setProgressText: (String) -> Unit
-): Set<Word> {
+): List<Word> {
     val map: MutableMap<String, MutableList<Caption>> = HashMap()
-
+    // 保存顺序
+    val orderList = mutableListOf<String>()
     ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { input ->
         val model = TokenizerModel(input)
         val tokenizer: Tokenizer = TokenizerME(model)
@@ -1628,6 +1668,7 @@ private fun readSRT(
                 if (!map.containsKey(lowercase)) {
                     val list = mutableListOf(dataCaption)
                     map[lowercase] = list
+                    orderList.add(lowercase)
                 } else {
                     if (map[lowercase]!!.size < 3) {
                         map[lowercase]?.add(dataCaption)
@@ -1636,16 +1677,16 @@ private fun readSRT(
             }
         }
     }
-    setProgressText("从字幕文件中提取出 ${map.size} 个单词，正在批量查询单词，如果词典里没有就丢弃")
-    val validSet = Dictionary.querySet(map.keys)
-    setProgressText("${validSet.size} 个有效单词")
-    validSet.forEach { word ->
+    setProgressText("从字幕文件中提取出 ${orderList.size} 个单词，正在批量查询单词，如果词典里没有就丢弃")
+    val validList = Dictionary.queryList(orderList)
+    setProgressText("${validList.size} 个有效单词")
+    validList.forEach { word ->
         if (map[word.value] != null) {
             word.captions = map[word.value]!!
         }
     }
     setProgressText("")
-    return validSet
+    return validList
 }
 
 
@@ -1655,8 +1696,9 @@ private fun readMKV(
     trackId: Int,
     setProgressText: (String) -> Unit,
     setIsSelectedASS: (Boolean) -> Unit
-): Set<Word> {
+): List<Word> {
     val map: MutableMap<String, ArrayList<Caption>> = HashMap()
+    val orderList = mutableListOf<String>()
     var reader: EBMLReader? = null
     try {
         reader = EBMLReader(pathName)
@@ -1669,7 +1711,7 @@ private fun readMKV(
          */
         if (!reader.readHeader()) {
             println("This is not an mkv file!")
-            return setOf()
+            return listOf()
         }
 
         /**
@@ -1683,7 +1725,7 @@ private fun readMKV(
          */
         val numSubtitles: Int = reader.subtitles.size
         if (numSubtitles == 0) {
-            return setOf()
+            return listOf()
         }
 
         /**
@@ -1737,7 +1779,9 @@ private fun readMKV(
                             val list = ArrayList<Caption>()
                             list.add(dataCaption)
                             map[word] = list
+                            orderList.add(word)
                         } else {
+
                             if (map[word]!!.size < 3) {
                                 map[word]!!.add(dataCaption)
                             }
@@ -1756,16 +1800,17 @@ private fun readMKV(
             e.printStackTrace()
         }
     }
-    setProgressText("从视频中提取出${map.keys.size}个单词，正在批量查询单词，如果词典里没有就丢弃")
-    val validSet = Dictionary.querySet(map.keys)
-    setProgressText("${validSet.size}个有效单词")
-    validSet.forEach { word ->
+    setProgressText("从视频中提取出${orderList.size}个单词，正在批量查询单词，如果词典里没有就丢弃")
+//    val validSet = Dictionary.querySet(map.keys)
+    val validList = Dictionary.queryList(orderList)
+    setProgressText("${validList.size}个有效单词")
+    validList.forEach { word ->
         if (map[word.value] != null) {
             word.captions = map[word.value]!!
         }
     }
     setProgressText("")
-    return validSet
+    return validList
 }
 
 /**
