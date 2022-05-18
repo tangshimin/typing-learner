@@ -61,6 +61,7 @@ compose.desktop {
             packageVersion = "1.0.0"
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+            copyright = "Copyright 2022 Shimin Tang. All rights reserved."
             licenseFile.set(project.file("LICENSE"))
             windows{
                 dirChooser = true
