@@ -72,6 +72,7 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.TransferHandler
+import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
@@ -146,38 +147,105 @@ fun TypingSubtitles(
         trackList.addAll(it)
     }
 
-    /** 打开文件 */
+    /** 解析打开的文件 */
+    val parseImportFile: (List<File>,OpenMode) -> Unit = {files,openMode ->
+        if(files.size == 1){
+            val file = files.first()
+            loading = true
+            scope.launch {
+                Thread(Runnable{
+                    if (file.extension == "mkv") {
+                        if (typingSubtitles.videoPath != file.absolutePath) {
+                            selectedPath = file.absolutePath
+                            parseTrackList(
+                                mediaPlayerComponent,
+                                window,
+                                playerWindow,
+                                file.absolutePath,
+                                setTrackList = { setTrackList(it) },
+                            )
+
+                        } else {
+                            JOptionPane.showMessageDialog(window, "文件已打开")
+                        }
+
+                    }else if (file.extension == "mp4") {
+                        JOptionPane.showMessageDialog(window, "需要同时选择 mp4 视频 + srt 字幕")
+                    }else if (file.extension == "srt") {
+                        JOptionPane.showMessageDialog(window, "需要同时选择1个视频(mp4、mkv) + 1个srt 字幕")
+                    }else if (file.extension == "json") {
+                        JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
+                    } else {
+                        JOptionPane.showMessageDialog(window, "格式不支持")
+                    }
+                    loading = false
+                }).start()
+            }
+        }else if(files.size == 2){
+            val first = files.first()
+            val last = files.last()
+            val modeString = if(openMode== OpenMode.Open) "打开" else "拖拽"
+            if(first.extension == "srt" && (last.extension == "mp4"||last.extension == "mkv")){
+                typingSubtitles.trackID = 0
+                typingSubtitles.trackSize = 0
+                typingSubtitles.currentIndex = 0
+                typingSubtitles.firstVisibleItemIndex = 0
+                typingSubtitles.subtitlesPath = first.absolutePath
+                typingSubtitles.videoPath = last.absolutePath
+                typingSubtitles.trackDescription = first.nameWithoutExtension
+                captionList.clear()
+                if(openMode == OpenMode.Open) showOpenFile = false
+            }else if((first.extension == "mp4"||first.extension == "mkv") && last.extension == "srt"){
+                typingSubtitles.trackID = 0
+                typingSubtitles.trackSize = 0
+                typingSubtitles.currentIndex = 0
+                typingSubtitles.firstVisibleItemIndex = 0
+                typingSubtitles.videoPath = first.absolutePath
+                typingSubtitles.subtitlesPath = last.absolutePath
+                typingSubtitles.trackDescription = last.nameWithoutExtension
+                captionList.clear()
+                if(openMode == OpenMode.Open) showOpenFile = false
+            }else if(first.extension == "mp4" && last.extension == "mp4"){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个 MP4 格式的视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+            }else if(first.extension == "mkv" && last.extension == "mkv"){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个 MKV 格式的视频，\n"
+                        +"可以选择一个有字幕的 mkv 格式的视频，\n或者一个 MKV 格式的视频和1个 srt 字幕")
+            }else if(first.extension == "mkv" && last.extension == "mp4"){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+            }else if(first.extension == "mp4" && last.extension == "mkv"){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+            }else if(first.extension == "srt" && last.extension == "srt"){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个字幕，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+            }else {
+                JOptionPane.showMessageDialog(window, "文件格式不支持")
+            }
+        }else{
+            JOptionPane.showMessageDialog(window, "不能超过两个文件")
+        }
+
+    }
+    /** 打开文件对话框 */
     val openFileChooser: () -> Unit = {
         val fileChooser = futureFileChooser.get()
-        fileChooser.dialogTitle = "选择 MKV 视频"
+        fileChooser.dialogTitle = "打开"
         fileChooser.fileSystemView = FileSystemView.getFileSystemView()
         fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
         fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        fileChooser.isAcceptAllFileFilterUsed = false
+        fileChooser.isMultiSelectionEnabled = true
+        val fileFilter = FileNameExtensionFilter("1个 mkv 视频，或 1个视频(mp4、mkv) + 1个字幕(srt)","mkv","srt","mp4")
+        fileChooser.addChoosableFileFilter(fileFilter)
         fileChooser.selectedFile = null
         if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-            val file = fileChooser.selectedFile
-            if (typingSubtitles.videoPath != file.absolutePath) {
-                selectedPath = file.absolutePath
-                loading = true
-                Thread(Runnable {
-                    parseTrackList(
-                        mediaPlayerComponent,
-                        window,
-                        playerWindow,
-                        file.absolutePath,
-                        setTrackList = { setTrackList(it) },
-                    )
-                    loading = false
-                }).start()
-
-            } else {
-                JOptionPane.showMessageDialog(window, "文件已打开")
-            }
-
+            val files = fileChooser.selectedFiles.toList()
+            parseImportFile(files,OpenMode.Open)
             closeLoadingDialog()
         } else {
             closeLoadingDialog()
         }
+        fileChooser.selectedFile = null
+        fileChooser.isMultiSelectionEnabled = false
+        fileChooser.removeChoosableFileFilter(fileFilter)
     }
 
     /**  使用按钮播放视频时调用的回调函数   */
@@ -333,74 +401,7 @@ fun TypingSubtitles(
         showWrongMessage = { message ->
             JOptionPane.showMessageDialog(window, message)
         },
-        parseImportFile = { files ->
-            if(files.size == 1){
-                val file = files.first()
-                loading = true
-                scope.launch {
-                    Thread(Runnable{
-                        if (file.extension == "mkv") {
-                            if (typingSubtitles.videoPath != file.absolutePath) {
-                                selectedPath = file.absolutePath
-                                parseTrackList(
-                                    mediaPlayerComponent,
-                                    window,
-                                    playerWindow,
-                                    file.absolutePath,
-                                    setTrackList = { setTrackList(it) },
-                                )
-
-                            } else {
-                                JOptionPane.showMessageDialog(window, "文件已打开")
-                            }
-
-                        }else if (file.extension == "json") {
-                            JOptionPane.showMessageDialog(window, "想要打开词库文件，需要先切换到记忆单词界面")
-                        } else {
-                            JOptionPane.showMessageDialog(window, "拖放一个文件，只支持 mkv 格式的视频")
-                        }
-                        loading = false
-                    }).start()
-                }
-            }else if(files.size == 2){
-                val first = files.first()
-                val last = files.last()
-                if(first.extension == "srt" && (last.extension == "mp4"||last.extension == "mkv")){
-                    typingSubtitles.trackID = 0
-                    typingSubtitles.trackSize = 0
-                    typingSubtitles.currentIndex = 0
-                    typingSubtitles.firstVisibleItemIndex = 0
-                    typingSubtitles.subtitlesPath = first.absolutePath
-                    typingSubtitles.videoPath = last.absolutePath
-                    typingSubtitles.trackDescription = first.nameWithoutExtension
-                    captionList.clear()
-                }else if((first.extension == "mp4"||first.extension == "mkv") && last.extension == "srt"){
-                    typingSubtitles.trackID = 0
-                    typingSubtitles.trackSize = 0
-                    typingSubtitles.currentIndex = 0
-                    typingSubtitles.firstVisibleItemIndex = 0
-                    typingSubtitles.videoPath = first.absolutePath
-                    typingSubtitles.subtitlesPath = last.absolutePath
-                    typingSubtitles.trackDescription = last.nameWithoutExtension
-                    captionList.clear()
-                }else if(first.extension == "mp4" && last.extension == "mp4"){
-                    JOptionPane.showMessageDialog(window, "拖拽了两个 MP4 格式的视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
-                }else if(first.extension == "mkv" && last.extension == "mkv"){
-                    JOptionPane.showMessageDialog(window, "拖拽了两个 MKV 格式的视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
-                }else if(first.extension == "mkv" && last.extension == "mp4"){
-                    JOptionPane.showMessageDialog(window, "拖拽了两个视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
-                }else if(first.extension == "mp4" && last.extension == "mkv"){
-                    JOptionPane.showMessageDialog(window, "拖拽了两个视频，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
-                }else if(first.extension == "srt" && last.extension == "srt"){
-                    JOptionPane.showMessageDialog(window, "拖拽了两个字幕，需要一个 MP4 或 MKV 格式的视频和一个 srt 字幕")
-                }else {
-                    JOptionPane.showMessageDialog(window, "文件格式不支持")
-                }
-            }else{
-                JOptionPane.showMessageDialog(window, "不能超过两个文件")
-            }
-
-        }
+        parseImportFile = { parseImportFile(it,OpenMode.Drag) }
     )
 
     window.transferHandler = transferHandler
@@ -877,6 +878,9 @@ fun TypingSubtitles(
 
 }
 
+enum class OpenMode {
+    Open, Drag,
+}
 @Composable
 fun OpenFileComponent(
     parentComponent: Component,
