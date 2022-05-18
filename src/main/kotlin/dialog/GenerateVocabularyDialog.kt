@@ -202,72 +202,121 @@ fun GenerateVocabularyDialog(
 
         /**  处理拖放文件的函数 */
         val transferHandler = createTransferHandler(
+            singleFile = false,
             showWrongMessage = { message ->
                 JOptionPane.showMessageDialog(window, message)
             },
             parseImportFile = { files ->
-                val file = files.first()
-                loading = true
+
                 scope.launch {
                     Thread(Runnable {
-                        when (file.extension) {
-                            "pdf", "txt" -> {
-                                if (type == DOCUMENT) {
-                                    selectedFilePath = file.absolutePath
-                                    selectedSubtitlesName = "    "
-                                } else {
-                                    JOptionPane.showMessageDialog(
-                                        window,
-                                        "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
-                                    )
+                        if(files.size == 1){
+                            val file = files.first()
+                            when (file.extension) {
+                                "pdf", "txt" -> {
+                                    if (type == DOCUMENT) {
+                                        selectedFilePath = file.absolutePath
+                                        selectedSubtitlesName = "    "
+                                    } else {
+                                        JOptionPane.showMessageDialog(
+                                            window,
+                                            "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
+                                        )
+                                    }
                                 }
-                            }
-                            "srt" -> {
-                                if (type == SUBTITLES) {
-                                    selectedFilePath = file.absolutePath
-                                    selectedSubtitlesName = "    "
-                                } else {
-                                    JOptionPane.showMessageDialog(
-                                        window,
-                                        "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
-                                    )
+                                "srt" -> {
+                                    if (type == SUBTITLES) {
+                                        selectedFilePath = file.absolutePath
+                                        selectedSubtitlesName = "    "
+                                    } else {
+                                        JOptionPane.showMessageDialog(
+                                            window,
+                                            "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
+                                        )
+                                    }
                                 }
-                            }
-                            "mkv" -> {
-                                if (type == MKV) {
-                                    selectedFilePath = file.absolutePath
-                                    relateVideoPath = file.absolutePath
-                                    selectedSubtitlesName = "    "
-                                    parseTrackList(
-                                        state.videoPlayerComponent,
-                                        window,
-                                        state.videoPlayerWindow,
-                                        file.absolutePath,
-                                        setTrackList = {
-                                            trackList.clear()
-                                            trackList.addAll(it)
+                                "mp4" -> {
+                                    if(type == SUBTITLES){
+                                        relateVideoPath = file.absolutePath
+                                    }else{
+                                        JOptionPane.showMessageDialog(window, "格式错误")
+                                    }
+                                }
+                                "mkv" -> {
+                                    when (type) {
+                                        MKV -> {
+                                            loading = true
+                                            selectedFilePath = file.absolutePath
+                                            relateVideoPath = file.absolutePath
+                                            selectedSubtitlesName = "    "
+                                            parseTrackList(
+                                                state.videoPlayerComponent,
+                                                window,
+                                                state.videoPlayerWindow,
+                                                file.absolutePath,
+                                                setTrackList = {
+                                                    trackList.clear()
+                                                    trackList.addAll(it)
+                                                }
+                                            )
+                                            loading = false
                                         }
-                                    )
-                                } else {
-                                    JOptionPane.showMessageDialog(
-                                        window,
-                                        "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
-                                    )
+                                        SUBTITLES -> {
+                                            relateVideoPath = file.absolutePath
+                                        }
+                                        else -> {
+                                            JOptionPane.showMessageDialog(
+                                                window,
+                                                "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
+                                            )
+                                        }
+                                    }
+                                }
+                                "json" -> {
+                                    if (title == "过滤词库") {
+                                        selectedFilePath = file.absolutePath
+                                    }
+                                }
+                                else -> {
+                                    JOptionPane.showMessageDialog(window, "格式不支持")
                                 }
                             }
-                            "json" -> {
-                                if (title == "过滤词库") {
-                                    selectedFilePath = file.absolutePath
-                                }
-                            }
-                            else -> {
-                                JOptionPane.showMessageDialog(window, "格式不支持")
-                            }
-                        }
-                        loading = false
-                    }).start()
 
+
+                        }else if(files.size == 2){
+                            if(type == SUBTITLES){
+                                val first = files.first()
+                                val last = files.last()
+                                if(first.extension == "srt" && (last.extension == "mp4" || last.extension == "mkv")){
+                                    selectedFilePath = first.absolutePath
+                                    selectedSubtitlesName = "    "
+                                    relateVideoPath = last.absolutePath
+                                }else if(last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")){
+                                    selectedFilePath = last.absolutePath
+                                    selectedSubtitlesName = "    "
+                                    relateVideoPath = first.absolutePath
+                                }else if(first.extension == "srt" && last.extension == "srt"){
+                                    JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                                }else if(first.extension == "mp4" && last.extension == "mp4"){
+                                    JOptionPane.showMessageDialog(window, "不能接收两个 mp4 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                                }else if(first.extension == "mkv" && last.extension == "mkv"){
+                                    JOptionPane.showMessageDialog(window, "不能接收两个 mkv 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                                }else if(first.extension == "mkv" && last.extension == "mp4"){
+                                    JOptionPane.showMessageDialog(window, "不能接收两个视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                                }else{
+                                    JOptionPane.showMessageDialog(window, "格式错误，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                                }
+
+                            }else{
+                                JOptionPane.showMessageDialog(window, "只要从字幕生成词库才能接收两个文件")
+                            }
+                        }else{
+                            JOptionPane.showMessageDialog(window, "文件不能超过两个")
+                        }
+                    }).start()
                 }
+
+
             }
         )
         window.transferHandler = transferHandler
