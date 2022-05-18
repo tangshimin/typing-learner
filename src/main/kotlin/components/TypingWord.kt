@@ -1406,25 +1406,6 @@ fun play(
 }
 
 
-fun computeVideoBounds(mainWindow: ComposeWindow): Rectangle {
-    val windowWidth = mainWindow.size.width
-    val size = if (windowWidth in 801..1079) {
-        Dimension(642, 390)
-    } else if (windowWidth > 1080) {
-        Dimension(1005, 610)
-    } else {
-        Dimension(540, 304)
-    }
-    var x = (mainWindow.size.width - size.width).div(2)
-    // 232 是单词 + 字幕的高度
-    var y = ((mainWindow.size.height - 232 - size.height).div(2)) + 232 + 15
-
-    x += mainWindow.location.x
-    y += mainWindow.location.y
-    val point = Point(x, y)
-    return Rectangle(point, size)
-}
-
 /**
  * 计算视频播放窗口的位置和大小
  */
