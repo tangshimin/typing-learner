@@ -914,9 +914,10 @@ fun OpenFileComponent(
         ) {
 
             Text(
-                text = "可以拖放 MKV 文件到这里",
+                text = "可以拖放一个有字幕的 MKV 视频或\n"+
+                        "字幕(SRT) + 视频(MP4、MKV)到这里\n",
                 color = MaterialTheme.colors.primary,
-                modifier = Modifier.padding(end = 20.dp)
+                modifier = Modifier.padding(top = 14.dp,end = 20.dp)
             )
             OutlinedButton(
                 modifier = Modifier.padding(end = 20.dp),
