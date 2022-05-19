@@ -321,7 +321,7 @@ fun TypingSubtitles(
     val saveIsPlayKeystrokeSound: (Boolean) -> Unit = {
         scope.launch {
             globalState.isPlayKeystrokeSound = it
-            saveGlobalState
+            saveGlobalState()
         }
     }
 
