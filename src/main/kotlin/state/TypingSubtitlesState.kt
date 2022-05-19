@@ -30,7 +30,10 @@ class TypingSubtitlesState(typingSubtitlesData: TypingSubtitlesData) {
     /** 抄写字幕时的字幕文件的路径 */
     var subtitlesPath by mutableStateOf(typingSubtitlesData.subtitlesPath)
 
-    /** 抄写字幕时的字幕的轨道 ID */
+    /** 抄写字幕时的字幕的轨道 ID,
+     *  如果等于 -1 表示不使用内置的轨道，
+     *  而是使用外部的字幕。
+     */
     var trackID by mutableStateOf(typingSubtitlesData.trackID)
 
     /** 选择的字幕名称  */

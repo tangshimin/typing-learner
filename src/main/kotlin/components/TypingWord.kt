@@ -1400,8 +1400,55 @@ fun play(
     window.layout = null
     window.contentPane.add(videoPlayerComponent)
     window.isVisible = true
+    // 使用内部字幕轨道,通常是从 MKV 生成的词库
+    if(trackId != -1){
+        videoPlayerComponent.mediaPlayer().media()
+            .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
+    // 不使用内部字幕轨道，通常是从字幕生成的词库
+    }else{
+        videoPlayerComponent.mediaPlayer().media()
+            .play(relativeVideoPath, ":start-time=$start", ":stop-time=$end")
+    }
+}
+
+fun play(
+    window: JFrame,
+    setIsPlaying: (Boolean) -> Unit,
+    videoPlayerComponent: Component,
+    volume: Float,
+    caption:Caption,
+    videoPath:String,
+    subtitlePath:String,
+    bounds: Rectangle
+) {
+    window.size = bounds.size
+    window.location = bounds.location
+    var start = LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    start = start.div(1000_000_000)
+    var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    end = end.div(1000_000_000)
+    videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
+
+    videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+            mediaPlayer.subpictures().setSubTitleUri(subtitlePath)
+            mediaPlayer.audio().setVolume((volume * 100).toInt())
+        }
+
+        override fun finished(mediaPlayer: MediaPlayer) {
+            setIsPlaying(false)
+            window.isVisible = false
+            EventQueue.invokeLater {
+                window.remove(videoPlayerComponent)
+            }
+            videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+        }
+    })
+    window.layout = null
+    window.contentPane.add(videoPlayerComponent)
+    window.isVisible = true
     videoPlayerComponent.mediaPlayer().media()
-        .play(relativeVideoPath, ":sub-track=$trackId", ":start-time=$start", ":stop-time=$end")
+        .play(videoPath,  ":sub-text-scale=100",":start-time=$start", ":stop-time=$end")
 
 }
 

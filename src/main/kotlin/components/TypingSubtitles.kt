@@ -104,7 +104,7 @@ fun TypingSubtitles(
     var selectedPath by remember { mutableStateOf("") }
     var showSelectTrack by remember { mutableStateOf(false) }
     val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
-    val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
+    val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 675, 378)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
 
@@ -187,7 +187,7 @@ fun TypingSubtitles(
             val last = files.last()
             val modeString = if(openMode== OpenMode.Open) "打开" else "拖拽"
             if(first.extension == "srt" && (last.extension == "mp4"||last.extension == "mkv")){
-                typingSubtitles.trackID = 0
+                typingSubtitles.trackID = -1
                 typingSubtitles.trackSize = 0
                 typingSubtitles.currentIndex = 0
                 typingSubtitles.firstVisibleItemIndex = 0
@@ -197,7 +197,7 @@ fun TypingSubtitles(
                 captionList.clear()
                 if(openMode == OpenMode.Open) showOpenFile = false
             }else if((first.extension == "mp4"||first.extension == "mkv") && last.extension == "srt"){
-                typingSubtitles.trackID = 0
+                typingSubtitles.trackID = -1
                 typingSubtitles.trackSize = 0
                 typingSubtitles.currentIndex = 0
                 typingSubtitles.firstVisibleItemIndex = 0
@@ -257,14 +257,29 @@ fun TypingSubtitles(
                 scope.launch {
                     isPlaying = true
                     val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
-                    play(
-                        window = playerWindow,
-                        setIsPlaying = { isPlaying = it },
-                        volume = videoVolume,
-                        playTriple = playTriple,
-                        videoPlayerComponent = mediaPlayerComponent,
-                        bounds = videoPlayerBounds
-                    )
+                    // 使用内部字幕轨道
+                    if(typingSubtitles.trackID != -1){
+                        play(
+                            window = playerWindow,
+                            setIsPlaying = { isPlaying = it },
+                            volume = videoVolume,
+                            playTriple = playTriple,
+                            videoPlayerComponent = mediaPlayerComponent,
+                            bounds = videoPlayerBounds
+                        )
+                        // 使用外部字幕
+                    }else{
+                        play(
+                            window= playerWindow,
+                            setIsPlaying = { isPlaying = it },
+                            videoPlayerComponent= mediaPlayerComponent,
+                            volume= videoVolume,
+                            caption=caption,
+                            videoPath=typingSubtitles.videoPath,
+                            subtitlePath=typingSubtitles.subtitlesPath,
+                            bounds= videoPlayerBounds
+                        )
+                    }
                 }
             }
 
@@ -378,14 +393,30 @@ fun TypingSubtitles(
                 if (!isPlaying) {
                     scope.launch {
                         isPlaying = true
-                        play(
-                            window = playerWindow,
-                            setIsPlaying = { isPlaying = it },
-                            volume = videoVolume,
-                            playTriple = playTriple,
-                            videoPlayerComponent = mediaPlayerComponent,
-                            bounds = videoPlayerBounds
-                        )
+                        // 使用内部字幕轨道
+                        if(typingSubtitles.trackID != -1){
+                            play(
+                                window = playerWindow,
+                                setIsPlaying = { isPlaying = it },
+                                volume = videoVolume,
+                                playTriple = playTriple,
+                                videoPlayerComponent = mediaPlayerComponent,
+                                bounds = videoPlayerBounds
+                            )
+                            // 使用外部字幕
+                        }else{
+                            play(
+                                window= playerWindow,
+                                setIsPlaying = { isPlaying = it },
+                                videoPlayerComponent= mediaPlayerComponent,
+                                volume= videoVolume,
+                                caption=caption,
+                                videoPath=typingSubtitles.videoPath,
+                                subtitlePath=typingSubtitles.subtitlesPath,
+                                bounds= videoPlayerBounds
+                            )
+                        }
+
                     }
 
                 }

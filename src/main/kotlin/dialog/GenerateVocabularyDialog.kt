@@ -291,10 +291,12 @@ fun GenerateVocabularyDialog(
                                     selectedFilePath = first.absolutePath
                                     selectedSubtitlesName = "    "
                                     relateVideoPath = last.absolutePath
+                                    selectedTrackId = -1
                                 }else if(last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")){
                                     selectedFilePath = last.absolutePath
                                     selectedSubtitlesName = "    "
                                     relateVideoPath = first.absolutePath
+                                    selectedTrackId = -1
                                 }else if(first.extension == "srt" && last.extension == "srt"){
                                     JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
                                 }else if(first.extension == "mp4" && last.extension == "mp4"){
@@ -1896,9 +1898,7 @@ fun replaceSpecialCharacter(captionContent: String): String {
     return content
 }
 
-/**
- * 有一些字幕并不是在一个的固定位置，而是标注在人物旁边，这个函数删除位置信息
- */
+/** 有一些字幕并不是在一个的固定位置，而是标注在人物旁边，这个函数删除位置信息 */
 fun removeLocationInfo(content: String): String {
     val pattern = Pattern.compile("\\{.*\\}")
     val matcher = pattern.matcher(content)
