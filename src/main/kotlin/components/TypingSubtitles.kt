@@ -104,7 +104,7 @@ fun TypingSubtitles(
     var selectedPath by remember { mutableStateOf("") }
     var showSelectTrack by remember { mutableStateOf(false) }
     val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
-    val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 675, 378)) }
+    val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
 
