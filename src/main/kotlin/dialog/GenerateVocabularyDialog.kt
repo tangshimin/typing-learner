@@ -1714,9 +1714,7 @@ private fun readSRT(
             var content = replaceSpecialCharacter(caption.content)
             val tokenize = tokenizer.tokenize(content)
             var text = caption.content.replace("<br />", "\n")
-            if (text.endsWith("\n")) {
-                text = text.substringBefore("\n")
-            }
+            text = removeLocationInfo(text)
             val dataCaption = Caption(
                 // getTime(format) 返回的时间不能播放
                 start = caption.start.getTime("hh:mm:ss.ms"),
