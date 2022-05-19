@@ -1283,8 +1283,7 @@ fun parseTrackList(
 }
 
 /**
- * 现在 libVLC 有一个bug,停止一个包含 ASS 格式的字幕的 mkv 格式的视频会崩溃，
- * 所以要先检查一下是否有 ASS 格式的字幕
+ * 有些文件，可能文件扩展是mkv,但实际内容并不是 mkv
  */
 fun checkSubtitles(
     videoPath: String,
@@ -1316,24 +1315,6 @@ fun checkSubtitles(
             JOptionPane.showMessageDialog(parentComponent, "这个视频没有字幕")
             return false
         }
-
-        /**
-         * You need this to find the clusters scattered across the file to find
-         * video, audio and subtitle data
-         */
-        reader.readCues()
-
-        /**
-         *  Read all the subtitles from the file each from cue index.
-         *  Once a cue is parsed, it is cached, so if you read the same cue again,
-         *  it will not waste time.
-         *  Performance-wise, this will take some time because it needs to read
-         *  most of the file.
-         */
-        for (i in 0 until reader.cuesCount) {
-            reader.readSubtitlesInCueFrame(i)
-        }
-
     } catch (exception: IOException) {
         exception.printStackTrace()
     } finally {
