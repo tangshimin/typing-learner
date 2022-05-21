@@ -79,7 +79,7 @@ fun AudioButton(
                 val tint by animateColorAsState(if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground)
                 IconToggleButton(
                     checked = isPlaying,
-                     modifier = Modifier.padding(top = 8.dp),
+                     modifier = Modifier.padding(top = 11.dp),
                     onCheckedChange = {
                         if (!isPlaying) {
                             scope.launch {

@@ -159,6 +159,7 @@ fun Word(
                         activeMenu = true
                     }
                 }) {
+                val fontSize = MaterialTheme.typography.h2.fontSize
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
@@ -173,7 +174,7 @@ fun Word(
                         cursorBrush = SolidColor(MaterialTheme.colors.primary),
                         textStyle = TextStyle(
                             color = Color.Transparent,
-                            fontSize = 3.5.em,
+                            fontSize = fontSize,
                             letterSpacing = 5.sp,
                             fontFamily =fontFamily
                         ),
@@ -195,7 +196,7 @@ fun Word(
                                 withStyle(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.primary,
-                                        fontSize = 3.5.em,
+                                        fontSize = fontSize,
                                         letterSpacing = 5.sp,
                                         fontFamily = fontFamily,
                                     )
@@ -206,7 +207,7 @@ fun Word(
                                 withStyle(
                                     style = SpanStyle(
                                         color = Color.Red,
-                                        fontSize = 3.5.em,
+                                        fontSize =fontSize,
                                         letterSpacing = 5.sp,
                                         fontFamily =fontFamily,
                                     )
@@ -224,7 +225,7 @@ fun Word(
                             withStyle(
                                 style = SpanStyle(
                                     color = MaterialTheme.colors.onBackground,
-                                    fontSize = 3.5.em,
+                                    fontSize = fontSize,
                                     letterSpacing = 5.sp,
                                     fontFamily = fontFamily,
                                 )
@@ -239,7 +240,7 @@ fun Word(
                                 withStyle(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.onBackground,
-                                        fontSize = 3.5.em,
+                                        fontSize = fontSize,
                                         letterSpacing = 5.sp,
                                         fontFamily =fontFamily,
                                     )
@@ -250,7 +251,7 @@ fun Word(
                                 withStyle(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.onBackground,
-                                        fontSize = 3.5.em,
+                                        fontSize = fontSize,
                                         letterSpacing = 5.sp,
                                         fontFamily = fontFamily,
                                     )
