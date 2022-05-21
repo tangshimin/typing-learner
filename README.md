@@ -5,7 +5,7 @@
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
 
 ## 抄写字幕
-https://user-images.githubusercontent.com/16540656/166701653-130614b1-f586-44b7-9bb8-a0eb656160f9.mp4
+[https://user-images.githubusercontent.com/16540656/166701653-130614b1-f586-44b7-9bb8-a0eb656160f9.mp4](https://user-images.githubusercontent.com/16540656/169644575-8f02e757-9105-430f-87e5-fe7bc93142e2.mp4)
 
 demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
@@ -37,12 +37,13 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 10. 学习完整个词库之后，还有一个随机排序整个词库的功能。
   
 11. 单词可以重复输入多次，熟悉了之后按 Enter 键切换到下一个单词。
-  
-12. 字幕和单词英语定义也可以重复输入多次。
-  
-13. 增加了词性，词形和英语释义等属性，可以自由的关闭和隐藏。
 
-14. 默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。推荐第一次记忆词典的时候，使用非自动切换，第二天复习的时候再打开自动切换
+12.  默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。推荐第一次记忆词典的时候，使用非自动切换，第二天复习的时候再打开自动切换 
+  
+13. 字幕和单词英语定义也可以重复输入多次。
+  
+14. 增加了词性，词形和英语释义等属性，可以自由的关闭和隐藏。
+
 
 
 ## 开发环境
@@ -56,3 +57,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
+
+
+
+
