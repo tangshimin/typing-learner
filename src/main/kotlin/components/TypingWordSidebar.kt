@@ -401,13 +401,17 @@ fun TypingWordSidebar(state: AppState) {
 
                         )
                 }
+                var showColorChooser by remember { mutableStateOf(false) }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                        .clickable { }.padding(start = 16.dp, end = 8.dp)
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                        .clickable {
+                            scope.launch {
+                                showColorChooser = true
+                            }
+                        }.padding(start = 16.dp, end = 8.dp)
                 ) {
-                    var showColorChooser by remember { mutableStateOf(false) }
                     if(showColorChooser){
                         ColorChooserDialog(
                             close = {showColorChooser = false},
@@ -424,32 +428,25 @@ fun TypingWordSidebar(state: AppState) {
                         )
                     }
                     Spacer(Modifier.width(15.dp))
-                    IconButton(onClick = {
-                        scope.launch {
-                            showColorChooser = true
-                        }
-
-                    }) {
-                        Icon(
-                            Icons.Default.Palette,
-                            contentDescription = "",
-                            tint = MaterialTheme.colors.primary
-                        )
-                    }
+                    Icon(
+                        Icons.Default.Palette,
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.primary,
+                        modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
+                    )
                 }
 
-
+                var expanded by remember { mutableStateOf(false) }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                        .clickable { }.padding(start = 16.dp, end = 8.dp)
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                        .clickable {  expanded = true }.padding(start = 16.dp, end = 8.dp)
                 ) {
                     Row {
                         Text("音量控制", color = MaterialTheme.colors.onBackground)
                     }
                     Spacer(Modifier.width(15.dp))
-                    var expanded by remember { mutableStateOf(false) }
                     CursorDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
@@ -498,13 +495,12 @@ fun TypingWordSidebar(state: AppState) {
                             }
                         }
                     }
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.VolumeUp,
-                            contentDescription = "",
-                            tint = MaterialTheme.colors.primary
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.VolumeUp,
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.primary,
+                        modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
+                    )
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
