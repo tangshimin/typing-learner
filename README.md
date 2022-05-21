@@ -5,7 +5,7 @@
 https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
 
 ## 抄写字幕
-https://user-images.githubusercontent.com/16540656/166701653-130614b1-f586-44b7-9bb8-a0eb656160f9.mp4
+[https://user-images.githubusercontent.com/16540656/166701653-130614b1-f586-44b7-9bb8-a0eb656160f9.mp4](https://user-images.githubusercontent.com/16540656/169644575-8f02e757-9105-430f-87e5-fe7bc93142e2.mp4)
 
 demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
@@ -57,3 +57,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
+
+
+
+
