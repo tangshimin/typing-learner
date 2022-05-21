@@ -50,6 +50,7 @@ import opennlp.tools.tokenize.Tokenizer
 import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.text.PDFTextStripper
 import player.isWindows
 import state.AppState
@@ -1624,17 +1625,24 @@ fun readDocument(
     var text = ""
     val extension = file.extension
     val otherExtensions = listOf("txt", "java", "cs", "cpp", "c", "kt", "js", "py", "ts")
-    if (extension == "pdf") {
-        setProgressText("正在加载文档")
-        val document: PDDocument = PDDocument.load(file)
-        print("${file.name},page:${document.pages.count}")
-        //Instantiate PDFTextStripper class
-        val pdfStripper = PDFTextStripper()
-        text = pdfStripper.getText(document)
-        document.close()
-    } else if (otherExtensions.contains(extension)) {
-        text = file.readText()
+    try{
+        if (extension == "pdf") {
+            setProgressText("正在加载文档")
+            val document: PDDocument = PDDocument.load(file)
+            print("${file.name},page:${document.pages.count}")
+            //Instantiate PDFTextStripper class
+            val pdfStripper = PDFTextStripper()
+            text = pdfStripper.getText(document)
+            document.close()
+        } else if (otherExtensions.contains(extension)) {
+            text = file.readText()
+        }
+    }catch (exception: InvalidPasswordException){
+        JOptionPane.showMessageDialog(null,exception.message)
+    }catch (exception:IOException){
+        JOptionPane.showMessageDialog(null,exception.message)
     }
+
 
     val set: MutableSet<String> = HashSet()
     val list = mutableListOf<String>()
@@ -1697,54 +1705,59 @@ private fun readSRT(
     val map: MutableMap<String, MutableList<Caption>> = HashMap()
     // 保存顺序
     val orderList = mutableListOf<String>()
-    ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { input ->
-        val model = TokenizerModel(input)
-        val tokenizer: Tokenizer = TokenizerME(model)
-        val formatSRT = FormatSRT()
-        val file = File(pathName)
-        val inputStream: InputStream = FileInputStream(file)
+    try{
+        ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { input ->
+            val model = TokenizerModel(input)
+            val tokenizer: Tokenizer = TokenizerME(model)
+            val formatSRT = FormatSRT()
+            val file = File(pathName)
+            val inputStream: InputStream = FileInputStream(file)
 
-        setProgressText("正在解析字幕文件")
-        val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
+            setProgressText("正在解析字幕文件")
+            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
 
-        val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
-        val captionList: Collection<subtitleFile.Caption> = captions.values
-        setProgressText("正在分词")
-        for (caption in captionList) {
-            var content = replaceSpecialCharacter(caption.content)
-            val tokenize = tokenizer.tokenize(content)
-            var text = caption.content.replace("<br />", "\n")
-            text = removeLocationInfo(text)
-            val dataCaption = Caption(
-                // getTime(format) 返回的时间不能播放
-                start = caption.start.getTime("hh:mm:ss.ms"),
-                end = caption.end.getTime("hh:mm:ss.ms"),
-                content = text
-            )
-            for (word in tokenize) {
-                val lowercase = word.lowercase(Locale.getDefault())
-                if (!map.containsKey(lowercase)) {
-                    val list = mutableListOf(dataCaption)
-                    map[lowercase] = list
-                    orderList.add(lowercase)
-                } else {
-                    if (map[lowercase]!!.size < 3) {
-                        map[lowercase]?.add(dataCaption)
+            val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
+            val captionList: Collection<subtitleFile.Caption> = captions.values
+            setProgressText("正在分词")
+            for (caption in captionList) {
+                var content = replaceSpecialCharacter(caption.content)
+                val tokenize = tokenizer.tokenize(content)
+                var text = caption.content.replace("<br />", "\n")
+                text = removeLocationInfo(text)
+                val dataCaption = Caption(
+                    // getTime(format) 返回的时间不能播放
+                    start = caption.start.getTime("hh:mm:ss.ms"),
+                    end = caption.end.getTime("hh:mm:ss.ms"),
+                    content = text
+                )
+                for (word in tokenize) {
+                    val lowercase = word.lowercase(Locale.getDefault())
+                    if (!map.containsKey(lowercase)) {
+                        val list = mutableListOf(dataCaption)
+                        map[lowercase] = list
+                        orderList.add(lowercase)
+                    } else {
+                        if (map[lowercase]!!.size < 3) {
+                            map[lowercase]?.add(dataCaption)
+                        }
                     }
                 }
             }
         }
-    }
-    setProgressText("从字幕文件中提取出 ${orderList.size} 个单词，正在批量查询单词，如果词典里没有就丢弃")
-    val validList = Dictionary.queryList(orderList)
-    setProgressText("${validList.size} 个有效单词")
-    validList.forEach { word ->
-        if (map[word.value] != null) {
-            word.captions = map[word.value]!!
+        setProgressText("从字幕文件中提取出 ${orderList.size} 个单词，正在批量查询单词，如果词典里没有就丢弃")
+        val validList = Dictionary.queryList(orderList)
+        setProgressText("${validList.size} 个有效单词")
+        validList.forEach { word ->
+            if (map[word.value] != null) {
+                word.captions = map[word.value]!!
+            }
         }
+        setProgressText("")
+        return validList
+    }catch (exception:IOException){
+        JOptionPane.showMessageDialog(null,exception.message)
     }
-    setProgressText("")
-    return validList
+    return listOf()
 }
 
 
@@ -1849,6 +1862,7 @@ private fun readMKV(
             }
         }
     } catch (e: IOException) {
+        JOptionPane.showMessageDialog(null,e.message)
         e.printStackTrace()
     } finally {
         try {
