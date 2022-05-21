@@ -1620,16 +1620,15 @@ fun readDocument(
     pathName: String,
     setProgressText: (String) -> Unit
 ): List<Word> {
-    var start = System.currentTimeMillis()
     val file = File(pathName)
     var text = ""
     val extension = file.extension
     val otherExtensions = listOf("txt", "java", "cs", "cpp", "c", "kt", "js", "py", "ts")
+
     try{
         if (extension == "pdf") {
             setProgressText("正在加载文档")
             val document: PDDocument = PDDocument.load(file)
-            print("${file.name},page:${document.pages.count}")
             //Instantiate PDFTextStripper class
             val pdfStripper = PDFTextStripper()
             text = pdfStripper.getText(document)
@@ -1689,8 +1688,6 @@ fun readDocument(
     val validList = Dictionary.queryList(list)
     setProgressText("${validList.size} 个有效单词")
     setProgressText("")
-    val end = System.currentTimeMillis()
-    println(": ${(end - start).div(1000)} 秒")
     return validList
 }
 
