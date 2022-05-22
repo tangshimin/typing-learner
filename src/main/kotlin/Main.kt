@@ -281,7 +281,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     }
     var aboutDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
-        Item("检查更新(U)", mnemonic = 'U', onClick = { println("点击 检查更新") })
+//        Item("检查更新(U)", mnemonic = 'U', onClick = { println("点击 检查更新") })
         Item("关于(A)", mnemonic = 'A', onClick = { aboutDialogVisible = true })
         if (aboutDialogVisible) {
             AboutDialog(
