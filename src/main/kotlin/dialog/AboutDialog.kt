@@ -66,9 +66,9 @@ fun AboutDialog(close: () -> Unit) {
                 }
                 when (state) {
                     0 -> {
-                        Column {
+                        Column (modifier = Modifier.width(IntrinsicSize.Max)){
                             Row(
-                                horizontalArrangement = Arrangement.Center,
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
@@ -78,12 +78,21 @@ fun AboutDialog(close: () -> Unit) {
                             }
 
                             Row(
-                                horizontalArrangement = Arrangement.Center,
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
                                     Text("源代码地址：https://github.com/tangshimin/qwerty-learner-desktop")
+                                }
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.Start,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                            ) {
+                                SelectionContainer {
+                                    Text("邮箱：tang_shimin@qq.com")
                                 }
                             }
                         }
