@@ -18,6 +18,8 @@ VLC 播放器 下载地址：https://www.videolan.org/
 词典：
 ECDICT  下载地址：https://github.com/skywind3000/ECDICT
 
-音效
+单词发音：
+单词的语音数据来源于有道词典开放 API
+
 本程序使用的音效：
 Success!!.wav  下载地址：https://freesound.org/people/jobro/sounds/60445/
