@@ -13,7 +13,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 ## 主要新增功能如下：
 
-1. 可以用[电影生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
+1. 可以用[MKV 视频生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)或[字幕生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
   ![Generate Vocabulary From MKV Video File](https://user-images.githubusercontent.com/16540656/166684580-57e31303-e849-4bb6-be9a-2cc0cb851317.png)
 2. [可以用英文文档生成词库](https://github.com/tangshimin/qwerty-learner-desktop/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 
@@ -44,7 +44,8 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
   
 14. 增加了词性，词形和英语释义等属性，可以自由的关闭和隐藏。
 
-
+## TODO
+- [ ] 1.1  生成词库的时候可以使用本地的`mdx`格式的词典。
 
 ## 开发环境
 
@@ -58,6 +59,6 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
 
-
+感谢 [libregd](https://github.com/libregd) 为桌面版重新设计 Icon。
 
 
