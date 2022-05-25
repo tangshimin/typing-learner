@@ -9,7 +9,6 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 
 demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
-### [下载地址](https://github.com/tangshimin/qwerty-learner-desktop/releases)
 
 ## 主要新增功能如下：
 
