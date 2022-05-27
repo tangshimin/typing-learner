@@ -1,4 +1,3 @@
-# qwerty-learner-desktop
 
 基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) ，用 kotlin + compose desktop 写的桌面版。
 ## 记忆单词
