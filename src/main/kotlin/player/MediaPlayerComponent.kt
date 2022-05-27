@@ -35,8 +35,10 @@ fun rememberMediaPlayerComponent(): Component = remember {
 fun createMediaPlayerComponent(): Component {
     // 如果是 Windows 就使用内置的 VLC 播放器
     if (isWindows()) {
+        println("使用内置的 VLC")
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getResourcesFile("VLC").absolutePath ?: "")
     } else{
+        println("搜索 VLC 路径")
         NativeDiscovery().discover()
     }
 

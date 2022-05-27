@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.serialization") version "1.6.10"
 }
 
-group = "com.qwertylearner"
+group = "com.typinglearner"
 version = "1.0"
 repositories {
     google()
@@ -57,7 +57,7 @@ compose.desktop {
 //        jvmArgs += listOf("-XX:+PrintNMTStatistics")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "qwerty-learner"
+            packageName = "typing learner"
             packageVersion = "1.0.0"
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
@@ -66,7 +66,7 @@ compose.desktop {
             windows{
                 dirChooser = true
                 perUserInstall = true
-                menuGroup = "qwerty learner"
+                menuGroup = "typing learner"
                 iconFile.set(project.file("src/main/resources/logo/logo.ico"))
             }
             macOS{

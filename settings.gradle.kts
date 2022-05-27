@@ -5,5 +5,5 @@ pluginManagement {
     }
     
 }
-rootProject.name = "qwerty-learner-desktop"
+rootProject.name = "typing-learner"
 
