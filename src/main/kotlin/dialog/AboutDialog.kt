@@ -73,7 +73,7 @@ fun AboutDialog(close: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
-                                    Text("qwerty leaner desktop 1.0.0 64-bit")
+                                    Text("typing leaner v1.0.0-beta11 64-bit")
                                 }
                             }
 
@@ -83,7 +83,7 @@ fun AboutDialog(close: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
-                                    Text("源代码地址：https://github.com/tangshimin/qwerty-learner-desktop")
+                                    Text("源代码地址：https://github.com/tangshimin/typing-learner")
                                 }
                             }
                             Row(
