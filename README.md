@@ -9,7 +9,7 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
 
-## 主要功能
+### 本软件是基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 写的桌面版，主要新增功能如下：
 
 1. [可以用MKV 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
   ![Generate Vocabulary From MKV Video File](https://user-images.githubusercontent.com/16540656/166684580-57e31303-e849-4bb6-be9a-2cc0cb851317.png)
