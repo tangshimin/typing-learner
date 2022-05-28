@@ -389,6 +389,10 @@ fun TypingSubtitles(
                 saveIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
                 true
             }
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.One && keyEvent.type == KeyEventType.KeyUp) -> {
+                setIsOpenSettings(!isOpenSettings)
+                true
+            }
             ((keyEvent.key == Key.Tab) && keyEvent.type == KeyEventType.KeyUp) -> {
                 val caption = captionList[typingSubtitles.currentIndex]
                 val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
