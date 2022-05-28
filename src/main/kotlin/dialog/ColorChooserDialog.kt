@@ -28,11 +28,13 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.toAwt
 import components.toCompose
+import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
 import theme.createColors
 import java.awt.Dimension
 import javax.swing.JColorChooser
 
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun ColorChooserDialog(
     close: () -> Unit,
@@ -78,18 +80,18 @@ fun ColorChooserDialog(
                                     fontSize = 2.em,
                                     text = buildAnnotatedString {
                                         withStyle(
-                                            style = SpanStyle(color = selectedColor,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = selectedColor, fontFamily = fontFamily)
                                         ) {
                                             append("qwerty-l")
                                         }
 
                                         withStyle(
-                                            style = SpanStyle(color = Color.Red,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = Color.Red,fontFamily = fontFamily)
                                         ) {
                                             append("e")
                                         }
                                         withStyle(
-                                            style = SpanStyle(color = darkColors().onBackground,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = darkColors().onBackground,fontFamily = fontFamily)
                                         ) {
                                             append("arner")
                                         }
@@ -119,18 +121,18 @@ fun ColorChooserDialog(
                                     fontSize = 2.em,
                                     text = buildAnnotatedString {
                                         withStyle(
-                                            style = SpanStyle(color = selectedColor,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = selectedColor,fontFamily = fontFamily)
                                         ) {
                                             append("qwerty-l")
                                         }
 
                                         withStyle(
-                                            style = SpanStyle(color = Color.Red,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = Color.Red,fontFamily = fontFamily)
                                         ) {
                                             append("e")
                                         }
                                         withStyle(
-                                            style = SpanStyle(color = lightColors().onBackground,fontFamily = fontFamily,)
+                                            style = SpanStyle(color = lightColors().onBackground,fontFamily = fontFamily)
                                         ) {
                                             append("arner")
                                         }
