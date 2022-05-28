@@ -75,6 +75,7 @@ import javax.swing.JOptionPane
 import javax.swing.TransferHandler
 import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
+import androidx.compose.ui.geometry.Rect
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -104,6 +105,7 @@ fun TypingSubtitles(
     var selectedPath by remember { mutableStateOf("") }
     var showSelectTrack by remember { mutableStateOf(false) }
     val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
+    var textRect by remember{ mutableStateOf(Rect(0.0F,0.0F,0.0F,0.0F))}
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
@@ -718,6 +720,13 @@ fun TypingSubtitles(
                                         color = MaterialTheme.colors.onBackground,
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1,
+                                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                                            if (typingSubtitles.currentIndex == index) {
+                                                // 如果视频播放按钮被遮挡，就使用这个位置计算出视频播放器的位置
+                                                textRect = coordinates.boundsInWindow()
+                                            }
+
+                                        }
                                     )
 
                                     if (typingSubtitles.currentIndex == index) {
@@ -769,24 +778,33 @@ fun TypingSubtitles(
                                                     }
                                                     .onGloballyPositioned { coordinates ->
                                                         val rect = coordinates.boundsInWindow()
-                                                        videoPlayerBounds.x = window.x + rect.left.toInt() + (48 * density).toInt()
-                                                        videoPlayerBounds.y = window.y + rect.top.toInt() - (100 * density).toInt()
+                                                        if(!rect.isEmpty){
+                                                            // 视频播放按钮没有被遮挡
+                                                            videoPlayerBounds.x = window.x + rect.left.toInt() + (48 * density).toInt()
+                                                            videoPlayerBounds.y = window.y + rect.top.toInt() - (100 * density).toInt()
+                                                        }else{
+                                                            // 视频播放按钮被遮挡
+                                                            videoPlayerBounds.x = window.x + textRect.right.toInt()
+                                                            videoPlayerBounds.y = window.y + textRect.top.toInt() - (100 * density).toInt()
+                                                        }
 
-                                                        // 判断屏幕边界
                                                         val graphicsDevice =
                                                             GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
+                                                        // 只要一个显示器时，才判断屏幕边界
+                                                        if(GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.size == 1){
+                                                            val width = graphicsDevice.displayMode.width
+                                                            val height = graphicsDevice.displayMode.height
+                                                            val actualWidth = (540 * density).toInt()
+                                                            if (videoPlayerBounds.x + actualWidth > width) {
+                                                                videoPlayerBounds.x = width - actualWidth
+                                                            }
+                                                            val actualHeight = (330 * density).toInt()
+                                                            if (videoPlayerBounds.y < 0) videoPlayerBounds.y = 0
+                                                            if (videoPlayerBounds.y + actualHeight > height) {
+                                                                videoPlayerBounds.y = height - actualHeight
+                                                            }
+                                                        }
 
-                                                        val width = graphicsDevice.displayMode.width
-                                                        val height = graphicsDevice.displayMode.height
-                                                        val actualWidth = (540 * density).toInt()
-                                                        if (videoPlayerBounds.x + actualWidth > width) {
-                                                            videoPlayerBounds.x = width - actualWidth
-                                                        }
-                                                        val actualHeight = (330 * density).toInt()
-                                                        if (videoPlayerBounds.y < 0) videoPlayerBounds.y = 0
-                                                        if (videoPlayerBounds.y + actualHeight > height) {
-                                                            videoPlayerBounds.y = height - actualHeight
-                                                        }
 
                                                         // 显示器缩放
                                                         if(density != 1f){
