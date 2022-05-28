@@ -40,7 +40,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 13. 字幕和单词英语定义也可以重复输入多次。
   
 14. 增加了词性，词形和英语释义等属性，可以自由的关闭和隐藏。
-
+## [下载地址](https://github.com/tangshimin/typing-learner/releases)
 ## TODO
 - [ ] 1.1  生成词库的时候可以使用本地的`mdx`格式的词典。
 
