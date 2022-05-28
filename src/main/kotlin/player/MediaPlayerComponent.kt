@@ -6,6 +6,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.sun.jna.NativeLibrary
 import state.getResourcesFile
 import uk.co.caprica.vlcj.binding.RuntimeUtil
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
@@ -15,7 +16,6 @@ import java.awt.Desktop
 import java.util.*
 import javax.swing.JEditorPane
 import javax.swing.JOptionPane
-import javax.swing.JTextArea
 import javax.swing.event.HyperlinkEvent
 
 
@@ -35,10 +35,8 @@ fun rememberMediaPlayerComponent(): Component = remember {
 fun createMediaPlayerComponent(): Component {
     // 如果是 Windows 就使用内置的 VLC 播放器
     if (isWindows()) {
-        println("使用内置的 VLC")
         NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), getResourcesFile("VLC").absolutePath ?: "")
     } else{
-        println("搜索 VLC 路径")
         NativeDiscovery().discover()
     }
 
@@ -61,7 +59,15 @@ fun createMediaPlayerComponent(): Component {
             JOptionPane.showMessageDialog(null, message)
         }
         CallbackMediaPlayerComponent()
-    } else {
+    } else if(isWindows()){
+        val args = listOf(
+            "--video-title=vlcj video output",
+            "--no-snapshot-preview",
+            "--quiet",
+            "--intf=dummy")
+        val mediaPlayerFactory = MediaPlayerFactory(null,args )
+        EmbeddedMediaPlayerComponent(mediaPlayerFactory, null, null, null, null)
+    }else{
         EmbeddedMediaPlayerComponent()
     }
 }
