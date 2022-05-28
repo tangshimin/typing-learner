@@ -49,6 +49,7 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 - 启动项目之前需要将 `qwerty-learner-desktop\resources\common\dictionary` 文件夹里的词典文件`ecdict.mv.db.7z` 解压缩。不然不能使用生成词库功能。
 - JDK 17
+- gradle 7.3.3
 - VLC 视频播放器
 
 
