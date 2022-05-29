@@ -56,7 +56,7 @@ fun ChapterFinishedDialog(
     resetIndex: (Boolean) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
-    val width = if (isVocabularyFinished) 550.dp else 400.dp
+    val width = if (isVocabularyFinished) 650.dp else 500.dp
     val height = (180 + ((dictationWrongWords.size * 18) + 10)).dp
     Dialog(
         title = "",
@@ -206,7 +206,7 @@ fun ChapterFinishedDialog(
                                 enterDictation()
                             }
                         ) {
-                            val text = if (isDictation) "再默写一次" else "默写本章"
+                            val text = if (isDictation) "(V)再默写一次" else "(V)默写本章"
                             Text(text = text, color = textColor)
                         }
                     }
@@ -232,7 +232,7 @@ fun ChapterFinishedDialog(
                         ) {
                             OutlinedButton(onClick = {
                                 reviewWrongWords()
-                            }) { Text("复习错误单词", color = textColor) }
+                            }) { Text("(N)复习错误单词", color = textColor) }
                         }
                     }
                     if (!isDictation) {
@@ -255,7 +255,7 @@ fun ChapterFinishedDialog(
                         ) {
                             OutlinedButton(onClick = {
                                 learnAgain()
-                            }) { Text("重复本章", color = textColor) }
+                            }) { Text("(Shift+⏎)重复本章", color = textColor) }
                         }
                     }
 
@@ -283,19 +283,20 @@ fun ChapterFinishedDialog(
                             OutlinedButton(onClick = {
                                 resetIndex(false)
                             }) {
-                                Text("返回到第一章", color = textColor)
+                                Text("(⏎)返回到第一章", color = textColor)
                             }
                         } else {
                             OutlinedButton(onClick = {
                                 nextChapter()
                             }) {
-                                Text("下一章", color = textColor)
+                                Text("(⏎)下一章", color = textColor)
                             }
                         }
 
                     }
-                    Spacer(Modifier.width(20.dp))
+
                     if (isVocabularyFinished) {
+                        Spacer(Modifier.width(20.dp))
                         OutlinedButton(onClick = {
                             resetIndex(true)
                         }) {
