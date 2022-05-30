@@ -82,7 +82,7 @@ fun ColorChooserDialog(
                                         withStyle(
                                             style = SpanStyle(color = selectedColor, fontFamily = fontFamily)
                                         ) {
-                                            append("qwerty-l")
+                                            append("typing-l")
                                         }
 
                                         withStyle(
@@ -123,7 +123,7 @@ fun ColorChooserDialog(
                                         withStyle(
                                             style = SpanStyle(color = selectedColor,fontFamily = fontFamily)
                                         ) {
-                                            append("qwerty-l")
+                                            append("typing-l")
                                         }
 
                                         withStyle(
