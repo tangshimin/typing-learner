@@ -1,8 +1,5 @@
 package player
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import com.sun.jna.NativeLibrary
 import state.getResourcesFile
 import uk.co.caprica.vlcj.binding.RuntimeUtil
@@ -18,16 +15,6 @@ import javax.swing.JEditorPane
 import javax.swing.JOptionPane
 import javax.swing.event.HyperlinkEvent
 
-
-val LocalMediaPlayerComponent = staticCompositionLocalOf<Component> {
-    error("LocalMediaPlayerComponent isn't provided")
-}
-
-@Composable
-fun rememberMediaPlayerComponent(): Component = remember {
-    val mediaPlayerComponent = createMediaPlayerComponent()
-    mediaPlayerComponent
-}
 
 /**
  * 初始化视频播放组件

@@ -25,9 +25,18 @@ import kotlinx.coroutines.launch
 import state.getAudioDirectory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
-import java.awt.Component
+import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import java.io.File
 import java.net.URL
+
+val LocalAudioPlayerComponent = staticCompositionLocalOf<AudioPlayerComponent> {
+    error("LocalMediaPlayerComponent isn't provided")
+}
+
+@Composable
+fun rememberAudioPlayerComponent(): AudioPlayerComponent = remember {
+    AudioPlayerComponent()
+}
 
 
 @OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
@@ -39,7 +48,7 @@ fun AudioButton(
 ) {
     if (pronunciation != "false") {
         val scope = rememberCoroutineScope()
-        val audioPlayerComponent = LocalMediaPlayerComponent.current
+        val audioPlayerComponent = LocalAudioPlayerComponent.current
         var isPlaying by remember { mutableStateOf(false) }
 
         /**
@@ -105,12 +114,6 @@ fun AudioButton(
 
                 }
             }
-            SwingPanel(
-                modifier = Modifier.size(DpSize(0.dp, 0.dp)),
-                factory = {
-                    audioPlayerComponent
-                }
-            )
         }
 
         SideEffect {
@@ -126,14 +129,14 @@ fun AudioButton(
 fun playAudio(
     audioPath: String,
     volume: Float,
-    mediaPlayerComponent: Component,
+    audioPlayerComponent: AudioPlayerComponent,
     changePlayerState: (Boolean) -> Unit,
     setIsAutoPlay: (Boolean) -> Unit,
 ) {
     if (audioPath.isNotEmpty()) {
         changePlayerState(true)
         setIsAutoPlay(false)
-        mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+        audioPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
                 mediaPlayer.audio().setVolume((volume * 100).toInt())
             }
@@ -141,10 +144,10 @@ fun playAudio(
             override fun finished(mediaPlayer: MediaPlayer) {
                 changePlayerState(false)
                 setIsAutoPlay(true)
-                mediaPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+                audioPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
             }
         })
-        mediaPlayerComponent.mediaPlayer().media().play(audioPath)
+        audioPlayerComponent.mediaPlayer().media().play(audioPath)
     }
 
 }

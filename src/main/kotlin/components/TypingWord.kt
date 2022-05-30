@@ -53,6 +53,7 @@ import kotlin.concurrent.schedule
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
+import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 
 /**
  * 应用程序的核心组件
@@ -68,7 +69,7 @@ import androidx.compose.ui.text.platform.Font
 fun TypingWord(
     window: ComposeWindow,
     title: String,
-    audioPlayer: Component,
+    audioPlayer: AudioPlayerComponent,
     state: AppState,
     videoBounds: Rectangle,
 ) {
@@ -243,7 +244,7 @@ fun TypingWord(
                                         playAudio(
                                             audioPath = audioPath,
                                             volume = state.global.audioVolume,
-                                            mediaPlayerComponent = audioPlayer,
+                                            audioPlayerComponent = audioPlayer,
                                             changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
                                             setIsAutoPlay = {}
                                         )

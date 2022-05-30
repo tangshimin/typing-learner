@@ -29,10 +29,10 @@ import data.VocabularyType
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.LocalMediaPlayerComponent
+import player.LocalAudioPlayerComponent
 import player.isMacOS
 import player.mediaPlayer
-import player.rememberMediaPlayerComponent
+import player.rememberAudioPlayerComponent
 import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
@@ -55,11 +55,11 @@ fun main() = application {
     val state = rememberAppState()
     UpdateFlatLaf(state.global.isDarkTheme, state)
     CompositionLocalProvider(
-        LocalMediaPlayerComponent provides rememberMediaPlayerComponent(),
+        LocalAudioPlayerComponent provides rememberAudioPlayerComponent(),
         LocalCtrl provides rememberCtrl(),
         LocalTextSelectionColors provides textSelectionColors()
     ) {
-        val audioPlayerComponent = LocalMediaPlayerComponent.current
+        val audioPlayerComponent = LocalAudioPlayerComponent.current
         val windowState = rememberWindowState(
             position = WindowPosition(Alignment.Center),
             placement = WindowPlacement.Maximized,
