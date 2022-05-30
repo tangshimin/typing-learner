@@ -535,7 +535,7 @@ fun TypingSubtitles(
                                     } else if (input.length <= captionContent.length) {
                                         textFieldValue = input
                                         typingResult.clear()
-                                        val inputChars = input.toList()
+                                        val inputChars = input.toMutableList()
                                         for (i in inputChars.indices) {
                                             val inputChar = inputChars[i]
                                             val char = captionContent[i]
@@ -544,6 +544,13 @@ fun TypingSubtitles(
                                                 // 方括号的语义很弱，又不好输入，所以可以使用空格替换
                                             } else if (inputChar == ' ' && (char == '[' || char == ']')) {
                                                 typingResult.add(Pair(char, true))
+                                                // 音乐符号不好输入，所以可以使用空格替换
+                                            }else if (inputChar == ' ' && (char == '♪')) {
+                                                typingResult.add(Pair(char, true))
+//                                              // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
+                                                inputChars.add(i,'♪')
+                                                inputChars.removeAt(i+1)
+                                                textFieldValue = String(inputChars.toCharArray())
                                             } else {
                                                 typingResult.add(Pair(inputChar, false))
                                             }
