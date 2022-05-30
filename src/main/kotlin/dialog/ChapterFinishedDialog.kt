@@ -57,7 +57,7 @@ fun ChapterFinishedDialog(
 ) {
     val focusRequester = remember { FocusRequester() }
     val width = if (isVocabularyFinished) 650.dp else 500.dp
-    val height = (180 + ((dictationWrongWords.size * 18) + 10)).dp
+    val height = (280 + ((dictationWrongWords.size * 18) + 10)).dp
     Dialog(
         title = "",
         onCloseRequest = { close() },
@@ -177,91 +177,11 @@ fun ChapterFinishedDialog(
                     Spacer(modifier = Modifier.height(33.dp))
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
                 ) {
-
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                shape = RectangleShape
-                            ) {
-                                Text(text = "快捷键 V", modifier = Modifier.padding(10.dp))
-                            }
-                        },
-                        delayMillis = 300,
-                        tooltipPlacement = TooltipPlacement.ComponentRect(
-                            anchor = Alignment.TopCenter,
-                            alignment = Alignment.TopCenter,
-                            offset = DpOffset.Zero
-                        )
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-
-                                enterDictation()
-                            }
-                        ) {
-                            val text = if (isDictation) "(V)再默写一次" else "(V)默写本章"
-                            Text(text = text, color = textColor)
-                        }
-                    }
-
-                    Spacer(Modifier.width(20.dp))
-                    if (isDictation && !isReviewWrongList) {
-                        TooltipArea(
-                            tooltip = {
-                                Surface(
-                                    elevation = 4.dp,
-                                    border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                    shape = RectangleShape
-                                ) {
-                                    Text(text = "快捷键 N", modifier = Modifier.padding(10.dp))
-                                }
-                            },
-                            delayMillis = 300,
-                            tooltipPlacement = TooltipPlacement.ComponentRect(
-                                anchor = Alignment.TopCenter,
-                                alignment = Alignment.TopCenter,
-                                offset = DpOffset.Zero
-                            )
-                        ) {
-                            OutlinedButton(onClick = {
-                                reviewWrongWords()
-                            }) { Text("(N)复习错误单词", color = textColor) }
-                        }
-                    }
-                    if (!isDictation) {
-                        TooltipArea(
-                            tooltip = {
-                                Surface(
-                                    elevation = 4.dp,
-                                    border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
-                                    shape = RectangleShape
-                                ) {
-                                    Text(text = "快捷键 Shift+Enter", modifier = Modifier.padding(10.dp))
-                                }
-                            },
-                            delayMillis = 300,
-                            tooltipPlacement = TooltipPlacement.ComponentRect(
-                                anchor = Alignment.TopCenter,
-                                alignment = Alignment.TopCenter,
-                                offset = DpOffset.Zero
-                            )
-                        ) {
-                            OutlinedButton(onClick = {
-                                learnAgain()
-                            }) { Text("(Shift+⏎)重复本章", color = textColor) }
-                        }
-                    }
-
-
-                    Spacer(Modifier.width(20.dp))
-
                     TooltipArea(
                         tooltip = {
                             Surface(
@@ -294,9 +214,82 @@ fun ChapterFinishedDialog(
                         }
 
                     }
+                    Spacer(Modifier.width(15.dp))
+                    if (!isDictation) {
+                        TooltipArea(
+                            tooltip = {
+                                Surface(
+                                    elevation = 4.dp,
+                                    border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                                    shape = RectangleShape
+                                ) {
+                                    Text(text = "快捷键 Shift+Enter", modifier = Modifier.padding(10.dp))
+                                }
+                            },
+                            delayMillis = 300,
+                            tooltipPlacement = TooltipPlacement.ComponentRect(
+                                anchor = Alignment.TopCenter,
+                                alignment = Alignment.TopCenter,
+                                offset = DpOffset.Zero
+                            )
+                        ) {
+                            OutlinedButton(onClick = {
+                                learnAgain()
+                            }) { Text("(Shift+⏎)重复本章", color = textColor) }
+                        }
+                    }
+                    Spacer(Modifier.width(15.dp))
+                    TooltipArea(
+                        tooltip = {
+                            Surface(
+                                elevation = 4.dp,
+                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                                shape = RectangleShape
+                            ) {
+                                Text(text = "快捷键 V", modifier = Modifier.padding(10.dp))
+                            }
+                        },
+                        delayMillis = 300,
+                        tooltipPlacement = TooltipPlacement.ComponentRect(
+                            anchor = Alignment.TopCenter,
+                            alignment = Alignment.TopCenter,
+                            offset = DpOffset.Zero
+                        )
+                    ) {
+                        OutlinedButton(
+                            onClick = { enterDictation() }
+                        ) {
+                            val text = if (isDictation) "(V)再默写一次" else "(V)默写本章"
+                            Text(text = text, color = textColor)
+                        }
+                    }
+                    Spacer(Modifier.width(15.dp))
+                    if (isDictation && !isReviewWrongList &&  correctRate < 100F ) {
+                        TooltipArea(
+                            tooltip = {
+                                Surface(
+                                    elevation = 4.dp,
+                                    border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                                    shape = RectangleShape
+                                ) {
+                                    Text(text = "快捷键 N", modifier = Modifier.padding(10.dp))
+                                }
+                            },
+                            delayMillis = 300,
+                            tooltipPlacement = TooltipPlacement.ComponentRect(
+                                anchor = Alignment.TopCenter,
+                                alignment = Alignment.TopCenter,
+                                offset = DpOffset.Zero
+                            )
+                        ) {
+                            OutlinedButton(onClick = {
+                                reviewWrongWords()
+                            }) { Text("(N)复习错误单词", color = textColor) }
+                        }
+                    }
 
                     if (isVocabularyFinished) {
-                        Spacer(Modifier.width(20.dp))
+                        Spacer(Modifier.width(15.dp))
                         OutlinedButton(onClick = {
                             resetIndex(true)
                         }) {
