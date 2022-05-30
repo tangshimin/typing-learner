@@ -1718,15 +1718,14 @@ private fun readSRT(
             setProgressText("正在分词")
             for (caption in captionList) {
                 var content = replaceSpecialCharacter(caption.content)
-                val tokenize = tokenizer.tokenize(content)
-                var text = caption.content.replace("<br />", "\n")
-                text = removeLocationInfo(text)
+                content = removeLocationInfo(content)
                 val dataCaption = Caption(
                     // getTime(format) 返回的时间不能播放
                     start = caption.start.getTime("hh:mm:ss.ms"),
                     end = caption.end.getTime("hh:mm:ss.ms"),
-                    content = text
+                    content = content
                 )
+                val tokenize = tokenizer.tokenize(content)
                 for (word in tokenize) {
                     val lowercase = word.lowercase(Locale.getDefault())
                     if (!map.containsKey(lowercase)) {
@@ -1834,14 +1833,15 @@ private fun readMKV(
                 val captionList = subtitle.readUnreadSubtitles()
                 for (caption in captionList) {
                     var content = replaceSpecialCharacter(caption.stringData)
-                    content = content.lowercase(Locale.getDefault())
-                    val tokenize = tokenizer.tokenize(content)
-                    val stringData = removeLocationInfo(caption.stringData)
+                    content = removeLocationInfo(content)
                     val dataCaption = Caption(
                         start = caption.startTime.format().toString(),
                         end = caption.endTime.format(),
-                        content = stringData
+                        content = content
                     )
+
+                    content = content.lowercase(Locale.getDefault())
+                    val tokenize = tokenizer.tokenize(content)
                     for (word in tokenize) {
                         if (!map.containsKey(word)) {
                             val list = ArrayList<Caption>()
