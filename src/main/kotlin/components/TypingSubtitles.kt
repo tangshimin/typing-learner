@@ -1339,7 +1339,7 @@ fun parseTrackList(
         playerWindow.layout = null
         playerWindow.contentPane.add(mediaPlayerComponent)
         playerWindow.isVisible = true
-        mediaPlayerComponent.mediaPlayer().media().play(videoPath)
+        mediaPlayerComponent.mediaPlayer().media().play(videoPath,":no-sub-autodetect-file")
     }
 }
 
