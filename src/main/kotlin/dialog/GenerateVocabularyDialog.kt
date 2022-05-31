@@ -55,6 +55,7 @@ import org.apache.pdfbox.text.PDFTextStripper
 import player.isWindows
 import state.AppState
 import state.composeAppResource
+import state.getResourcesFile
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import java.awt.BorderLayout
@@ -65,6 +66,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
+import java.nio.file.Paths
 import java.text.Collator
 import java.util.*
 import java.util.concurrent.FutureTask
@@ -541,33 +543,40 @@ fun GenerateVocabularyDialog(
                                     fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
                                     val userSelection = fileChooser.showSaveDialog(window)
                                     if (userSelection == JFileChooser.APPROVE_OPTION) {
-                                        val fileToSave = fileChooser.selectedFile
-                                        val vocabulary = Vocabulary(
-                                            name = fileToSave.nameWithoutExtension,
-                                            type = if (title == "过滤词库") filteringType else type,
-                                            language = "english",
-                                            size = previewList.size,
-                                            relateVideoPath = relateVideoPath,
-                                            subtitlesTrackId = selectedTrackId,
-                                            wordList = previewList
-                                        )
-                                        state.saveToRecentList(vocabulary.name, fileToSave.absolutePath)
-                                        saveVocabulary(vocabulary, fileToSave.absolutePath)
+                                        val selectedFile = fileChooser.selectedFile
+                                       val vocabularyDirPath =  Paths.get(getResourcesFile("vocabulary").absolutePath)
+                                       val savePath = Paths.get(selectedFile.absolutePath)
+                                        if(savePath.startsWith(vocabularyDirPath)){
+                                            JOptionPane.showMessageDialog(null,"不能把词库保存到应用程序安装目录，因为软件更新或卸载时，生成的词库会被删除")
+                                        }else{
+                                            val vocabulary = Vocabulary(
+                                                name = selectedFile.nameWithoutExtension,
+                                                type = if (title == "过滤词库") filteringType else type,
+                                                language = "english",
+                                                size = previewList.size,
+                                                relateVideoPath = relateVideoPath,
+                                                subtitlesTrackId = selectedTrackId,
+                                                wordList = previewList
+                                            )
+                                            state.saveToRecentList(vocabulary.name, selectedFile.absolutePath)
+                                            saveVocabulary(vocabulary, selectedFile.absolutePath)
 
-                                        // 清理状态
-                                        selectedFilePath = ""
-                                        selectedSubtitlesName = ""
-                                        previewList.clear()
-                                        relateVideoPath = ""
-                                        selectedTrackId = 0
-                                        filteringType = DOCUMENT
-                                        trackList.clear()
-                                        filterState = Idle
-                                        documentWords.clear()
-                                        selectedFileList.clear()
-                                        notBncFilter = false
-                                        notFrqFilter = false
-                                        replaceToLemma = false
+                                            // 清理状态
+                                            selectedFilePath = ""
+                                            selectedSubtitlesName = ""
+                                            previewList.clear()
+                                            relateVideoPath = ""
+                                            selectedTrackId = 0
+                                            filteringType = DOCUMENT
+                                            trackList.clear()
+                                            filterState = Idle
+                                            documentWords.clear()
+                                            selectedFileList.clear()
+                                            notBncFilter = false
+                                            notFrqFilter = false
+                                            replaceToLemma = false
+                                        }
+
 
                                     }
                                 }
