@@ -51,6 +51,7 @@ compose.desktop {
 //        jvmArgs += listOf("-client")
         jvmArgs += listOf("-Xmx1G")
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
+        jvmArgs += listOf("-Dapple.awt.application.appearance=system")
 //        jvmArgs += listOf("-XX:+PrintGCDetails")
 //        jvmArgs += listOf("-XX:NativeMemoryTracking=summary")
 //        jvmArgs += listOf("-XX:+UnlockDiagnosticVMOptions")
