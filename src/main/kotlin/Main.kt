@@ -29,10 +29,7 @@ import data.VocabularyType
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.LocalAudioPlayerComponent
-import player.isMacOS
-import player.mediaPlayer
-import player.rememberAudioPlayerComponent
+import player.*
 import state.AppState
 import state.TypingType.*
 import state.getResourcesFile
@@ -184,7 +181,9 @@ private fun computeTitle(state: AppState): String {
 private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
         Item("打开词库(O)", mnemonic = 'O', onClick = {
-            state.loadingFileChooserVisible = true
+            if(isWindows()) {
+                state.loadingFileChooserVisible = true
+            }
             Thread(Runnable {
                 val fileChooser = state.futureFileChooser.get()
                 fileChooser.dialogTitle = "选择词库"
