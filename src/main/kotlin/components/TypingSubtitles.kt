@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -75,7 +76,6 @@ import javax.swing.JOptionPane
 import javax.swing.TransferHandler
 import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
-import androidx.compose.ui.geometry.Rect
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -499,6 +499,8 @@ fun TypingSubtitles(
                             val captionContent = caption.content
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
+                            var selectable by remember { mutableStateOf(false) }
+                            val focusRequester = remember { FocusRequester() }
                             val next :() -> Unit = {
                                 scope.launch {
                                     val end =
@@ -506,6 +508,7 @@ fun TypingSubtitles(
                                     if (index >= end) {
                                         listState.scrollToItem(index)
                                     }
+                                    focusManager.moveFocus(FocusDirection.Next)
                                     focusManager.moveFocus(FocusDirection.Next)
                                     focusManager.moveFocus(FocusDirection.Next)
                                     focusManager.moveFocus(FocusDirection.Next)
@@ -600,6 +603,10 @@ fun TypingSubtitles(
                                                 previous()
                                             }
                                         }
+                                        true
+                                    }
+                                    (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
+                                        scope.launch { selectable = !selectable }
                                         true
                                     }
                                     else -> false
@@ -731,7 +738,9 @@ fun TypingSubtitles(
                                         color = MaterialTheme.colors.onBackground,
                                         overflow = TextOverflow.Ellipsis,
                                         maxLines = 1,
-                                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                                        modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .onGloballyPositioned { coordinates ->
                                             if (typingSubtitles.currentIndex == index) {
                                                 // 如果视频播放按钮被遮挡，就使用这个位置计算出视频播放器的位置
                                                 textRect = coordinates.boundsInWindow()
@@ -746,9 +755,43 @@ fun TypingSubtitles(
                                                 .background(MaterialTheme.colors.primary)
                                         )
                                     }
+
+                                    DropdownMenu(
+                                        expanded = selectable,
+                                        focusable = true,
+                                        onDismissRequest = {
+                                            selectable = false
+                                        },
+                                        offset = DpOffset(0.dp, (-50).dp)
+                                    ) {
+                                        BasicTextField(
+                                            value = captionContent,
+                                            onValueChange = {},
+                                            singleLine = true,
+                                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                                            textStyle = MaterialTheme.typography.h5.copy(
+                                                fontFamily = monospace,
+                                                color = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.high),
+                                            ),
+                                            modifier = Modifier.focusable()
+                                                .height(32.dp)
+                                                .focusRequester(focusRequester)
+                                                .onKeyEvent {
+                                                    if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
+                                                        scope.launch { selectable = !selectable }
+                                                        true
+                                                    } else false
+                                                }
+                                        )
+                                        LaunchedEffect(Unit) {
+                                            focusRequester.requestFocus()
+                                        }
+
+                                    }
+
                                 }
 
-                                Row(Modifier.width(48.dp).height(IntrinsicSize.Max)) {
+                                Row(Modifier.width(126.dp).height(IntrinsicSize.Max)) {
                                     if (typingSubtitles.currentIndex == index) {
                                         TooltipArea(
                                             tooltip = {
@@ -771,8 +814,8 @@ fun TypingSubtitles(
                                             },
                                             delayMillis = 300,
                                             tooltipPlacement = TooltipPlacement.ComponentRect(
-                                                anchor = Alignment.CenterEnd,
-                                                alignment = Alignment.CenterEnd,
+                                                anchor = Alignment.TopCenter,
+                                                alignment = Alignment.TopCenter,
                                                 offset = DpOffset.Zero
                                             )
                                         ) {
@@ -832,6 +875,43 @@ fun TypingSubtitles(
                                             }
 
                                         }
+
+                                        TooltipArea(
+                                            tooltip = {
+                                                Surface(
+                                                    elevation = 4.dp,
+                                                    border = BorderStroke(
+                                                        1.dp,
+                                                        MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                                                    ),
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Row(modifier = Modifier.padding(10.dp)){
+                                                        Text(text = "复制单词" )
+                                                        CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                                                            val ctrl = LocalCtrl.current
+                                                            Text(text = " $ctrl+B")
+                                                        }
+                                                    }
+
+                                                }
+                                            },
+                                            delayMillis = 300,
+                                            tooltipPlacement = TooltipPlacement.ComponentRect(
+                                                anchor = Alignment.TopCenter,
+                                                alignment = Alignment.TopCenter,
+                                                offset = DpOffset.Zero
+                                            )
+                                        ) {
+                                            IconButton(onClick = { selectable = !selectable }){
+                                                Icon(
+                                                    Icons.Filled.ContentCopy,
+                                                    contentDescription = "Localized description",
+                                                    tint = MaterialTheme.colors.primary
+                                                )
+                                            }
+                                        }
+
 
                                     }
                                 }
