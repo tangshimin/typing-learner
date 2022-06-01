@@ -167,7 +167,7 @@ fun TypingWord(
                         }
 
                         /** 处理全局快捷键的回调函数 */
-                        val keyEvent: (KeyEvent) -> Boolean = {
+                        val globalKeyEvent: (KeyEvent) -> Boolean = {
                             when {
                                 (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
@@ -334,7 +334,7 @@ fun TypingWord(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
-                                .onKeyEvent { keyEvent(it) }
+                                .onKeyEvent { globalKeyEvent(it) }
                                 .width(intrinsicSize = IntrinsicSize.Max)
                                 .background(MaterialTheme.colors.background)
                                 .focusable(true)
@@ -631,7 +631,7 @@ fun TypingWord(
                                     ) {
                                         toNext()
                                         true
-                                    } else false
+                                    } else globalKeyEvent(it)
                                 }
                             Captions(
                                 captionsVisible = state.typingWord.subtitlesVisible,
