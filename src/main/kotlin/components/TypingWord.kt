@@ -355,6 +355,9 @@ fun TypingWord(
                             /** 字幕输入框里的字符串列表 */
                             var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
 
+                            /** 字幕输入框焦点请求器*/
+                            val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
+
                             /** 单词输入框输入的结果*/
                             val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
@@ -566,11 +569,10 @@ fun TypingWord(
                                         }
                                     }
                                     if (input.length == captionContent.length) {
-                                        Timer("cleanInputChar", false).schedule(50) {
-                                            captionsTextFieldValueList[index] = ""
-                                            typingResult.clear()
+                                        when(index){
+                                            0 -> focusRequester2.requestFocus()
+                                            1 -> focusRequester3.requestFocus()
                                         }
-
                                     }
 
                                 }
@@ -659,6 +661,7 @@ fun TypingWord(
                                 },
                                 playKeySound = { playKeySound() },
                                 modifier = captionsModifier,
+                                focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3)
                             )
                             if (state.isPlaying) Spacer(
                                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
@@ -1078,6 +1081,7 @@ fun Captions(
     checkTyping: (Int, String, String) -> Unit,
     playKeySound: () -> Unit,
     modifier: Modifier,
+    focusRequesterList:List<FocusRequester>,
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1117,6 +1121,7 @@ fun Captions(
                         index = index,
                         playTriple = playTriple,
                         bounds = bounds,
+                        focusRequester = focusRequesterList[index]
                     )
                 }
 
@@ -1205,6 +1210,7 @@ fun Caption(
     index: Int,
     playTriple: Triple<Caption, String, Int>,
     bounds: Rectangle,
+    focusRequester:FocusRequester
 ) {
     val scope = rememberCoroutineScope()
     val relativeVideoPath = playTriple.second
@@ -1215,7 +1221,7 @@ fun Caption(
             modifier = Modifier.height(36.dp).width(IntrinsicSize.Max)
         ) {
             var selectable by remember { mutableStateOf(false) }
-            val focusRequester = remember { FocusRequester() }
+            val dropMenuFocusRequester = remember { FocusRequester() }
             var isFocused by remember { mutableStateOf(false) }
             val focusManager = LocalFocusManager.current
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
@@ -1225,7 +1231,6 @@ fun Caption(
                         scope.launch {
                             checkTyping(index, input, captionContent)
                         }
-
                     },
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colors.primary),
@@ -1234,6 +1239,7 @@ fun Caption(
                         .fillMaxWidth()
                         .height(32.dp)
                         .align(Alignment.CenterStart)
+                        .focusRequester(focusRequester)
                         .onKeyEvent {
                             when {
                                 (it.type == KeyEventType.KeyDown
@@ -1336,8 +1342,7 @@ fun Caption(
                             color = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.high),
                         ),
                         modifier = Modifier.focusable()
-//                            .height(32.dp)
-                            .focusRequester(focusRequester)
+                            .focusRequester(dropMenuFocusRequester)
                             .onKeyEvent {
                                 if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                     scope.launch { selectable = !selectable }
@@ -1346,7 +1351,7 @@ fun Caption(
                             }
                     )
                     LaunchedEffect(Unit) {
-                        focusRequester.requestFocus()
+                        dropMenuFocusRequester.requestFocus()
                     }
 
                 }
