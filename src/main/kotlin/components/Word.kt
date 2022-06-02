@@ -90,6 +90,7 @@ fun Word(
     dictationWrongWords: Map<Word, Int>,
     resetChapterTime: () -> Unit,
     playKeySound: () -> Unit,
+    jumpToCaptions: () -> Unit,
 
     ) {
 
@@ -110,6 +111,10 @@ fun Word(
                 if (state.isDictation) {
                     dictationSkip()
                 }
+                true
+            }
+            (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
+                jumpToCaptions()
                 true
             }
             (it.type == KeyEventType.KeyDown

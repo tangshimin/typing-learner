@@ -421,6 +421,11 @@ fun TypingWord(
                                 }
                             }
 
+                            /** 焦点切换到抄写字幕*/
+                            val jumpToCaptions:() -> Unit = {
+                                focusRequester1.requestFocus()
+                            }
+
                             /** 切换下一个单词 */
                             val toNext: () -> Unit = {
                                 scope.launch {
@@ -602,6 +607,7 @@ fun TypingWord(
                                 dictationWrongWords = state.dictationWrongWords,
                                 resetChapterTime = { state.resetChapterTime() },
                                 playKeySound = { playKeySound() },
+                                jumpToCaptions = { jumpToCaptions() },
                             )
                             Phonetic(
                                 word = currentWord,
