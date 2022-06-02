@@ -349,8 +349,14 @@ fun TypingWord(
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
-                            /** 字幕输入框里的字符串列表 */
-                            var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
+                            /** 第一条字幕的输入字符串*/
+                            var captionsTextFieldValue1 by remember { mutableStateOf("") }
+
+                            /** 第二条字幕的输入字符串*/
+                            var captionsTextFieldValue2 by remember { mutableStateOf("") }
+
+                            /** 第三条字幕的输入字符串*/
+                            var captionsTextFieldValue3 by remember { mutableStateOf("") }
 
                             /** 字幕输入框焦点请求器*/
                             val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
@@ -430,7 +436,9 @@ fun TypingWord(
                                     wordTextFieldValue = ""
                                     definitionTypingResult.clear()
                                     captionsTypingResultMap.clear()
-                                    captionsTextFieldValueList = mutableStateListOf("", "", "")
+                                    captionsTextFieldValue1 = ""
+                                    captionsTextFieldValue2 = ""
+                                    captionsTextFieldValue3 = ""
                                     state.wordCorrectTime = 0
                                     state.wordWrongTime = 0
                                     if (state.isDictation) {
@@ -534,7 +542,12 @@ fun TypingWord(
                             val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
 
                                 if (input.length <= captionContent.length) {
-                                    captionsTextFieldValueList[index] = input
+//                                    captionsTextFieldValueList[index] = input
+                                    when(index){
+                                        0 -> captionsTextFieldValue1 = input
+                                        1 -> captionsTextFieldValue2 = input
+                                        2 -> captionsTextFieldValue3 = input
+                                    }
                                     val typingResult = captionsTypingResultMap[index]
                                     typingResult!!.clear()
                                     val chars = input.toList()
@@ -627,7 +640,7 @@ fun TypingWord(
                                 setIsPlaying = { state.isPlaying = it },
                                 word = currentWord,
                                 bounds = videoBounds,
-                                textFieldValueList = captionsTextFieldValueList,
+                                textFieldValueList = listOf(captionsTextFieldValue1,captionsTextFieldValue2,captionsTextFieldValue3),
                                 typingResultMap = captionsTypingResultMap,
                                 putTypingResultMap = { index, list ->
                                     captionsTypingResultMap[index] = list
