@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -24,9 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -45,6 +50,7 @@ import state.TypingType
 import theme.createColors
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
+import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import java.awt.*
 import java.io.File
 import java.time.Duration
@@ -54,10 +60,6 @@ import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 import kotlin.concurrent.schedule
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Font
-import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 
 /**
  * 应用程序的核心组件
@@ -1215,6 +1217,7 @@ fun Caption(
             var selectable by remember { mutableStateOf(false) }
             val focusRequester = remember { FocusRequester() }
             var isFocused by remember { mutableStateOf(false) }
+            val focusManager = LocalFocusManager.current
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
                 BasicTextField(
                     value = textFieldValue,
@@ -1232,20 +1235,35 @@ fun Caption(
                         .height(32.dp)
                         .align(Alignment.CenterStart)
                         .onKeyEvent {
-                            if (it.type == KeyEventType.KeyDown
-                                && it.key != Key.ShiftRight
-                                && it.key != Key.ShiftLeft
-                                && it.key != Key.CtrlRight
-                                && it.key != Key.CtrlLeft
-                            ) {
-                                scope.launch { playKeySound() }
-                                true
+                            when {
+                                (it.type == KeyEventType.KeyDown
+                                        && it.key != Key.ShiftRight
+                                        && it.key != Key.ShiftLeft
+                                        && it.key != Key.CtrlRight
+                                        && it.key != Key.CtrlLeft
+                                        ) -> {
+                                    scope.launch { playKeySound() }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch { selectable = !selectable }
+                                    true
+                                }
+
+                                (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    true
+                                }
+
+                                (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
+                                    focusManager.moveFocus(FocusDirection.Previous)
+                                    focusManager.moveFocus(FocusDirection.Previous)
+                                    true
+                                }
+                                else -> false
                             }
-                            if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
-                                scope.launch { selectable = !selectable }
-                                true
-                            }
-                            false
                         }
                         .onFocusChanged {
                             isFocused = it.isFocused
