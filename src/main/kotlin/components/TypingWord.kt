@@ -889,57 +889,58 @@ fun Definition(
             Box(modifier = if (rows > 5) greaterThen10Modifier else normalModifier) {
                 val stateVertical = rememberScrollState(0)
                 Box(Modifier.verticalScroll(stateVertical)) {
-                    Text(
-                        textAlign = TextAlign.Start,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.body1.copy(lineHeight = 26.sp),
-                        color = MaterialTheme.colors.onBackground,
-                        modifier = Modifier.align(Alignment.CenterStart),
-                        text = buildAnnotatedString {
-                            typingResult.forEach { (char, correct) ->
-                                if (correct) {
-                                    withStyle(
-                                        style = SpanStyle(
-                                            color = MaterialTheme.colors.primary,
-                                            fontSize = LocalTextStyle.current.fontSize,
-                                            letterSpacing = LocalTextStyle.current.letterSpacing,
-                                            fontFamily = LocalTextStyle.current.fontFamily,
-                                        )
-                                    ) {
-                                        append(char)
-                                    }
-                                } else {
-                                    withStyle(
-                                        style = SpanStyle(
-                                            color = Color.Red,
-                                            fontSize = LocalTextStyle.current.fontSize,
-                                            letterSpacing = LocalTextStyle.current.letterSpacing,
-                                            fontFamily = LocalTextStyle.current.fontFamily,
-                                        )
-                                    ) {
-                                        if (char == ' ') {
-                                            append("_")
-                                        } else {
+                    SelectionContainer {
+                        Text(
+                            textAlign = TextAlign.Start,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.body1.copy(lineHeight = 26.sp),
+                            color = MaterialTheme.colors.onBackground,
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            text = buildAnnotatedString {
+                                typingResult.forEach { (char, correct) ->
+                                    if (correct) {
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = MaterialTheme.colors.primary,
+                                                fontSize = LocalTextStyle.current.fontSize,
+                                                letterSpacing = LocalTextStyle.current.letterSpacing,
+                                                fontFamily = LocalTextStyle.current.fontFamily,
+                                            )
+                                        ) {
                                             append(char)
                                         }
+                                    } else {
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = Color.Red,
+                                                fontSize = LocalTextStyle.current.fontSize,
+                                                letterSpacing = LocalTextStyle.current.letterSpacing,
+                                                fontFamily = LocalTextStyle.current.fontFamily,
+                                            )
+                                        ) {
+                                            if (char == ' ') {
+                                                append("_")
+                                            } else {
+                                                append(char)
+                                            }
 
+                                        }
                                     }
                                 }
-                            }
-                            val remainChars = word.definition.substring(typingResult.size)
-                            withStyle(
-                                style = SpanStyle(
-                                    color = MaterialTheme.colors.onBackground,
-                                    fontSize = LocalTextStyle.current.fontSize,
-                                    letterSpacing = LocalTextStyle.current.letterSpacing,
-                                    fontFamily = LocalTextStyle.current.fontFamily,
-                                )
-                            ) {
-                                append(remainChars)
-                            }
-                        },
-                    )
-
+                                val remainChars = word.definition.substring(typingResult.size)
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = MaterialTheme.colors.onBackground,
+                                        fontSize = LocalTextStyle.current.fontSize,
+                                        letterSpacing = LocalTextStyle.current.letterSpacing,
+                                        fontFamily = LocalTextStyle.current.fontFamily,
+                                    )
+                                ) {
+                                    append(remainChars)
+                                }
+                            },
+                        )
+                    }
                 }
                 if (rows > 5) {
                     VerticalScrollbar(
