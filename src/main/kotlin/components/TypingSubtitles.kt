@@ -597,14 +597,6 @@ fun TypingSubtitles(
                                         }
                                         true
                                     }
-                                    ((it.key == Key.Backspace) && it.type == KeyEventType.KeyUp) -> {
-                                        scope.launch {
-                                            if(textFieldValue.isEmpty()){
-                                                previous()
-                                            }
-                                        }
-                                        true
-                                    }
                                     (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
                                         scope.launch { selectable = !selectable }
                                         true
