@@ -1136,6 +1136,31 @@ fun Caption(
             val dropMenuFocusRequester = remember { FocusRequester() }
             var isFocused by remember { mutableStateOf(false) }
             val focusManager = LocalFocusManager.current
+            var isPathWrong by remember { mutableStateOf(false) }
+            val playCurrentCaption:()-> Unit = {
+                if (!isPlaying) {
+                    val file = File(relativeVideoPath)
+                    if (file.exists()) {
+                        setIsPlaying(true)
+                        scope.launch {
+                            play(
+                                videoPlayerWindow,
+                                setIsPlaying = { setIsPlaying(it) },
+                                volume,
+                                playTriple,
+                                videoPlayerComponent,
+                                bounds
+                            )
+                        }
+
+                    } else {
+                        isPathWrong = true
+                        Timer("恢复状态", false).schedule(2000) {
+                            isPathWrong = false
+                        }
+                    }
+                }
+            }
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
                 BasicTextField(
                     value = textFieldValue,
@@ -1165,6 +1190,10 @@ fun Caption(
                                 }
                                 (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch { selectable = !selectable }
+                                    true
+                                }
+                                (it.key == Key.Tab && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {  playCurrentCaption() }
                                     true
                                 }
 
@@ -1277,7 +1306,7 @@ fun Caption(
 
                 }
             }
-            var isPathWrong by remember { mutableStateOf(false) }
+
             TooltipArea(
                 tooltip = {
                     Surface(
@@ -1304,28 +1333,29 @@ fun Caption(
                 )
             ) {
                 IconButton(onClick = {
-                    if (!isPlaying) {
-                        val file = File(relativeVideoPath)
-                        if (file.exists()) {
-                            setIsPlaying(true)
-                            scope.launch {
-                                play(
-                                    videoPlayerWindow,
-                                    setIsPlaying = { setIsPlaying(it) },
-                                    volume,
-                                    playTriple,
-                                    videoPlayerComponent,
-                                    bounds
-                                )
-                            }
-
-                        } else {
-                            isPathWrong = true
-                            Timer("恢复状态", false).schedule(2000) {
-                                isPathWrong = false
-                            }
-                        }
-                    }
+                    playCurrentCaption()
+//                    if (!isPlaying) {
+//                        val file = File(relativeVideoPath)
+//                        if (file.exists()) {
+//                            setIsPlaying(true)
+//                            scope.launch {
+//                                play(
+//                                    videoPlayerWindow,
+//                                    setIsPlaying = { setIsPlaying(it) },
+//                                    volume,
+//                                    playTriple,
+//                                    videoPlayerComponent,
+//                                    bounds
+//                                )
+//                            }
+//
+//                        } else {
+//                            isPathWrong = true
+//                            Timer("恢复状态", false).schedule(2000) {
+//                                isPathWrong = false
+//                            }
+//                        }
+//                    }
 
 
                 }) {
