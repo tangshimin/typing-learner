@@ -349,9 +349,6 @@ fun TypingWord(
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
-                            /** 英语定义输入框里的字符串 */
-                            var definitionTextFieldValue by remember { mutableStateOf("") }
-
                             /** 字幕输入框里的字符串列表 */
                             var captionsTextFieldValueList = remember { mutableStateListOf("", "", "") }
 
@@ -431,7 +428,6 @@ fun TypingWord(
                                 scope.launch {
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
-                                    definitionTextFieldValue = ""
                                     definitionTypingResult.clear()
                                     captionsTypingResultMap.clear()
                                     captionsTextFieldValueList = mutableStateListOf("", "", "")
@@ -533,30 +529,6 @@ fun TypingWord(
                                 }
                             }
 
-                            /** 检查输入的英语定义 */
-                            val checkDefinitionInput: (String) -> Unit = { input ->
-                                definitionTextFieldValue = input
-                                definitionTypingResult.clear()
-                                if (input.length <= currentWord.definition.length) {
-                                    val chars = input.toList()
-                                    for (i in chars.indices) {
-                                        val char = chars[i]
-                                        if (char == currentWord.definition[i]) {
-                                            definitionTypingResult.add(Pair(char, true))
-                                        } else {
-                                            definitionTypingResult.add(Pair(char, false))
-                                        }
-                                    }
-
-                                    if (input.length == currentWord.definition.length) {
-                                        Timer("cleanInputChar", false).schedule(50) {
-                                            definitionTextFieldValue = ""
-                                            definitionTypingResult.clear()
-                                        }
-                                    }
-
-                                }
-                            }
 
                             /** 检查输入的字幕 */
                             val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
@@ -622,10 +594,7 @@ fun TypingWord(
                                 word = currentWord,
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = state.isPlaying,
-                                textFieldValue = definitionTextFieldValue,
                                 typingResult = definitionTypingResult,
-                                checkTyping = { checkDefinitionInput(it) },
-                                playKeySound = { playKeySound() },
                             )
                             Translation(
                                 word = currentWord,
@@ -904,10 +873,7 @@ fun Definition(
     word: Word,
     definitionVisible: Boolean,
     isPlaying: Boolean,
-    textFieldValue: String,
     typingResult: List<Pair<Char, Boolean>>,
-    checkTyping: (String) -> Unit,
-    playKeySound: () -> Unit,
 ) {
     if (definitionVisible && !isPlaying) {
 
@@ -919,38 +885,12 @@ fun Definition(
             .width(554.dp)
             .height(260.dp)
             .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
-        val scope = rememberCoroutineScope()
         Column {
             Box(modifier = if (rows > 5) greaterThen10Modifier else normalModifier) {
                 val stateVertical = rememberScrollState(0)
                 Box(Modifier.verticalScroll(stateVertical)) {
-//                    BasicTextField(
-//                        value = textFieldValue,
-//                        onValueChange = { input ->
-//                            scope.launch {
-//                                checkTyping(input)
-//                            }
-//                        },
-//                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-//                        textStyle = MaterialTheme.typography.body1.copy(color = Color.Transparent, lineHeight = 26.sp),
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .height(IntrinsicSize.Max)
-//                            .align(Alignment.TopStart).onKeyEvent {
-//                                if (it.type == KeyEventType.KeyDown
-//                                    && it.key != Key.ShiftRight
-//                                    && it.key != Key.ShiftLeft
-//                                    && it.key != Key.CtrlRight
-//                                    && it.key != Key.CtrlLeft
-//                                ) {
-//                                    playKeySound()
-//                                }
-//                                true
-//                            }
-//                    )
                     Text(
                         textAlign = TextAlign.Start,
-//                    maxLines = 10,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.body1.copy(lineHeight = 26.sp),
                         color = MaterialTheme.colors.onBackground,
