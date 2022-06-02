@@ -364,9 +364,6 @@ fun TypingWord(
                             /** 单词输入框输入的结果*/
                             val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
 
-                            /** 英语定义输入框的结果 */
-                            val definitionTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
-
                             /** 字幕输入框的结果 */
                             val captionsTypingResultMap =
                                 remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
@@ -434,7 +431,6 @@ fun TypingWord(
                                 scope.launch {
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
-                                    definitionTypingResult.clear()
                                     captionsTypingResultMap.clear()
                                     captionsTextFieldValue1 = ""
                                     captionsTextFieldValue2 = ""
@@ -608,7 +604,6 @@ fun TypingWord(
                                 word = currentWord,
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = state.isPlaying,
-                                typingResult = definitionTypingResult,
                             )
                             Translation(
                                 word = currentWord,
@@ -887,10 +882,8 @@ fun Definition(
     word: Word,
     definitionVisible: Boolean,
     isPlaying: Boolean,
-    typingResult: List<Pair<Char, Boolean>>,
 ) {
     if (definitionVisible && !isPlaying) {
-
         val rows = word.definition.length - word.definition.replace("\n", "").length
         val normalModifier = Modifier
             .width(554.dp)
@@ -910,49 +903,7 @@ fun Definition(
                             style = MaterialTheme.typography.body1.copy(lineHeight = 26.sp),
                             color = MaterialTheme.colors.onBackground,
                             modifier = Modifier.align(Alignment.CenterStart),
-                            text = buildAnnotatedString {
-                                typingResult.forEach { (char, correct) ->
-                                    if (correct) {
-                                        withStyle(
-                                            style = SpanStyle(
-                                                color = MaterialTheme.colors.primary,
-                                                fontSize = LocalTextStyle.current.fontSize,
-                                                letterSpacing = LocalTextStyle.current.letterSpacing,
-                                                fontFamily = LocalTextStyle.current.fontFamily,
-                                            )
-                                        ) {
-                                            append(char)
-                                        }
-                                    } else {
-                                        withStyle(
-                                            style = SpanStyle(
-                                                color = Color.Red,
-                                                fontSize = LocalTextStyle.current.fontSize,
-                                                letterSpacing = LocalTextStyle.current.letterSpacing,
-                                                fontFamily = LocalTextStyle.current.fontFamily,
-                                            )
-                                        ) {
-                                            if (char == ' ') {
-                                                append("_")
-                                            } else {
-                                                append(char)
-                                            }
-
-                                        }
-                                    }
-                                }
-                                val remainChars = word.definition.substring(typingResult.size)
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = MaterialTheme.colors.onBackground,
-                                        fontSize = LocalTextStyle.current.fontSize,
-                                        letterSpacing = LocalTextStyle.current.letterSpacing,
-                                        fontFamily = LocalTextStyle.current.fontFamily,
-                                    )
-                                ) {
-                                    append(remainChars)
-                                }
-                            },
+                            text = word.definition,
                         )
                     }
                 }
