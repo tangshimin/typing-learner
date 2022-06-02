@@ -924,30 +924,30 @@ fun Definition(
             Box(modifier = if (rows > 5) greaterThen10Modifier else normalModifier) {
                 val stateVertical = rememberScrollState(0)
                 Box(Modifier.verticalScroll(stateVertical)) {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { input ->
-                            scope.launch {
-                                checkTyping(input)
-                            }
-                        },
-                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                        textStyle = MaterialTheme.typography.body1.copy(color = Color.Transparent, lineHeight = 26.sp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Max)
-                            .align(Alignment.TopStart).onKeyEvent {
-                                if (it.type == KeyEventType.KeyDown
-                                    && it.key != Key.ShiftRight
-                                    && it.key != Key.ShiftLeft
-                                    && it.key != Key.CtrlRight
-                                    && it.key != Key.CtrlLeft
-                                ) {
-                                    playKeySound()
-                                }
-                                true
-                            }
-                    )
+//                    BasicTextField(
+//                        value = textFieldValue,
+//                        onValueChange = { input ->
+//                            scope.launch {
+//                                checkTyping(input)
+//                            }
+//                        },
+//                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+//                        textStyle = MaterialTheme.typography.body1.copy(color = Color.Transparent, lineHeight = 26.sp),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(IntrinsicSize.Max)
+//                            .align(Alignment.TopStart).onKeyEvent {
+//                                if (it.type == KeyEventType.KeyDown
+//                                    && it.key != Key.ShiftRight
+//                                    && it.key != Key.ShiftLeft
+//                                    && it.key != Key.CtrlRight
+//                                    && it.key != Key.CtrlLeft
+//                                ) {
+//                                    playKeySound()
+//                                }
+//                                true
+//                            }
+//                    )
                     Text(
                         textAlign = TextAlign.Start,
 //                    maxLines = 10,
@@ -1270,8 +1270,17 @@ fun Caption(
                                 }
 
                                 (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
-                                    focusManager.moveFocus(FocusDirection.Previous)
-                                    focusManager.moveFocus(FocusDirection.Previous)
+                                    if(index == 0){
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                    }else{
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                    }
+
                                     true
                                 }
                                 else -> false
