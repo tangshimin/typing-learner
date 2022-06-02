@@ -532,10 +532,11 @@ fun TypingWord(
 
                             /** 检查输入的字幕 */
                             val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
-                                captionsTextFieldValueList[index] = input
-                                val typingResult = captionsTypingResultMap[index]
-                                typingResult!!.clear()
+
                                 if (input.length <= captionContent.length) {
+                                    captionsTextFieldValueList[index] = input
+                                    val typingResult = captionsTypingResultMap[index]
+                                    typingResult!!.clear()
                                     val chars = input.toList()
                                     for (i in chars.indices) {
                                         val char = chars[i]
