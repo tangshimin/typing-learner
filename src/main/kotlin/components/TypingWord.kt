@@ -10,12 +10,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -1208,7 +1212,9 @@ fun Caption(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.height(36.dp).width(IntrinsicSize.Max)
         ) {
-
+            var selectable by remember { mutableStateOf(false) }
+            val focusRequester = remember { FocusRequester() }
+            var isFocused by remember { mutableStateOf(false) }
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
                 BasicTextField(
                     value = textFieldValue,
@@ -1224,16 +1230,25 @@ fun Caption(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(32.dp)
-                        .align(Alignment.CenterStart).onKeyEvent {
+                        .align(Alignment.CenterStart)
+                        .onKeyEvent {
                             if (it.type == KeyEventType.KeyDown
                                 && it.key != Key.ShiftRight
                                 && it.key != Key.ShiftLeft
                                 && it.key != Key.CtrlRight
                                 && it.key != Key.CtrlLeft
                             ) {
-                                playKeySound()
+                                scope.launch { playKeySound() }
+                                true
                             }
-                            true
+                            if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
+                                scope.launch { selectable = !selectable }
+                                true
+                            }
+                            false
+                        }
+                        .onFocusChanged {
+                            isFocused = it.isFocused
                         }
                 )
                 Text(
@@ -1285,6 +1300,38 @@ fun Caption(
                         }
                     },
                 )
+
+                DropdownMenu(
+                    expanded = selectable,
+                    focusable = true,
+                    onDismissRequest = {
+                        selectable = false
+                    },
+                    offset = DpOffset(0.dp, (-30).dp)
+                ) {
+                    BasicTextField(
+                        value = captionContent,
+                        onValueChange = {},
+                        singleLine = true,
+                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                        textStyle =  LocalTextStyle.current.copy(
+                            color = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.high),
+                        ),
+                        modifier = Modifier.focusable()
+//                            .height(32.dp)
+                            .focusRequester(focusRequester)
+                            .onKeyEvent {
+                                if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
+                                    scope.launch { selectable = !selectable }
+                                    true
+                                } else false
+                            }
+                    )
+                    LaunchedEffect(Unit) {
+                        focusRequester.requestFocus()
+                    }
+
+                }
             }
             var isPathWrong by remember { mutableStateOf(false) }
             TooltipArea(
@@ -1348,7 +1395,43 @@ fun Caption(
             if (isPathWrong) {
                 Text("视频地址错误", color = Color.Red)
             }
+            if(isFocused){
+                TooltipArea(
+                    tooltip = {
+                        Surface(
+                            elevation = 4.dp,
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                            ),
+                            shape = RectangleShape
+                        ) {
+                            Row(modifier = Modifier.padding(10.dp)){
+                                Text(text = "复制单词" )
+                                CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                                    val ctrl = LocalCtrl.current
+                                    Text(text = " $ctrl+B")
+                                }
+                            }
 
+                        }
+                    },
+                    delayMillis = 300,
+                    tooltipPlacement = TooltipPlacement.ComponentRect(
+                        anchor = Alignment.TopCenter,
+                        alignment = Alignment.TopCenter,
+                        offset = DpOffset.Zero
+                    )
+                ) {
+                    IconButton(onClick = { selectable = !selectable }){
+                        Icon(
+                            Icons.Filled.ContentCopy,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colors.primary
+                        )
+                    }
+                }
+            }
         }
     }
 
