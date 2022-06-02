@@ -1897,12 +1897,6 @@ private fun readMKV(
 fun replaceSpecialCharacter(captionContent: String): String {
     var content = captionContent
     if (content.startsWith("-")) content = content.substring(1)
-    if (content.contains("[")) {
-        content = content.replace(Regex("\\["), "")
-    }
-    if (content.contains("]")) {
-        content = content.replace(Regex("]"), "")
-    }
     if (content.contains("<i>")) {
         content = content.replace("<i>", "")
     }

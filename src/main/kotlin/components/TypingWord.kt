@@ -546,13 +546,28 @@ fun TypingWord(
                                     }
                                     val typingResult = captionsTypingResultMap[index]
                                     typingResult!!.clear()
-                                    val chars = input.toList()
-                                    for (i in chars.indices) {
-                                        val char = chars[i]
-                                        if (char == captionContent[i]) {
+                                    val inputChars = input.toMutableList()
+                                    for (i in inputChars.indices) {
+                                        val inputChar = inputChars[i]
+                                        val char = captionContent[i]
+                                        if (inputChar == char) {
                                             typingResult.add(Pair(char, true))
+                                        }else if (inputChar == ' ' && (char == '[' || char == ']')) {
+                                            typingResult.add(Pair(char, true))
+                                            // 音乐符号不好输入，所以可以使用空格替换
+                                        }else if (inputChar == ' ' && (char == '♪')) {
+                                            typingResult.add(Pair(char, true))
+                                            // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
+                                            inputChars.add(i,'♪')
+                                            inputChars.removeAt(i+1)
+                                            val textFieldValue = String(inputChars.toCharArray())
+                                            when(index){
+                                                0 -> captionsTextFieldValue1 = textFieldValue
+                                                1 -> captionsTextFieldValue2 = textFieldValue
+                                                2 -> captionsTextFieldValue3 = textFieldValue
+                                            }
                                         } else {
-                                            typingResult.add(Pair(char, false))
+                                            typingResult.add(Pair(inputChar, false))
                                         }
                                     }
                                     if (input.length == captionContent.length) {
