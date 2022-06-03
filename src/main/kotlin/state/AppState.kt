@@ -368,23 +368,34 @@ class AppState {
     }
 
     /** 改变词库 */
-    fun changeVocabulary(file: File) {
+    fun changeVocabulary(file: File,index: Int) {
         val newVocabulary = loadMutableVocabulary(file.absolutePath)
         if(newVocabulary.wordList.size>0){
+            saveToRecentList(vocabulary.name, typingWord.vocabularyPath,typingWord.index)
             vocabulary = newVocabulary
             typingWord.vocabularyName = file.nameWithoutExtension
             typingWord.vocabularyPath = file.absolutePath
+
             if (isDictation) {
                 exitDictationMode()
                 resetChapterTime()
             }
-            typingWord.chapter = 1
-            typingWord.index = 0
+            typingWord.chapter = (index / 20) + 1
+            typingWord.index = index
             wordCorrectTime = 0
             wordWrongTime = 0
             saveTypingWordState()
-            saveToRecentList(vocabulary.name, file.absolutePath)
         }
+    }
+
+    fun findVocabularyIndex(file:File):Int{
+        var index = 0
+        for (recentItem in recentList) {
+            if(file.absolutePath == recentItem.path){
+                index = recentItem.index
+            }
+        }
+        return index
     }
 
     /** 保存当前的词库 */
@@ -422,13 +433,13 @@ class AppState {
         return File(settingsDir, "recentList.json")
     }
 
-    fun saveToRecentList(name: String, path: String) {
+    fun saveToRecentList(name: String, path: String,index: Int) {
         runBlocking {
             launch {
-                val item = RecentItem(LocalDateTime.now().toString(), name, path)
+                val item = RecentItem(LocalDateTime.now().toString(), name, path,index)
                 if (!recentList.contains(item)) {
-                    if (recentList.size == 30) {
-                        recentList.removeAt(29)
+                    if (recentList.size == 1000) {
+                        recentList.removeAt(999)
                     }
                     recentList.add(0, item)
                 } else {

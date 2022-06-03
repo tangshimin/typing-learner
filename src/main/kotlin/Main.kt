@@ -193,7 +193,8 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                 fileChooser.selectedFile = null
                 if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     val file = fileChooser.selectedFile
-                    state.changeVocabulary(file)
+                    val index = state.findVocabularyIndex(file)
+                    state.changeVocabulary(file,index)
                     state.global.type = WORD
                     state.saveGlobalState()
                     state.loadingFileChooserVisible = false
@@ -212,7 +213,7 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
                     if (recentFile.exists()) {
                         Item(text = recentItem.name, onClick = {
                             val file = File(recentItem.path)
-                            state.changeVocabulary(file)
+                            state.changeVocabulary(file,recentItem.index)
                             state.global.type = WORD
                             state.saveGlobalState()
                             state.loadingFileChooserVisible = false
@@ -394,7 +395,7 @@ fun MenuDialogs(state: AppState) {
         MergeVocabularyDialog(
             futureFileChooser = state.futureFileChooser,
             saveToRecentList = { name, path ->
-                state.saveToRecentList(name, path)
+                state.saveToRecentList(name, path,0)
             },
             close = { state.mergeVocabulary = false })
     }

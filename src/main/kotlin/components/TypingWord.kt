@@ -93,7 +93,8 @@ fun TypingWord(
             scope.launch {
                 if (file.extension == "json") {
                     if (state.typingWord.vocabularyPath != file.absolutePath) {
-                        state.changeVocabulary(file)
+                        val index = state.findVocabularyIndex(file)
+                        state.changeVocabulary(file,index)
                     } else {
                         JOptionPane.showMessageDialog(window, "词库已打开")
                     }

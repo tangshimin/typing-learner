@@ -558,7 +558,7 @@ fun GenerateVocabularyDialog(
                                                 subtitlesTrackId = selectedTrackId,
                                                 wordList = previewList
                                             )
-                                            state.saveToRecentList(vocabulary.name, selectedFile.absolutePath)
+                                            state.saveToRecentList(vocabulary.name, selectedFile.absolutePath,0)
                                             saveVocabulary(vocabulary, selectedFile.absolutePath)
 
                                             // 清理状态
@@ -612,7 +612,7 @@ fun GenerateVocabularyDialog(
 }
 
 @Serializable
-data class RecentItem(val time: String, val name: String, val path: String) {
+data class RecentItem(val time: String, val name: String, val path: String, val index: Int = 0) {
     override fun equals(other: Any?): Boolean {
         val otherItem = other as RecentItem
         return this.name == otherItem.name && this.path == otherItem.path
