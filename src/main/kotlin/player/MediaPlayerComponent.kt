@@ -36,7 +36,7 @@ fun createMediaPlayerComponent(): Component {
             val message = JEditorPane()
             message.contentType = "text/html"
             message.text = "没有安装 <a href='https://www.videolan.org/'>VLC 视频播放器</a><br>"+
-                    "qwerty-learner 需要 VLC 朗读单词发音和播放视频<br>"
+                    "typing-learner 需要 VLC 朗读单词发音和播放视频<br>"
             message.addHyperlinkListener {
                 if(it.eventType == HyperlinkEvent.EventType.ACTIVATED){
                     Desktop.getDesktop().browse(it.url.toURI())
