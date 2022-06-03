@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
@@ -18,6 +19,9 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import player.isWindows
 import state.getResourcesFile
+import java.awt.Desktop
+import javax.swing.JEditorPane
+import javax.swing.event.HyperlinkEvent
 
 /**
  * 关于 对话框
@@ -121,12 +125,24 @@ fun AboutDialog(close: () -> Unit) {
                         }
                     }
                     2 -> {
-                        val file = getResourcesFile("3rd.txt")
+                        val file = getResourcesFile("3rd.html")
                         if (file.exists()) {
                             val thirdParty = file.readText()
-                            SelectionContainer {
-                                Text(thirdParty, modifier = Modifier.padding(10.dp))
+                            val editorPane = JEditorPane()
+                            editorPane.isEditable = false
+                            editorPane.contentType = "text/html"
+                            editorPane.text = thirdParty
+                            editorPane.addHyperlinkListener {
+                                if(it.eventType == HyperlinkEvent.EventType.ACTIVATED){
+                                    Desktop.getDesktop().browse(it.url.toURI())
+                                }
                             }
+                            SwingPanel(
+                                modifier = Modifier.width(600.dp).height(460.dp),
+                                factory = {
+                                    editorPane
+                                }
+                            )
                         }
                     }
                 }
