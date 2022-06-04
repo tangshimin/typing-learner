@@ -81,7 +81,7 @@ fun TypingWordSidebar(state: AppState) {
 
                     Spacer(Modifier.width(15.dp))
                     Icon(
-                        Icons.Filled.TextFields,
+                        Icons.Filled.Subtitles,
                         contentDescription = "Localized description",
                         tint = MaterialTheme.colors.onBackground,
                         modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
@@ -498,7 +498,7 @@ fun TypingWordSidebar(state: AppState) {
                     Icon(
                         imageVector = Icons.Filled.VolumeUp,
                         contentDescription = "",
-                        tint = MaterialTheme.colors.primary,
+                        tint = MaterialTheme.colors.onBackground,
                         modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
                     )
                 }

@@ -1217,7 +1217,7 @@ fun SubtitlesSidebar(
                 }
                 Spacer(Modifier.width(15.dp))
                 Icon(
-                    Icons.Filled.TextFields,
+                    Icons.Filled.Title,
                     contentDescription = "Localized description",
                     tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground,
                     modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)

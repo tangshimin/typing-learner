@@ -379,13 +379,13 @@ fun EditingCaptions(
                         offset = DpOffset.Zero
                     )
                 ) {
-                    val progress = 0.5f
                     IconButton(onClick = {
                         showSettingTimeLineDialog = true
                     }, modifier = Modifier.size(48.dp)) {
-                        LinearProgressIndicator(
-                            progress = progress,
-                            modifier = Modifier.width(24.dp)
+                        Icon(
+                            Icons.Filled.Timeline,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colors.primary
                         )
                     }
                 }
