@@ -69,10 +69,11 @@ fun ColorChooserDialog(
                     Column(verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize().background(if(MaterialTheme.colors.isLight) Color.LightGray else Color.DarkGray)){
                         Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth().height(120.dp)){
-                            Box(Modifier.width(115.dp).fillMaxHeight().background(selectedColor))
-                            Spacer(Modifier.width(15.dp))
+                            Box(Modifier.width(40.dp).height(40.dp).background(selectedColor))
+                            Spacer(Modifier.width(25.dp))
                             Row(horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.width(300.dp).fillMaxHeight().background(darkColors().background)){
@@ -156,19 +157,26 @@ fun ColorChooserDialog(
                         }
                         Row(
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)){
-                            OutlinedButton(onClick = {
-                                state.global.primaryColor = selectedColor
-                                state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
-                                state.saveGlobalState()
-                                close()
-                            }){
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    state.global.primaryColor = selectedColor
+                                    state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
+                                    state.saveGlobalState()
+                                    close()
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = selectedColor)
+                            ) {
                                 Text("确定")
                             }
                             Spacer(Modifier.width(10.dp))
-                            OutlinedButton(onClick = {
-                               close()
-                            }){
+                            OutlinedButton(
+                                onClick = {
+                                    close()
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = selectedColor)
+                            ) {
                                 Text("取消")
                             }
                         }
