@@ -9,10 +9,10 @@ https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-
 demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 
 
-### 本软件是基于 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 写的桌面版，主要新增功能如下：
+### 主要功能：
 
 1. [可以用MKV 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。有了这个功能，今后就可以一边追美剧一边学英语了。
-  ![Generate Vocabulary From MKV Video File](https://user-images.githubusercontent.com/16540656/166684580-57e31303-e849-4bb6-be9a-2cc0cb851317.png)
+    ![Generate Vocabulary From MKV Video File](https://user-images.githubusercontent.com/16540656/166684580-57e31303-e849-4bb6-be9a-2cc0cb851317.png)
   
 2. [如果不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 3. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
@@ -26,13 +26,13 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 6. 抄写字幕，可以抄写你感兴趣的电影、电视剧、纪录片、TED演讲。可以抄写多种语言的字幕。
 
 7. 合并词库，可以把一整季的电视剧生成的多个字幕词库合并成一个词库。
- 
+
 8. 学习完一章之后，可以选择进入默写模式，在默写模式整个章节的单词是重新随机排序的，默写完了会出现默写的正确率。
   
 9. 学习完整个词库之后，还有一个随机排序整个词库的功能。
   
-10.  默认使用 Enter 键切换下一个单词，如果要使用类似于网页版的自动切换，可以使用 Ctrl + A 开启自动切换。推荐第一次记忆词典的时候，使用非自动切换，第二天复习的时候再打开自动切换。 
-  
+10.  默认使用 Enter 键切换下一个单词，如果要使用 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的自动切换，可以使用 Ctrl + A 开启自动切换。推荐第一次记忆不认识的单词时，使用非自动切换，第二天复习的时候再打开自动切换。 
+
 ## [下载地址](https://github.com/tangshimin/typing-learner/releases)
 
 ## TODO
@@ -40,17 +40,17 @@ demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyu
 
 ## 开发环境
 
-- 启动项目之前需要将 `qwerty-learner-desktop\resources\common\dictionary` 文件夹里的词典文件`ecdict.mv.db.7z` 解压缩。不然不能使用生成词库功能。
+- 启动项目之前需要将 `typing-learner\resources\common\dictionary` 文件夹里的词典文件`ecdict.mv.db.7z` 解压缩。不然不能使用生成词库功能。
 - JDK 17
 - gradle 7.3.3
 - VLC 视频播放器
 
 
 ## 致谢
-感谢 [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
+本项目的核心功能，记忆单词来源于  [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner) ，感谢 qwerty-learner 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
 
 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
 
-感谢 [libregd](https://github.com/libregd) 为桌面版重新设计 Icon。
+感谢 [libregd](https://github.com/libregd) 为本项目设计 Logo。
 
 
