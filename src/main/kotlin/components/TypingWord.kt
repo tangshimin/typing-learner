@@ -424,7 +424,9 @@ fun TypingWord(
 
                             /** 焦点切换到抄写字幕*/
                             val jumpToCaptions:() -> Unit = {
-                                focusRequester1.requestFocus()
+                                if(currentWord.captions.isNotEmpty()){
+                                    focusRequester1.requestFocus()
+                                }
                             }
 
                             /** 切换下一个单词 */
