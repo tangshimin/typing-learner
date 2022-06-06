@@ -91,7 +91,7 @@ fun Word(
     resetChapterTime: () -> Unit,
     playKeySound: () -> Unit,
     jumpToCaptions: () -> Unit,
-
+    focusRequester: FocusRequester
     ) {
 
     /**
@@ -100,7 +100,6 @@ fun Word(
     val scope = rememberCoroutineScope()
 
     val wordValue = word.value
-    val focusRequester = remember { FocusRequester() }
     var lastInputTime by remember { mutableStateOf(0L) }
     var activeMenu by remember { mutableStateOf(false) }
     val textFieldKeyEvent: (KeyEvent) -> Boolean = { it: KeyEvent ->

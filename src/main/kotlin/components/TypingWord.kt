@@ -350,6 +350,9 @@ fun TypingWord(
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
+                            /** 单词输入框的焦点请求器*/
+                            val wordFocusRequester = remember { FocusRequester() }
+
                             /** 第一条字幕的输入字符串*/
                             var captionsTextFieldValue1 by remember { mutableStateOf("") }
 
@@ -420,6 +423,11 @@ fun TypingWord(
                                         state.dictationWrongWords[currentWord] = 1
                                     }
                                 }
+                            }
+
+                            /** 焦点切换到单词输入框*/
+                            val jumpToWord:() -> Unit = {
+                                wordFocusRequester.requestFocus()
                             }
 
                             /** 焦点切换到抄写字幕*/
@@ -608,6 +616,7 @@ fun TypingWord(
                                 resetChapterTime = { state.resetChapterTime() },
                                 playKeySound = { playKeySound() },
                                 jumpToCaptions = { jumpToCaptions() },
+                                focusRequester = wordFocusRequester,
                             )
                             Phonetic(
                                 word = currentWord,
@@ -663,7 +672,8 @@ fun TypingWord(
                                 },
                                 playKeySound = { playKeySound() },
                                 modifier = captionsModifier,
-                                focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3)
+                                focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3),
+                                jumpToWord = {jumpToWord()}
                             )
                             if (state.isPlaying) Spacer(
                                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
@@ -1012,6 +1022,7 @@ fun Captions(
     playKeySound: () -> Unit,
     modifier: Modifier,
     focusRequesterList:List<FocusRequester>,
+    jumpToWord: () -> Unit,
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1051,7 +1062,8 @@ fun Captions(
                         index = index,
                         playTriple = playTriple,
                         bounds = bounds,
-                        focusRequester = focusRequesterList[index]
+                        focusRequester = focusRequesterList[index],
+                        jumpToWord = {jumpToWord()}
                     )
                 }
 
@@ -1140,7 +1152,8 @@ fun Caption(
     index: Int,
     playTriple: Triple<Caption, String, Int>,
     bounds: Rectangle,
-    focusRequester:FocusRequester
+    focusRequester:FocusRequester,
+    jumpToWord: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val relativeVideoPath = playTriple.second
@@ -1216,19 +1229,17 @@ fun Caption(
                                 }
 
                                 (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
+                                    if(index<2){
+                                        focusManager.moveFocus(FocusDirection.Next)
+                                        focusManager.moveFocus(FocusDirection.Next)
+                                        focusManager.moveFocus(FocusDirection.Next)
+                                    }
                                     true
                                 }
 
                                 (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
                                     if(index == 0){
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        jumpToWord()
                                     }else{
                                         focusManager.moveFocus(FocusDirection.Previous)
                                         focusManager.moveFocus(FocusDirection.Previous)
