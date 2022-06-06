@@ -583,8 +583,16 @@ fun TypingWord(
                                     }
                                     if (input.length == captionContent.length) {
                                         when(index){
-                                            0 -> focusRequester2.requestFocus()
-                                            1 -> focusRequester3.requestFocus()
+                                            0 -> {
+                                                if(currentWord.captions.size>1){
+                                                    focusRequester2.requestFocus()
+                                                }
+                                            }
+                                            1 -> {
+                                                if(currentWord.captions.size == 3){
+                                                    focusRequester3.requestFocus()
+                                                }
+                                            }
                                         }
                                     }
 
@@ -1060,6 +1068,7 @@ fun Captions(
                         },
                         playKeySound = { playKeySound() },
                         index = index,
+                        size = word.captions.size,
                         playTriple = playTriple,
                         bounds = bounds,
                         focusRequester = focusRequesterList[index],
@@ -1150,6 +1159,7 @@ fun Caption(
     checkTyping: (Int, String, String) -> Unit,
     playKeySound: () -> Unit,
     index: Int,
+    size: Int,
     playTriple: Triple<Caption, String, Int>,
     bounds: Rectangle,
     focusRequester:FocusRequester,
@@ -1229,7 +1239,7 @@ fun Caption(
                                 }
 
                                 (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
-                                    if(index<2){
+                                    if(index<2 && index + 1 < size){
                                         focusManager.moveFocus(FocusDirection.Next)
                                         focusManager.moveFocus(FocusDirection.Next)
                                         focusManager.moveFocus(FocusDirection.Next)
