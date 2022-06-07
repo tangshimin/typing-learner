@@ -483,6 +483,7 @@ fun Word(
                 // 重新生成一个乱序的单词列表
                 state.dictationWords = state.generateDictationWords(wordValue)
             }
+            focusRequester.requestFocus()
             resetChapterTime()
             changeShowChapterFinishedDialog(false)
         }
