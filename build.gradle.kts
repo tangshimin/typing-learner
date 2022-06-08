@@ -58,7 +58,7 @@ compose.desktop {
 //        jvmArgs += listOf("-XX:+PrintNMTStatistics")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Typing-Learner"
+            packageName = "Typing Learner"
             packageVersion = "1.0.0"
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
