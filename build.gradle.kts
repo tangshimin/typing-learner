@@ -58,7 +58,7 @@ compose.desktop {
 //        jvmArgs += listOf("-XX:+PrintNMTStatistics")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "typing-learner"
+            packageName = "Typing-Learner"
             packageVersion = "1.0.0"
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
@@ -67,7 +67,7 @@ compose.desktop {
             windows{
                 dirChooser = true
                 perUserInstall = true
-                menuGroup = "typing learner"
+                menuGroup = "Typing Learner"
                 iconFile.set(project.file("src/main/resources/logo/logo.ico"))
             }
             macOS{
