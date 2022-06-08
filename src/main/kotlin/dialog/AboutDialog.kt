@@ -106,7 +106,7 @@ fun AboutDialog(close: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
-                                    Text("typing leaner v1.0.0 64-bit")
+                                    Text("Typing Leaner v1.0.0 64-bit")
                                 }
                             }
 
