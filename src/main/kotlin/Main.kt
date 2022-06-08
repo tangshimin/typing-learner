@@ -67,7 +67,7 @@ fun main() = application {
         if (isOpen) {
             Window(
                 title = title,
-                icon = painterResource("logo/logo.svg"),
+                icon = painterResource("logo/logo.png"),
                 state = windowState,
                 onCloseRequest = {
                     isOpen = false
