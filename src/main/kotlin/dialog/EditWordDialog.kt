@@ -383,7 +383,7 @@ fun EditingCaptions(
                         showSettingTimeLineDialog = true
                     }, modifier = Modifier.size(48.dp)) {
                         Icon(
-                            Icons.Filled.Timeline,
+                            Icons.Filled.SpaceBar,
                             contentDescription = "Localized description",
                             tint = MaterialTheme.colors.primary
                         )
