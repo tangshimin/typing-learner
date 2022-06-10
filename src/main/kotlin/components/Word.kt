@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.*
@@ -153,17 +154,25 @@ fun Word(
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 48.dp).height(66.dp)
+            modifier = Modifier.padding(top = 48.dp).height(IntrinsicSize.Max)
         ) {
+            var textHeight by remember { mutableStateOf(0.dp) }
+            var bottom = 0.dp
+            var smallStyleList = listOf("H5","H6","Subtitle1","Subtitle2","Body1","Body2","Button","Caption","Overline")
+            if(smallStyleList.contains(state.global.textStyle)) bottom = (36.dp - textHeight).div(2)
+            if(bottom<0.dp) bottom = 0.dp
+            if(bottom>7.5.dp) bottom = 5.dp
+
             Box(Modifier
                 .width(intrinsicSize = IntrinsicSize.Max)
+                .height(intrinsicSize = IntrinsicSize.Max)
                 .padding(start = 50.dp)
                 .onPointerEvent(PointerEventType.Enter) {
                     if (!state.isDictation || (state.isDictation && state.isReviewWrongList)) {
                         activeMenu = true
                     }
                 }) {
-                val fontSize = MaterialTheme.typography.h2.fontSize
+                val fontSize = state.global.fontSize
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
@@ -179,11 +188,12 @@ fun Word(
                         textStyle = TextStyle(
                             color = Color.Transparent,
                             fontSize = fontSize,
-                            letterSpacing = 5.sp,
+                            letterSpacing =  state.global.letterSpacing,
                             fontFamily =fontFamily
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(bottom = bottom)
                             .align(Alignment.Center)
                             .focusRequester(focusRequester)
                             .onKeyEvent { textFieldKeyEvent(it) }
@@ -193,7 +203,12 @@ fun Word(
                     focusRequester.requestFocus()
                 }
                 Text(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier
+                        .padding(bottom = bottom)
+                        .align(Alignment.Center)
+                        .onGloballyPositioned { layoutCoordinates ->
+                        textHeight = (layoutCoordinates.size.height).dp
+                    },
                     text = buildAnnotatedString {
                         typingResult.forEach { (char, correct) ->
                             if (correct) {
@@ -201,7 +216,7 @@ fun Word(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.primary,
                                         fontSize = fontSize,
-                                        letterSpacing = 5.sp,
+                                        letterSpacing = state.global.letterSpacing,
                                         fontFamily = fontFamily,
                                     )
                                 ) {
@@ -212,7 +227,7 @@ fun Word(
                                     style = SpanStyle(
                                         color = Color.Red,
                                         fontSize =fontSize,
-                                        letterSpacing = 5.sp,
+                                        letterSpacing = state.global.letterSpacing,
                                         fontFamily =fontFamily,
                                     )
                                 ) {
@@ -230,7 +245,7 @@ fun Word(
                                 style = SpanStyle(
                                     color = MaterialTheme.colors.onBackground,
                                     fontSize = fontSize,
-                                    letterSpacing = 5.sp,
+                                    letterSpacing =  state.global.letterSpacing,
                                     fontFamily = fontFamily,
                                 )
                             ) {
@@ -245,7 +260,7 @@ fun Word(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.onBackground,
                                         fontSize = fontSize,
-                                        letterSpacing = 5.sp,
+                                        letterSpacing =  state.global.letterSpacing,
                                         fontFamily =fontFamily,
                                     )
                                 ) {
@@ -256,7 +271,7 @@ fun Word(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.onBackground,
                                         fontSize = fontSize,
-                                        letterSpacing = 5.sp,
+                                        letterSpacing =  state.global.letterSpacing,
                                         fontFamily = fontFamily,
                                     )
                                 ) {
@@ -272,16 +287,28 @@ fun Word(
                 )
             }
             Column {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "${if (correctTime > 0) correctTime else ""}", color = MaterialTheme.colors.primary)
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "${if (wrongTime > 0) wrongTime else ""}", color = Color.Red)
+                var top = (textHeight - 36.dp).div(2)
+                var numberFontSize = LocalTextStyle.current.fontSize
+                if(smallStyleList.contains(state.global.textStyle)) numberFontSize = MaterialTheme.typography.overline.fontSize
+                Spacer(modifier = Modifier.height(top))
+                Text(text = "${if (correctTime > 0) correctTime else ""}",
+                    color = MaterialTheme.colors.primary,
+                    fontSize =  numberFontSize)
+                Spacer(modifier = Modifier.height(top))
+                Text(text = "${if (wrongTime > 0) wrongTime else ""}",
+                    color = Color.Red,
+                    fontSize =  numberFontSize
+                )
             }
+            var volumeTop = textHeight.div(2) - 20.dp
+            if(volumeTop<0.dp) volumeTop =  0.dp
+            if(state.global.textStyle == "H1") volumeTop = 23.dp
 
             AudioButton(
                 audioPath = audioPath,
                 volume = state.global.audioVolume,
                 pronunciation = state.typingWord.pronunciation,
+                volumeTop = volumeTop
             )
         }
         val clipboardManager = LocalClipboardManager.current

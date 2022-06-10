@@ -32,6 +32,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
 import state.TypingType.*
+import state.computeFontSize
 import state.getResourcesFile
 import state.rememberAppState
 import theme.createColors
@@ -57,6 +58,11 @@ fun main() = application {
         LocalTextSelectionColors provides textSelectionColors()
     ) {
         val audioPlayerComponent = LocalAudioPlayerComponent.current
+        val close: () -> Unit = {
+            isOpen = false
+            audioPlayerComponent.mediaPlayer().release()
+            state.videoPlayerComponent.mediaPlayer().release()
+        }
         val windowState = rememberWindowState(
             position = WindowPosition(Alignment.Center),
             placement = WindowPlacement.Maximized,
@@ -69,14 +75,14 @@ fun main() = application {
                 title = title,
                 icon = painterResource("logo/logo.png"),
                 state = windowState,
-                onCloseRequest = {
-                    isOpen = false
-                    audioPlayerComponent.mediaPlayer().release()
-                    state.videoPlayerComponent.mediaPlayer().release()
-                },
+                onCloseRequest = {close() },
             ) {
                 MaterialTheme(colors = state.colors) {
-                    WindowMenuBar(state)
+                    state.global.fontSize = computeFontSize(state.global.textStyle)
+                    WindowMenuBar(
+                        state = state,
+                        close = {close()}
+                    )
                     MenuDialogs(state)
 
                     when (state.global.type) {
@@ -178,7 +184,10 @@ private fun computeTitle(state: AppState): String {
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
-private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
+private fun FrameWindowScope.WindowMenuBar(
+    state: AppState,
+    close: () -> Unit,
+) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
         Item("打开词库(O)", mnemonic = 'O', onClick = {
             if(isWindows()) {
@@ -236,12 +245,23 @@ private fun FrameWindowScope.WindowMenuBar(state: AppState) = MenuBar {
         Item("从文档生成词库(D)", mnemonic = 'D', onClick = {
             state.generateVocabularyFromDocument = true
         })
-        Item("从字幕生成词库(S)", mnemonic = 'S', onClick = {
+        Item("从字幕生成词库(C)", mnemonic = 'C', onClick = {
             state.generateVocabularyFromSubtitles = true
         })
         Item("从 MKV 视频生成词库(V)", mnemonic = 'V', onClick = {
             state.generateVocabularyFromMKV = true
         })
+        Separator()
+        var showSettingsDialog by remember { mutableStateOf(false) }
+        Item("设置(S)", mnemonic = 'S', onClick = { showSettingsDialog = true })
+        if(showSettingsDialog){
+            SettingsDialog(
+                close = {showSettingsDialog = false},
+                state = state
+            )
+        }
+        Separator()
+        Item("退出(X)", mnemonic = 'X', onClick = { close() })
     }
     Menu("字幕(S)", mnemonic = 'S') {
         val enableTypingSubtitles = (state.global.type == WORD)
@@ -336,7 +356,7 @@ fun Settings(
                             shape = RectangleShape
                         ) {
                             val ctrl = LocalCtrl.current
-                            Text(text = "设置 $ctrl+1", modifier = Modifier.padding(10.dp))
+                            Text(text = "侧边栏 $ctrl+1", modifier = Modifier.padding(10.dp))
                         }
                     },
                     delayMillis = 300,

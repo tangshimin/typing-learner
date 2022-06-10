@@ -12,28 +12,16 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Font
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import dialog.ColorChooserDialog
+import dialog.SettingsDialog
 import kotlinx.coroutines.launch
 import player.isMacOS
 import player.isWindows
 import state.AppState
 import state.TypingType
 import theme.createColors
-import java.awt.Dimension
-import javax.swing.JColorChooser
-import javax.swing.JDialog
 
 /**
  * 侧边菜单
@@ -400,40 +388,6 @@ fun TypingWordSidebar(state: AppState) {
                         },
 
                         )
-                }
-                var showColorChooser by remember { mutableStateOf(false) }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().height(48.dp)
-                        .clickable {
-                            scope.launch {
-                                showColorChooser = true
-                            }
-                        }.padding(start = 16.dp, end = 8.dp)
-                ) {
-                    if(showColorChooser){
-                        ColorChooserDialog(
-                            close = {showColorChooser = false},
-                            state = state
-                        )
-                    }
-
-                    Row {
-                        Text("选择主色", color = MaterialTheme.colors.onBackground)
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = "",
-                            color = MaterialTheme.colors.onBackground
-                        )
-                    }
-                    Spacer(Modifier.width(15.dp))
-                    Icon(
-                        Icons.Default.Palette,
-                        contentDescription = "",
-                        tint = MaterialTheme.colors.primary,
-                        modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
-                    )
                 }
 
                 var expanded by remember { mutableStateOf(false) }

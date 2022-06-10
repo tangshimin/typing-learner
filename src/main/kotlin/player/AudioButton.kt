@@ -18,6 +18,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ fun AudioButton(
     audioPath: String,
     volume: Float,
     pronunciation: String,
+    volumeTop: Dp,
 ) {
     if (pronunciation != "false") {
         val scope = rememberCoroutineScope()
@@ -88,7 +90,7 @@ fun AudioButton(
                 val tint by animateColorAsState(if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground)
                 IconToggleButton(
                     checked = isPlaying,
-                     modifier = Modifier.padding(top = 11.dp),
+                     modifier = Modifier.padding(top = volumeTop),
                     onCheckedChange = {
                         if (!isPlaying) {
                             scope.launch {
