@@ -39,7 +39,7 @@ import javax.swing.event.HyperlinkEvent
 fun AboutDialog(close: () -> Unit) {
     Dialog(
         title = "关于",
-        icon = painterResource("logo/logo.svg"),
+        icon = painterResource("logo/logo.png"),
         onCloseRequest = { close() },
         resizable = false,
         state = rememberDialogState(
@@ -115,37 +115,45 @@ fun AboutDialog(close: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
-                                    val annotatedString = buildAnnotatedString {
-                                        withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                            append("如果你有任何问题或建议可以到 GitHub 提 Issue,如果没有 GitHub 账号，可以发邮件。\n")
-                                        }
-                                        withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                            append("GitHub 地址：")
-                                        }
-                                        pushStringAnnotation(tag = "github", annotation = "https://github.com/tangshimin/typing-learner")
-                                        withStyle(style = SpanStyle(color = blueColor)) {
-                                            append("https://github.com/tangshimin/typing-learner")
-                                        }
-                                        pop()
-                                        withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                            append("\n邮箱：            ")
-                                        }
-                                        pushStringAnnotation(tag = "email", annotation = "mailto:typinglearner@outlook.com")
-                                        withStyle(style = SpanStyle(color = blueColor)) {
-                                            append("typinglearner@outlook.com")
-                                        }
-                                        pop()
+                                Text("如果你有任何问题或建议可以到 GitHub 提 Issue,如果没有 GitHub 账号，可以发邮件。")
+                            }
+                            Row{
+                                Text("GitHub 地址：")
+                                val annotatedString = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "github", annotation = "https://github.com/tangshimin/typing-learner")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("https://github.com/tangshimin/typing-learner")
                                     }
-                                    ClickableText(text = annotatedString,
-                                        style = MaterialTheme.typography.body1,
-                                        onClick = { offset ->
-                                            annotatedString.getStringAnnotations(tag = "github", start = offset, end = offset).firstOrNull()?.let {
-                                                uriHandler.openUri(it.item)
-                                            }
-                                            annotatedString.getStringAnnotations(tag = "email", start = offset, end = offset).firstOrNull()?.let {
-                                                uriHandler.openUri(it.item)
-                                            }
-                                        })
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier
+                                        .pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString.getStringAnnotations(tag = "github", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
+                                    })
+                            }
+                            Row{
+                                Text("邮箱：            ")
+                                val annotatedString = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "email", annotation = "mailto:typinglearner@outlook.com")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("typinglearner@outlook.com")
+                                    }
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier
+                                        .pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString.getStringAnnotations(tag = "email", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
+                                    })
                             }
                         }
                     }
@@ -174,72 +182,85 @@ fun AboutDialog(close: () -> Unit) {
                     }
                     2 -> {
 
-                        val annotatedString = buildAnnotatedString {
-                            // 本项目的核心功能，记忆单词来源于  [qwerty-learner](https://github.com/Kaiyiwing/qwerty-learner)，
-                            // 感谢 qwerty-learner 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append("本项目的核心功能，记忆单词来源于  ")
-                            }
-                            pushStringAnnotation(tag = "qwerty", annotation = "https://github.com/Kaiyiwing/qwerty-learner")
-                            withStyle(style = SpanStyle(color = blueColor)) {
-                                append("qwerty-learner")
-                            }
-                            pop()
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append("\n感谢 qwerty-learner 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。")
-                            }
+                        Column (Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp)){
+                            Row{
+                                Text("本项目的核心功能，记忆单词来源于  ")
+                                val annotatedString = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "qwerty", annotation = "https://github.com/Kaiyiwing/qwerty-learner")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("qwerty-learner")
+                                    }
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier.pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString.getStringAnnotations(tag = "qwerty", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
 
-                            // 感谢 [skywind3000](https://github.com/skywind3000) 开源 [ECDICT](https://github.com/skywind3000/ECDICT)。
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append("\n感谢 ")
+                                    })
                             }
-                            pushStringAnnotation(tag = "skywind3000", annotation = "https://github.com/skywind3000")
-                            withStyle(style = SpanStyle(color = blueColor)) {
-                                append("skywind3000")
+                            Row{
+                                Text("感谢 qwerty-learner 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。")
                             }
-                            pop()
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append("开源")
+                            Row{
+                                Text("感谢 ")
+                                val annotatedString1 = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "skywind3000", annotation = "https://github.com/skywind3000")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("skywind3000")
+                                    }
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString1,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier.pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString1.getStringAnnotations(tag = "skywind3000", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
+                                    })
+                                Text("开源")
+                                val annotatedString2 = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "ECDICT", annotation = "https://github.com/skywind3000/ECDICT")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("ECDICT")
+                                    }
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString2,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier.pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString2.getStringAnnotations(tag = "ECDICT", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
+                                    })
                             }
-                            pushStringAnnotation(tag = "ECDICT", annotation = "https://github.com/skywind3000/ECDICT")
-                            withStyle(style = SpanStyle(color = blueColor)) {
-                                append("ECDICT")
+                            Row{
+                                val annotatedString = buildAnnotatedString {
+                                    pushStringAnnotation(tag = "libregd", annotation = "https://github.com/libregd")
+                                    withStyle(style = SpanStyle(color = blueColor)) {
+                                        append("libregd")
+                                    }
+                                    pop()
+                                }
+                                ClickableText(text = annotatedString,
+                                    style = MaterialTheme.typography.body1,
+                                    modifier = Modifier.pointerHoverIcon(PointerIconDefaults.Hand),
+                                    onClick = { offset ->
+                                        annotatedString.getStringAnnotations(tag = "libregd", start = offset, end = offset).firstOrNull()?.let {
+                                            uriHandler.openUri(it.item)
+                                        }
+                                    })
+                                Text(" 为本项目设计 Logo。")
                             }
-                            pop()
-
-                            // 感谢 [libregd](https://github.com/libregd) 为本项目设计 Logo。
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append("\n感谢 ")
-                            }
-                            pushStringAnnotation(tag = "libregd", annotation = "https://github.com/libregd")
-                            withStyle(style = SpanStyle(color = blueColor)) {
-                                append("libregd")
-                            }
-                            pop()
-                            withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                append(" 为本项目设计 Logo。")
-                            }
-
                         }
 
-                        ClickableText(text = annotatedString,
-                            style = MaterialTheme.typography.body1,
-                            modifier = Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp),
-                            onClick = { offset ->
-                            annotatedString.getStringAnnotations(tag = "qwerty", start = offset, end = offset).firstOrNull()?.let {
-                                uriHandler.openUri(it.item)
-                            }
 
-                            annotatedString.getStringAnnotations(tag = "skywind3000", start = offset, end = offset).firstOrNull()?.let {
-                                uriHandler.openUri(it.item)
-                            }
-                            annotatedString.getStringAnnotations(tag = "ECDICT", start = offset, end = offset).firstOrNull()?.let {
-                                uriHandler.openUri(it.item)
-                            }
-                            annotatedString.getStringAnnotations(tag = "libregd", start = offset, end = offset).firstOrNull()?.let {
-                                uriHandler.openUri(it.item)
-                            }
-                        })
+
                     }
                     3 -> {
                         val file = getResourcesFile("3rd.html")
