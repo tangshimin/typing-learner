@@ -128,11 +128,11 @@ fun AboutDialog(close: () -> Unit) {
                                         }
                                         pop()
                                         withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                                            append("\n邮箱：")
+                                            append("\n邮箱：            ")
                                         }
-                                        pushStringAnnotation(tag = "email", annotation = "mailto:tang_shimin@qq.com")
+                                        pushStringAnnotation(tag = "email", annotation = "mailto:typinglearner@outlook.com")
                                         withStyle(style = SpanStyle(color = blueColor)) {
-                                            append("tang_shimin@qq.com")
+                                            append("typinglearner@outlook.com")
                                         }
                                         pop()
                                     }
