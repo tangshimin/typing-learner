@@ -301,8 +301,15 @@ private fun FrameWindowScope.WindowMenuBar(
     }
     var aboutDialogVisible by remember { mutableStateOf(false) }
     var donateDialogVisible by remember { mutableStateOf(false) }
+    var helpDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
 //        Item("检查更新(U)", mnemonic = 'U', onClick = { println("点击 检查更新") })
+        Item("帮助文档(H)", mnemonic = 'H', onClick = { helpDialogVisible = true})
+        if(helpDialogVisible){
+            HelpDialog(
+                close = {helpDialogVisible = false}
+            )
+        }
         Item("捐赠", onClick = { donateDialogVisible = true })
         if(donateDialogVisible){
             DonateDialog (
