@@ -40,7 +40,7 @@ fun MergeVocabularyDialog(
 ) {
     Dialog(
         title = "合并词库",
-        icon = painterResource("logo/logo.svg"),
+        icon = painterResource("logo/logo.png"),
         onCloseRequest = { close() },
         resizable = false,
         state = rememberDialogState(

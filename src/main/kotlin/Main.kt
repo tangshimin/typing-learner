@@ -472,7 +472,7 @@ fun MenuDialogs(state: AppState) {
 fun LoadingDialog() {
     Dialog(
         title = "正在加载文件选择器",
-        icon = painterResource("logo/logo.svg"),
+        icon = painterResource("logo/logo.png"),
         onCloseRequest = {},
         undecorated = true,
         resizable = false,
