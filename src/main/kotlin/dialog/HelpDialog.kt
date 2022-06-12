@@ -171,9 +171,10 @@ fun DocumentPage(){
 
             val uriHandler = LocalUriHandler.current
             val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
-            Row (verticalAlignment = Alignment.CenterVertically){
+            Row (verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 30.dp)){
                 Text("演示文档 AndroidNotesForProfessionals 来源于：")
-                val annotatedString = buildAnnotatedString {
+                val annotatedString1 = buildAnnotatedString {
                     pushStringAnnotation(tag = "android", annotation = "https://goalkicker.com/AndroidBook/")
                     withStyle(style = SpanStyle(color = blueColor)) {
                         append("https://goalkicker.com/AndroidBook/")
@@ -181,17 +182,38 @@ fun DocumentPage(){
                     pop()
                 }
                 ClickableText(
-                    text = annotatedString,
+                    text = annotatedString1,
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier
-                        .pointerHoverIcon(PointerIconDefaults.Hand)
-                        .padding(top = 20.dp, bottom = 20.dp),
+                        .pointerHoverIcon(PointerIconDefaults.Hand),
                     onClick = { offset ->
-                        annotatedString.getStringAnnotations(tag = "android", start = offset, end = offset).firstOrNull()?.let {
+                        annotatedString1.getStringAnnotations(tag = "android", start = offset, end = offset).firstOrNull()?.let {
                             uriHandler.openUri(it.item)
                         }
                     })
             }
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text("在 ")
+                val annotatedString = buildAnnotatedString {
+                    pushStringAnnotation(tag = "goalkicker", annotation = "https://goalkicker.com/")
+                    withStyle(style = SpanStyle(color = blueColor)) {
+                        append("goalkicker")
+                    }
+                    pop()
+                }
+                ClickableText(
+                    text = annotatedString,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .pointerHoverIcon(PointerIconDefaults.Hand),
+                    onClick = { offset ->
+                        annotatedString.getStringAnnotations(tag = "goalkicker", start = offset, end = offset).firstOrNull()?.let {
+                            uriHandler.openUri(it.item)
+                        }
+                    })
+                Text(" 有很多 Stack Overflow Documentation")
+            }
+
         }
         VerticalScrollbar(
             style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
@@ -202,6 +224,7 @@ fun DocumentPage(){
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SubtitlesPage(){
     Box(Modifier.fillMaxSize()){
@@ -251,6 +274,28 @@ fun SubtitlesPage(){
                 contentDescription = "document-7",
                 modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
             )
+
+            Row{
+                val uriHandler = LocalUriHandler.current
+                val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
+                Text("演示字幕来源于")
+                val annotatedString = buildAnnotatedString {
+                    pushStringAnnotation(tag = "blender", annotation = "https://durian.blender.org/")
+                    withStyle(style = SpanStyle(color = blueColor)) {
+                        append("Sintel")
+                    }
+                    pop()
+                }
+                ClickableText(
+                    text = annotatedString,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier.pointerHoverIcon(PointerIconDefaults.Hand),
+                    onClick = { offset ->
+                        annotatedString.getStringAnnotations(tag = "blender", start = offset, end = offset).firstOrNull()?.let {
+                            uriHandler.openUri(it.item)
+                        }
+                    })
+            }
         }
 
         VerticalScrollbar(
@@ -262,6 +307,7 @@ fun SubtitlesPage(){
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MatroskaPage(){
     Box(Modifier.fillMaxSize()){
@@ -312,7 +358,29 @@ fun MatroskaPage(){
                 modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
             )
 
-            Text("参考：演示视频来源于[Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)")
+            Row{
+                val uriHandler = LocalUriHandler.current
+                val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
+                Text("演示视频来源于")
+                val annotatedString = buildAnnotatedString {
+                    pushStringAnnotation(tag = "Sintel", annotation = "https://www.youtube.com/watch?v=eRsGyueVLvQ")
+                    withStyle(style = SpanStyle(color = blueColor)) {
+                        append("Sintel")
+                    }
+                    pop()
+                }
+                ClickableText(
+                    text = annotatedString,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .pointerHoverIcon(PointerIconDefaults.Hand)
+                    ,
+                    onClick = { offset ->
+                        annotatedString.getStringAnnotations(tag = "Sintel", start = offset, end = offset).firstOrNull()?.let {
+                            uriHandler.openUri(it.item)
+                        }
+                    })
+            }
         }
 
         VerticalScrollbar(
