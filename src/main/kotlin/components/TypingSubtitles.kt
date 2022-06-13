@@ -685,7 +685,12 @@ fun TypingSubtitles(
                                     CompositionLocalProvider(
                                         LocalTextInputService provides null
                                     ) {
-
+                                        if (typingSubtitles.currentIndex == index) {
+                                            Divider(
+                                                Modifier.align(Alignment.BottomCenter)
+                                                    .background(MaterialTheme.colors.primary)
+                                            )
+                                        }
 
                                         BasicTextField(
                                             value = textFieldValue,
@@ -698,7 +703,7 @@ fun TypingSubtitles(
                                             ),
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(32.dp)
+                                                .padding(bottom = 5.dp)
                                                 .align(Alignment.CenterStart)
                                                 .focusable()
                                                 .onKeyEvent { textFieldKeyEvent(it) }
@@ -771,6 +776,7 @@ fun TypingSubtitles(
                                         maxLines = 1,
                                         modifier = Modifier
                                             .align(Alignment.CenterStart)
+                                            .padding(bottom = 5.dp)
                                             .onGloballyPositioned { coordinates ->
                                             if (typingSubtitles.currentIndex == index) {
                                                 // 如果视频播放按钮被遮挡，就使用这个位置计算出视频播放器的位置
@@ -780,12 +786,7 @@ fun TypingSubtitles(
                                         }
                                     )
 
-                                    if (typingSubtitles.currentIndex == index) {
-                                        Divider(
-                                            Modifier.align(Alignment.BottomCenter)
-                                                .background(MaterialTheme.colors.primary)
-                                        )
-                                    }
+
 
                                     DropdownMenu(
                                         expanded = selectable,
