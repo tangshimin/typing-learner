@@ -51,6 +51,7 @@ import dialog.removeItalicSymbol
 import dialog.removeLocationInfo
 import dialog.replaceNewLine
 import kotlinx.coroutines.launch
+import player.LocalAudioPlayerComponent
 import player.isMacOS
 import player.isWindows
 import player.mediaPlayer
@@ -109,6 +110,8 @@ fun TypingSubtitles(
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
+    var mediaType by remember { mutableStateOf(computeMediaType(typingSubtitles.mediaPath)) }
+    val audioPlayerComponent = LocalAudioPlayerComponent.current
 
     /** 读取字幕文件*/
     if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
@@ -125,7 +128,7 @@ fun TypingSubtitles(
                 captionList.addAll(it)
             },
             resetSubtitlesState = {
-                typingSubtitles.videoPath = ""
+                typingSubtitles.mediaPath = ""
                 typingSubtitles.subtitlesPath = ""
                 typingSubtitles.trackID = 0
                 typingSubtitles.trackDescription = ""
@@ -149,6 +152,12 @@ fun TypingSubtitles(
         trackList.clear()
         trackList.addAll(it)
     }
+    /** 支持的媒体类型 */
+    val formatList = listOf("wav","mp3","aac","mp4","mkv")
+    /** 支持的音频类型*/
+    val audioFormatList = listOf("wav","mp3","aac")
+    /** 支持的视频类型 */
+    val videoFormatList = listOf("mp4","mkv")
 
     /** 解析打开的文件 */
     val parseImportFile: (List<File>,OpenMode) -> Unit = {files,openMode ->
@@ -158,7 +167,7 @@ fun TypingSubtitles(
             scope.launch {
                 Thread(Runnable{
                     if (file.extension == "mkv") {
-                        if (typingSubtitles.videoPath != file.absolutePath) {
+                        if (typingSubtitles.mediaPath != file.absolutePath) {
                             selectedPath = file.absolutePath
                             parseTrackList(
                                 mediaPlayerComponent,
@@ -172,8 +181,8 @@ fun TypingSubtitles(
                             JOptionPane.showMessageDialog(window, "文件已打开")
                         }
 
-                    }else if (file.extension == "mp4") {
-                        JOptionPane.showMessageDialog(window, "需要同时选择 mp4 视频 + srt 字幕")
+                    }else if (formatList.contains(file.extension)) {
+                        JOptionPane.showMessageDialog(window, "需要同时选择 ${file.extension} 视频 + srt 字幕")
                     }else if (file.extension == "srt") {
                         JOptionPane.showMessageDialog(window, "需要同时选择1个视频(mp4、mkv) + 1个srt 字幕")
                     }else if (file.extension == "json") {
@@ -188,37 +197,41 @@ fun TypingSubtitles(
             val first = files.first()
             val last = files.last()
             val modeString = if(openMode== OpenMode.Open) "打开" else "拖拽"
-            if(first.extension == "srt" && (last.extension == "mp4"||last.extension == "mkv")){
+
+
+            if(first.extension == "srt" && formatList.contains(last.extension)){
                 typingSubtitles.trackID = -1
                 typingSubtitles.trackSize = 0
                 typingSubtitles.currentIndex = 0
                 typingSubtitles.firstVisibleItemIndex = 0
                 typingSubtitles.subtitlesPath = first.absolutePath
-                typingSubtitles.videoPath = last.absolutePath
+                typingSubtitles.mediaPath = last.absolutePath
                 typingSubtitles.trackDescription = first.nameWithoutExtension
                 captionList.clear()
+                mediaType = computeMediaType(typingSubtitles.mediaPath)
                 if(openMode == OpenMode.Open) showOpenFile = false
-            }else if((first.extension == "mp4"||first.extension == "mkv") && last.extension == "srt"){
+            }else if(formatList.contains(first.extension) && last.extension == "srt"){
                 typingSubtitles.trackID = -1
                 typingSubtitles.trackSize = 0
                 typingSubtitles.currentIndex = 0
                 typingSubtitles.firstVisibleItemIndex = 0
-                typingSubtitles.videoPath = first.absolutePath
+                typingSubtitles.mediaPath = first.absolutePath
                 typingSubtitles.subtitlesPath = last.absolutePath
                 typingSubtitles.trackDescription = last.nameWithoutExtension
                 captionList.clear()
+                mediaType = computeMediaType(typingSubtitles.mediaPath)
                 if(openMode == OpenMode.Open) showOpenFile = false
             }else if(first.extension == "mp4" && last.extension == "mp4"){
-                JOptionPane.showMessageDialog(window, "${modeString}了2个 MP4 格式的视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+                JOptionPane.showMessageDialog(window, "${modeString}了2个 MP4 格式的视频，\n需要1个媒体（mp3、aac、wav、mp4、mkv）和1个 srt 字幕")
             }else if(first.extension == "mkv" && last.extension == "mkv"){
                 JOptionPane.showMessageDialog(window, "${modeString}了2个 MKV 格式的视频，\n"
                         +"可以选择一个有字幕的 mkv 格式的视频，\n或者一个 MKV 格式的视频和1个 srt 字幕")
-            }else if(first.extension == "mkv" && last.extension == "mp4"){
-                JOptionPane.showMessageDialog(window, "${modeString}了2个视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
-            }else if(first.extension == "mp4" && last.extension == "mkv"){
-                JOptionPane.showMessageDialog(window, "${modeString}了2个视频，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
             }else if(first.extension == "srt" && last.extension == "srt"){
-                JOptionPane.showMessageDialog(window, "${modeString}了2个字幕，\n需要1个视频（mp4、mkv）和1个 srt 字幕")
+                JOptionPane.showMessageDialog(window, "${modeString}了2个字幕，\n需要1个媒体（mp3、aac、wav、mp4、mkv）和1个 srt 字幕")
+            }else if(videoFormatList.contains(first.extension) && videoFormatList.contains(last.extension)){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个视频，\n需要1个媒体（mp3、aac、wav、mp4、mkv）和1个 srt 字幕")
+            }else if(audioFormatList.contains(first.extension) &&  audioFormatList.contains(last.extension)){
+                JOptionPane.showMessageDialog(window, "${modeString}了2个音频，\n需要1个媒体（mp3、aac、wav、mp4、mkv）和1个 srt 字幕")
             }else {
                 JOptionPane.showMessageDialog(window, "文件格式不支持")
             }
@@ -252,13 +265,13 @@ fun TypingSubtitles(
     }
 
     /**  使用按钮播放视频时调用的回调函数   */
-    val buttonEventPlay: (Caption) -> Unit = { caption ->
-        val file = File(typingSubtitles.videoPath)
-        if (file.exists()) {
+    val playCurrentCaption: (Caption) -> Unit = { caption ->
+        val file = File(typingSubtitles.mediaPath)
+        if (file.exists() ) {
             if (!isPlaying) {
                 scope.launch {
                     isPlaying = true
-                    val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
+                    val playTriple = Triple(caption, typingSubtitles.mediaPath, typingSubtitles.trackID)
                     // 使用内部字幕轨道
                     if(typingSubtitles.trackID != -1){
                         play(
@@ -271,16 +284,28 @@ fun TypingSubtitles(
                         )
                         // 使用外部字幕
                     }else{
-                        play(
-                            window= playerWindow,
-                            setIsPlaying = { isPlaying = it },
-                            videoPlayerComponent= mediaPlayerComponent,
-                            volume= videoVolume,
-                            caption=caption,
-                            videoPath=typingSubtitles.videoPath,
-                            subtitlePath=typingSubtitles.subtitlesPath,
-                            bounds= videoPlayerBounds
-                        )
+
+                        if(file.extension == "wav" || file.extension == "mp3"|| file.extension == "aac"){
+                            play(
+                                setIsPlaying = {isPlaying = it},
+                                audioPlayerComponent = audioPlayerComponent,
+                                volume = videoVolume,
+                                caption = caption,
+                                videoPath = typingSubtitles.mediaPath,
+                                subtitlePath = typingSubtitles.subtitlesPath
+                            )
+                        }else{
+                            play(
+                                window= playerWindow,
+                                setIsPlaying = { isPlaying = it },
+                                videoPlayerComponent= mediaPlayerComponent,
+                                volume= videoVolume,
+                                caption=caption,
+                                videoPath=typingSubtitles.mediaPath,
+                                subtitlePath=typingSubtitles.subtitlesPath,
+                                bounds= videoPlayerBounds
+                            )
+                        }
                     }
                 }
             }
@@ -317,7 +342,8 @@ fun TypingSubtitles(
 
     /** 保存视频路径时被调用的回调函数 */
     val saveVideoPath: (String) -> Unit = {
-        typingSubtitles.videoPath = it
+        typingSubtitles.mediaPath = it
+        mediaType = "video"
         saveSubtitlesState()
     }
 
@@ -334,14 +360,15 @@ fun TypingSubtitles(
         }
     }
 
-    /** 保存是否启用击键音效时被调用的回调函数 */
-    val saveIsPlayKeystrokeSound: (Boolean) -> Unit = {
+    /** 设置是否启用击键音效时被调用的回调函数 */
+    val setIsPlayKeystrokeSound: (Boolean) -> Unit = {
         scope.launch {
             globalState.isPlayKeystrokeSound = it
             saveGlobalState()
         }
     }
 
+    /** 选择字幕轨道 */
     val selectTypingSubTitles:() -> Unit = {
         if (trackList.isEmpty()) {
             loading = true
@@ -352,7 +379,7 @@ fun TypingSubtitles(
                         mediaPlayerComponent,
                         window,
                         playerWindow,
-                        typingSubtitles.videoPath,
+                        typingSubtitles.mediaPath,
                         setTrackList = {
                             setTrackList(it)
                         },
@@ -363,6 +390,22 @@ fun TypingSubtitles(
 
             }
 
+        }
+    }
+
+    /** 设置当前字幕的可见性 */
+    val setCurrentCaptionVisible: (Boolean) -> Unit = {
+        scope.launch {
+            typingSubtitles.currentCaptionVisible = !typingSubtitles.currentCaptionVisible
+            saveSubtitlesState()
+        }
+    }
+
+    /** 设置未抄写字幕的可见性 */
+    val setNotWroteCaptionVisible: (Boolean) -> Unit = {
+        scope.launch {
+            typingSubtitles.notWroteCaptionVisible = !typingSubtitles.notWroteCaptionVisible
+            saveSubtitlesState()
         }
     }
     /** 当前界面的快捷键 */
@@ -381,12 +424,20 @@ fun TypingSubtitles(
                 selectTypingSubTitles()
                 true
             }
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.A && keyEvent.type == KeyEventType.KeyUp) -> {
+                setCurrentCaptionVisible(!typingSubtitles.currentCaptionVisible)
+                true
+            }
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.W && keyEvent.type == KeyEventType.KeyUp) -> {
+                setNotWroteCaptionVisible(!typingSubtitles.notWroteCaptionVisible)
+                true
+            }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.D && keyEvent.type == KeyEventType.KeyUp) -> {
                 saveIsDarkTheme(!globalState.isDarkTheme)
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.M && keyEvent.type == KeyEventType.KeyUp) -> {
-                saveIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
+                setIsPlayKeystrokeSound(!globalState.isPlayKeystrokeSound)
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.One && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -395,37 +446,7 @@ fun TypingSubtitles(
             }
             ((keyEvent.key == Key.Tab) && keyEvent.type == KeyEventType.KeyUp) -> {
                 val caption = captionList[typingSubtitles.currentIndex]
-                val playTriple = Triple(caption, typingSubtitles.videoPath, typingSubtitles.trackID)
-                if (!isPlaying) {
-                    scope.launch {
-                        isPlaying = true
-                        // 使用内部字幕轨道
-                        if(typingSubtitles.trackID != -1){
-                            play(
-                                window = playerWindow,
-                                setIsPlaying = { isPlaying = it },
-                                volume = videoVolume,
-                                playTriple = playTriple,
-                                videoPlayerComponent = mediaPlayerComponent,
-                                bounds = videoPlayerBounds
-                            )
-                            // 使用外部字幕
-                        }else{
-                            play(
-                                window= playerWindow,
-                                setIsPlaying = { isPlaying = it },
-                                videoPlayerComponent= mediaPlayerComponent,
-                                volume= videoVolume,
-                                caption=caption,
-                                videoPath=typingSubtitles.videoPath,
-                                subtitlePath=typingSubtitles.subtitlesPath,
-                                bounds= videoPlayerBounds
-                            )
-                        }
-
-                    }
-
-                }
+                playCurrentCaption(caption)
                 true
             }
             else -> false
@@ -456,6 +477,10 @@ fun TypingSubtitles(
         Row(Modifier.fillMaxSize()) {
             SubtitlesSidebar(
                 isOpen = isOpenSettings,
+                currentCaptionVisible = typingSubtitles.currentCaptionVisible,
+                setCurrentCaptionVisible = {setCurrentCaptionVisible(it)},
+                notWroteCaptionVisible = typingSubtitles.notWroteCaptionVisible,
+                setNotWroteCaptionVisible = {setNotWroteCaptionVisible(it)},
                 back = { toTypingWord() },
                 trackSize = typingSubtitles.trackSize,
                 openFile = { showOpenFile = true },
@@ -464,7 +489,7 @@ fun TypingSubtitles(
                 isDarkTheme = globalState.isDarkTheme,
                 setIsDarkTheme = { saveIsDarkTheme(it) },
                 isPlayKeystrokeSound = globalState.isPlayKeystrokeSound,
-                setIsPlayKeystrokeSound = { saveIsPlayKeystrokeSound(it) },
+                setIsPlayKeystrokeSound = { setIsPlayKeystrokeSound(it) },
             )
             val topPadding = if (isMacOS()) 30.dp else 0.dp
             if (isOpenSettings) {
@@ -615,13 +640,27 @@ fun TypingSubtitles(
                                 val alpha = if(typingSubtitles.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
                                 val lineColor =  if(index <  typingSubtitles.currentIndex){
                                     MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
+                                }else if(typingSubtitles.currentIndex == index){
+                                    if(typingSubtitles.currentCaptionVisible){
+                                        MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                    }else{
+                                        Color.Transparent
+                                    }
                                 }else{
-                                    MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                    if(typingSubtitles.notWroteCaptionVisible){
+                                        MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                    }else{
+                                        Color.Transparent
+                                    }
                                 }
                                 val indexColor =  if(index <=  typingSubtitles.currentIndex){
                                     MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
                                 }else{
-                                    MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                    if(typingSubtitles.notWroteCaptionVisible){
+                                        MaterialTheme.colors.onBackground.copy(alpha = alpha)
+                                    }else{
+                                        Color.Transparent
+                                    }
                                 }
 
                                 Row(modifier = Modifier.width(indexWidth)){
@@ -813,12 +852,12 @@ fun TypingSubtitles(
                                         ) {
                                             val density = LocalDensity.current.density
                                             IconButton(onClick = {
-                                                buttonEventPlay(caption)
+                                                playCurrentCaption(caption)
                                             },
                                                 modifier = Modifier
                                                     .onKeyEvent {
                                                         if (it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) {
-                                                            buttonEventPlay(caption)
+                                                            playCurrentCaption(caption)
                                                             true
                                                         } else false
                                                     }
@@ -859,10 +898,16 @@ fun TypingSubtitles(
                                                         }
                                                     }
                                             ) {
+                                                val icon = if(mediaType=="audio" && !isPlaying) {
+                                                    Icons.Filled.VolumeDown
+                                                } else if(mediaType=="audio" && isPlaying){
+                                                    Icons.Filled.VolumeUp
+                                                }else Icons.Filled.PlayArrow
+
                                                 Icon(
-                                                    Icons.Filled.PlayArrow,
+                                                    icon,
                                                     contentDescription = "Localized description",
-                                                    tint = MaterialTheme.colors.primary
+                                                    tint = if(isPlaying)MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
                                                 )
                                             }
 
@@ -899,7 +944,7 @@ fun TypingSubtitles(
                                                 Icon(
                                                     Icons.Filled.ContentCopy,
                                                     contentDescription = "Localized description",
-                                                    tint = MaterialTheme.colors.primary
+                                                    tint = if(selectable)MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
                                                 )
                                             }
                                         }
@@ -979,7 +1024,7 @@ fun TypingSubtitles(
                                 trackList = trackList,
                                 setTrackList = { setTrackList(it) },
                                 setVideoPath = { saveVideoPath(it) },
-                                selectedPath = typingSubtitles.videoPath,
+                                selectedPath = typingSubtitles.mediaPath,
                                 setSelectedPath = { selectedPath = it },
                                 setSubtitlesPath = { saveSubtitlesPath(it) },
                                 setTrackSize = { saveTrackSize(it) },
@@ -1181,6 +1226,10 @@ fun Settings(
 fun SubtitlesSidebar(
     isOpen: Boolean,
     isDarkTheme: Boolean,
+    currentCaptionVisible: Boolean,
+    setCurrentCaptionVisible:(Boolean) -> Unit,
+    notWroteCaptionVisible: Boolean,
+    setNotWroteCaptionVisible:(Boolean) -> Unit,
     setIsDarkTheme: (Boolean) -> Unit,
     isPlayKeystrokeSound: Boolean,
     setIsPlayKeystrokeSound: (Boolean) -> Unit,
@@ -1201,7 +1250,7 @@ fun SubtitlesSidebar(
             Spacer(Modifier.fillMaxWidth().height(if (isMacOS()) 78.dp else 48.dp))
             Divider()
             val ctrl = LocalCtrl.current
-
+            val tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -1246,10 +1295,11 @@ fun SubtitlesSidebar(
                 Icon(
                     Icons.Filled.Folder,
                     contentDescription = "Localized description",
-                    tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground,
+                    tint = tint,
                     modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
                 )
             }
+
             if (trackSize > 1) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1270,8 +1320,68 @@ fun SubtitlesSidebar(
                     Icon(
                         Icons.Default.ExpandMore,
                         contentDescription = "Localized description",
-                        tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground,
+                        tint = tint,
                         modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
+                    )
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("当前字幕", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "$ctrl+A",
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }
+
+                Spacer(Modifier.width(15.dp))
+                var icon = if(currentCaptionVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                var tint = if(currentCaptionVisible){
+                    MaterialTheme.colors.primary
+                } else if (MaterialTheme.colors.isLight){
+                    Color.DarkGray
+                } else MaterialTheme.colors.onBackground
+
+                IconButton(onClick = {setCurrentCaptionVisible(!currentCaptionVisible) }){
+                    Icon(
+                        icon,
+                        contentDescription = "Localized description",
+                        tint =tint
+                    )
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("未写字幕", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "$ctrl+W",
+                        color = MaterialTheme.colors.onBackground
+                    )
+                }
+
+                Spacer(Modifier.width(15.dp))
+                var icon = if(notWroteCaptionVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                var tint = if(notWroteCaptionVisible){
+                    MaterialTheme.colors.primary
+                } else if (MaterialTheme.colors.isLight){
+                    Color.DarkGray
+                } else MaterialTheme.colors.onBackground
+
+                IconButton(onClick = {setNotWroteCaptionVisible(!notWroteCaptionVisible) }){
+                    Icon(
+                        icon,
+                        contentDescription = "Localized description",
+                        tint =tint
                     )
                 }
             }
@@ -1297,7 +1407,6 @@ fun SubtitlesSidebar(
                     onCheckedChange = { setIsDarkTheme(it) },
                 )
             }
-
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -1584,4 +1693,21 @@ private fun writeToFile(
         }
     }
     return subtitlesFile
+}
+
+/** 计算文件的媒体类型，
+ * 如果文件不存在返回默认的媒体类型 video
+ */
+fun computeMediaType(mediaPath:String):String{
+    val file = File(mediaPath)
+    if(file.exists()){
+        val extension = file.extension
+        //  mp3、aac、wav、mp4、mkv，
+        return if(extension =="mp3"||extension =="aac"||extension =="wav"){
+            "audio"
+        }else{
+            "video"
+        }
+    }
+    return "video"
 }

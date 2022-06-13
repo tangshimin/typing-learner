@@ -169,7 +169,7 @@ private fun computeTitle(state: AppState): String {
             }
         }
         SUBTITLES -> {
-            val fileName = File(state.typingSubtitles.videoPath).nameWithoutExtension
+            val fileName = File(state.typingSubtitles.mediaPath).nameWithoutExtension
             return fileName + " - " + state.typingSubtitles.trackDescription
         }
         else -> {

@@ -1549,6 +1549,36 @@ fun play(
 
 }
 
+/**
+ * 播放 MP3
+ */
+fun play(
+    setIsPlaying: (Boolean) -> Unit,
+    audioPlayerComponent: AudioPlayerComponent,
+    volume: Float,
+    caption:Caption,
+    videoPath:String,
+    subtitlePath:String,
+){
+    var start = LocalTime.parse(caption.start, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    start = start.div(1000_000_000)
+    var end = LocalTime.parse(caption.end, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
+    end = end.div(1000_000_000)
+    audioPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
+        override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+            mediaPlayer.subpictures().setSubTitleUri(subtitlePath)
+            mediaPlayer.audio().setVolume((volume * 100).toInt())
+        }
+
+        override fun finished(mediaPlayer: MediaPlayer) {
+            setIsPlaying(false)
+            audioPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
+        }
+    })
+    audioPlayerComponent.mediaPlayer().media()
+        .play(videoPath,  ":start-time=$start",  ":stop-time=$end")
+}
+
 
 /**
  * 计算视频播放窗口的位置和大小

@@ -249,7 +249,7 @@ class AppState {
         runBlocking {
             launch {
                 val typingSubtitlesData = TypingSubtitlesData(
-                    typingSubtitles.videoPath,
+                    typingSubtitles.mediaPath,
                     typingSubtitles.subtitlesPath,
                     typingSubtitles.trackID,
                     typingSubtitles.trackDescription,
@@ -257,6 +257,8 @@ class AppState {
                     typingSubtitles.currentIndex,
                     typingSubtitles.firstVisibleItemIndex,
                     typingSubtitles.sentenceMaxLength,
+                    typingSubtitles.currentCaptionVisible,
+                    typingSubtitles.notWroteCaptionVisible,
                 )
 
                 val json = jsonBuilder.encodeToString(typingSubtitlesData)
