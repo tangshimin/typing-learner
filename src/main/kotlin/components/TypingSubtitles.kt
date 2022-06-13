@@ -51,10 +51,7 @@ import dialog.removeItalicSymbol
 import dialog.removeLocationInfo
 import dialog.replaceNewLine
 import kotlinx.coroutines.launch
-import player.LocalAudioPlayerComponent
-import player.isMacOS
-import player.isWindows
-import player.mediaPlayer
+import player.*
 import state.GlobalState
 import state.TypingSubtitlesState
 import state.getSettingsDirectory
@@ -284,7 +281,6 @@ fun TypingSubtitles(
                         )
                         // 使用外部字幕
                     }else{
-
                         if(file.extension == "wav" || file.extension == "mp3"|| file.extension == "aac"){
                             play(
                                 setIsPlaying = {isPlaying = it},

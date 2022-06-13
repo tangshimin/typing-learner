@@ -31,7 +31,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
 import components.createTransferHandler
-import components.play
+import player.play
 import data.Caption
 import data.ExternalCaption
 import data.VocabularyType

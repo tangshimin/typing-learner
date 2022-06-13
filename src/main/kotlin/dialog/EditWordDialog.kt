@@ -30,7 +30,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
 import components.getPlayTripleMap
-import components.play
+import player.play
 import components.secondsToString
 import data.Caption
 import data.Dictionary
