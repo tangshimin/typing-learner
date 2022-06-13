@@ -155,7 +155,6 @@ fun loadMutableVocabulary(path: String): MutableVocabulary {
 }
 
 
-@OptIn(ExperimentalComposeUiApi::class)
 fun loadVocabulary(path: String): Vocabulary {
     val file = getResourcesFile(path)
     if (file.exists()) {

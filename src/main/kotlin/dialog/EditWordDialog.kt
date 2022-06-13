@@ -53,8 +53,7 @@ import java.time.format.DateTimeFormatter
  * @param close 点击取消之后调用的回调
  */
 @OptIn(
-    ExperimentalComposeUiApi::class, kotlinx.serialization.ExperimentalSerializationApi::class,
-    ExperimentalFoundationApi::class
+    kotlinx.serialization.ExperimentalSerializationApi::class
 )
 @Composable
 fun EditWordDialog(

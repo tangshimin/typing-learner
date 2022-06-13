@@ -18,7 +18,6 @@ import kotlin.concurrent.fixedRateTimer
 /**
  * 速度组件
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun Speed(
     speedVisible: Boolean,
@@ -80,7 +79,6 @@ fun Speed(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun ResetButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
@@ -90,7 +88,6 @@ fun ResetButton(speed: MutableSpeedState) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun StartButton(speed: MutableSpeedState) {
     OutlinedButton(onClick = {
@@ -101,7 +98,6 @@ fun StartButton(speed: MutableSpeedState) {
 }
 
 
-@OptIn(ExperimentalSerializationApi::class)
 fun startTimer(speed: MutableSpeedState) {
     speed.isStart = !speed.isStart
     if (speed.isStart) {
@@ -113,7 +109,6 @@ fun startTimer(speed: MutableSpeedState) {
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 fun reset(speed: MutableSpeedState) {
     speed.time = LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
     speed.inputCount = 0

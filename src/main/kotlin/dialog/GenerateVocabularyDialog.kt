@@ -87,7 +87,6 @@ import kotlin.collections.HashMap
  * @param type 词库类型
  */
 @OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
 )
 @ExperimentalComposeUiApi
@@ -887,7 +886,6 @@ fun BasicFilter(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VocabularyFilter(
     futureFileChooser: FutureTask<JFileChooser>,
@@ -1158,7 +1156,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
     return curDir
 }
 
-@OptIn(ExperimentalSerializationApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun SelectFile(
     parentWindow: Component,

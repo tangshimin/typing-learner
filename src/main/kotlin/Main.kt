@@ -45,7 +45,6 @@ import javax.swing.filechooser.FileSystemView
 @ExperimentalAnimationApi
 @OptIn(
     ExperimentalComposeUiApi::class,
-    ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
 )
 fun main() = application {
@@ -182,7 +181,7 @@ private fun computeTitle(state: AppState): String {
 /**
  * 菜单栏
  */
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 private fun FrameWindowScope.WindowMenuBar(
     state: AppState,
@@ -330,8 +329,7 @@ private fun FrameWindowScope.WindowMenuBar(
  * 设置
  */
 @OptIn(
-    ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class,
-    ExperimentalSerializationApi::class
+    ExperimentalFoundationApi::class
 )
 @Composable
 fun Settings(
@@ -414,7 +412,7 @@ fun textSelectionColors(): TextSelectionColors {
  * 对话框
  */
 @ExperimentalFoundationApi
-@OptIn(ExperimentalMaterialApi::class, ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class)
 @ExperimentalComposeUiApi
 @Composable
 fun MenuDialogs(state: AppState) {

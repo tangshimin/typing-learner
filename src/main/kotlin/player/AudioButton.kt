@@ -40,7 +40,7 @@ fun rememberAudioPlayerComponent(): AudioPlayerComponent = remember {
 }
 
 
-@OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun AudioButton(
     audioPath: String,

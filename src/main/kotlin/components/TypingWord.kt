@@ -64,7 +64,6 @@ import kotlin.concurrent.schedule
  */
 @OptIn(
     ExperimentalComposeUiApi::class,
-    ExperimentalFoundationApi::class,
     ExperimentalAnimationApi::class, ExperimentalSerializationApi::class
 )
 @Composable
@@ -908,7 +907,6 @@ fun Morphology(
 /**
  * 英语定义组件
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Definition(
     word: Word,
@@ -1142,7 +1140,7 @@ fun secondsToString(seconds: Double): String {
  * @param bounds 视频播放器的位置和大小
  */
 @OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class,
     ExperimentalComposeUiApi::class
 )
 @Composable
@@ -1475,7 +1473,6 @@ fun computeVideoBounds(
  * @param index links 的 index
  * @return Triple<Caption, String, Int>? ,视频播放器需要的信息
  */
-@OptIn(ExperimentalSerializationApi::class)
 fun getPayTriple(currentWord: Word, index: Int): Triple<Caption, String, Int>? {
 
     return if (index < currentWord.externalCaptions.size) {
