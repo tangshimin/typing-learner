@@ -421,7 +421,9 @@ fun TypingSubtitles(
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.S && keyEvent.type == KeyEventType.KeyUp) -> {
-                selectTypingSubTitles()
+                if(typingSubtitles.trackSize > 1){
+                    selectTypingSubTitles()
+                }
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.A && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -1031,7 +1033,10 @@ fun TypingSubtitles(
                                 setTrackSize = { saveTrackSize(it) },
                                 setIsLoading = { loading = it }
                             )
-                            OutlinedButton(onClick = { showSelectTrack = false }) {
+                            OutlinedButton(onClick = {
+                                showSelectTrack = false
+                                setTrackList(listOf())
+                            }) {
                                 Text("取消")
                             }
                         }
