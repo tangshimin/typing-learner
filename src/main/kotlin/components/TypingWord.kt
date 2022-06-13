@@ -1039,6 +1039,7 @@ fun Captions(
             modifier = modifier
         ) {
             Column {
+                var plyingIndex by remember { mutableStateOf(0) }
                 playTripleMap.forEach { (index, playTriple) ->
                     var captionContent = playTriple.first.content
                     if (captionContent.contains("\r\n")) {
@@ -1068,6 +1069,8 @@ fun Captions(
                         },
                         playKeySound = { playKeySound() },
                         index = index,
+                        playingIndex = plyingIndex,
+                        setPlayingIndex = {plyingIndex = it},
                         size = word.captions.size,
                         playTriple = playTriple,
                         bounds = bounds,
@@ -1159,6 +1162,8 @@ fun Caption(
     checkTyping: (Int, String, String) -> Unit,
     playKeySound: () -> Unit,
     index: Int,
+    playingIndex: Int,
+    setPlayingIndex: (Int) -> Unit,
     size: Int,
     playTriple: Triple<Caption, String, Int>,
     bounds: Rectangle,
@@ -1184,6 +1189,7 @@ fun Caption(
                     if (file.exists()) {
                         setIsPlaying(true)
                         scope.launch {
+                            setPlayingIndex(index)
                             play(
                                 videoPlayerWindow,
                                 setIsPlaying = { setIsPlaying(it) },
@@ -1373,35 +1379,12 @@ fun Caption(
             ) {
                 IconButton(onClick = {
                     playCurrentCaption()
-//                    if (!isPlaying) {
-//                        val file = File(relativeVideoPath)
-//                        if (file.exists()) {
-//                            setIsPlaying(true)
-//                            scope.launch {
-//                                play(
-//                                    videoPlayerWindow,
-//                                    setIsPlaying = { setIsPlaying(it) },
-//                                    volume,
-//                                    playTriple,
-//                                    videoPlayerComponent,
-//                                    bounds
-//                                )
-//                            }
-//
-//                        } else {
-//                            isPathWrong = true
-//                            Timer("恢复状态", false).schedule(2000) {
-//                                isPathWrong = false
-//                            }
-//                        }
-//                    }
-
-
                 }) {
+                    var tint = if(isPlaying && playingIndex == index) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
                     Icon(
                         Icons.Filled.PlayArrow,
                         contentDescription = "Localized description",
-                        tint = MaterialTheme.colors.primary
+                        tint = tint
                     )
                 }
             }
@@ -1437,10 +1420,11 @@ fun Caption(
                     )
                 ) {
                     IconButton(onClick = { selectable = !selectable }){
+                        var tint = if(selectable) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
                         Icon(
                             Icons.Filled.ContentCopy,
                             contentDescription = "Localized description",
-                            tint = MaterialTheme.colors.primary
+                            tint = tint
                         )
                     }
                 }
