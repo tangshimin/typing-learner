@@ -531,20 +531,24 @@ fun TypingSubtitles(
                                     if (index >= end) {
                                         listState.scrollToItem(index)
                                     }
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
+                                   if(index+1 != captionList.size){
+                                       focusManager.moveFocus(FocusDirection.Next)
+                                       focusManager.moveFocus(FocusDirection.Next)
+                                       focusManager.moveFocus(FocusDirection.Next)
+                                       focusManager.moveFocus(FocusDirection.Next)
+                                   }
                                 }
                             }
                             val previous :() -> Unit = {
                                 scope.launch {
                                     if(index == listState.firstVisibleItemIndex+1){
-                                        val top = index - listState.layoutInfo.visibleItemsInfo.size
+                                        var top = index - listState.layoutInfo.visibleItemsInfo.size
+                                        if(top < 0) top = 0
                                         listState.scrollToItem(top)
                                         typingSubtitles.currentIndex = index-1
-
-                                    }else{
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        focusManager.moveFocus(FocusDirection.Previous)
+                                    }else if(typingSubtitles.currentIndex > 0){
                                         focusManager.moveFocus(FocusDirection.Previous)
                                         focusManager.moveFocus(FocusDirection.Previous)
                                     }
