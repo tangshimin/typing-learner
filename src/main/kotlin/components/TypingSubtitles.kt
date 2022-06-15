@@ -1346,20 +1346,12 @@ fun SubtitlesSidebar(
                 }
 
                 Spacer(Modifier.width(15.dp))
-                var icon = if(currentCaptionVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                var tint = if(currentCaptionVisible){
-                    MaterialTheme.colors.primary
-                } else if (MaterialTheme.colors.isLight){
-                    Color.DarkGray
-                } else MaterialTheme.colors.onBackground
 
-                IconButton(onClick = {setCurrentCaptionVisible(!currentCaptionVisible) }){
-                    Icon(
-                        icon,
-                        contentDescription = "Localized description",
-                        tint =tint
-                    )
-                }
+                Switch(
+                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
+                    checked = currentCaptionVisible,
+                    onCheckedChange = { setCurrentCaptionVisible(!currentCaptionVisible) },
+                )
             }
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1376,20 +1368,12 @@ fun SubtitlesSidebar(
                 }
 
                 Spacer(Modifier.width(15.dp))
-                var icon = if(notWroteCaptionVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                var tint = if(notWroteCaptionVisible){
-                    MaterialTheme.colors.primary
-                } else if (MaterialTheme.colors.isLight){
-                    Color.DarkGray
-                } else MaterialTheme.colors.onBackground
 
-                IconButton(onClick = {setNotWroteCaptionVisible(!notWroteCaptionVisible) }){
-                    Icon(
-                        icon,
-                        contentDescription = "Localized description",
-                        tint =tint
-                    )
-                }
+                Switch(
+                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
+                    checked = notWroteCaptionVisible,
+                    onCheckedChange = {setNotWroteCaptionVisible(!notWroteCaptionVisible) },
+                )
             }
 
             Row(
