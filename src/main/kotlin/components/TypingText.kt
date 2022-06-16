@@ -236,8 +236,7 @@ fun TypingText(
                                         listState.scrollToItem(index)
                                     }
                                     if(index+1 != lines.size){
-                                        focusManager.moveFocus(FocusDirection.Next)
-                                        focusManager.moveFocus(FocusDirection.Next)
+                                        textState.currentIndex = textState.currentIndex + 1
                                     }
                                 }
                             }
@@ -251,8 +250,7 @@ fun TypingText(
                                         textState.currentIndex = index-1
                                         pgUp = true
                                     }else if(textState.currentIndex > 0){
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        textState.currentIndex = textState.currentIndex - 1
                                     }
 
                                 }
@@ -402,6 +400,12 @@ fun TypingText(
                                                 }
                                             }
                                         }
+                                        SideEffect {
+                                            if (textState.currentIndex == index) {
+                                                textFieldRequester.requestFocus()
+                                            }
+                                        }
+
 
                                     }
                                     Text(

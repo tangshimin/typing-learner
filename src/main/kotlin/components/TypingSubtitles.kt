@@ -544,9 +544,7 @@ fun TypingSubtitles(
                                         listState.scrollToItem(index)
                                     }
                                    if(index+1 != captionList.size){
-                                       focusManager.moveFocus(FocusDirection.Next)
-                                       focusManager.moveFocus(FocusDirection.Next)
-                                       focusManager.moveFocus(FocusDirection.Next)
+                                       subtitlesState.currentIndex = subtitlesState.currentIndex + 1
                                    }
                                 }
                             }
@@ -559,8 +557,7 @@ fun TypingSubtitles(
                                         subtitlesState.currentIndex = index-1
                                         pgUp = true
                                     }else if(subtitlesState.currentIndex > 0){
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        subtitlesState.currentIndex = subtitlesState.currentIndex - 1
                                     }
 
                                 }
@@ -740,6 +737,11 @@ fun TypingSubtitles(
                                                     textFieldRequester.requestFocus()
                                                     pgUp = false
                                                 }
+                                            }
+                                        }
+                                        SideEffect {
+                                            if (subtitlesState.currentIndex == index) {
+                                                textFieldRequester.requestFocus()
                                             }
                                         }
                                     }
