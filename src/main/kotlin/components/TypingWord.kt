@@ -10,7 +10,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +19,6 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -171,6 +169,24 @@ fun TypingWord(
                         /** 处理全局快捷键的回调函数 */
                         val globalKeyEvent: (KeyEvent) -> Boolean = {
                             when {
+                                (it.isCtrlPressed && it.key == Key.U && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        if (!state.isDictation) {
+                                           state.global.type = TypingType.SUBTITLES
+                                            state.saveGlobalState()
+                                        }
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        if (!state.isDictation) {
+                                            state.global.type = TypingType.TEXT
+                                            state.saveGlobalState()
+                                        }
+                                    }
+                                    true
+                                }
                                 (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.isAuto = !state.typingWord.isAuto
@@ -307,7 +323,7 @@ fun TypingWord(
                                     }
                                     true
                                 }
-                                (it.isCtrlPressed && it.key == Key.W && it.type == KeyEventType.KeyUp) -> {
+                                (it.isCtrlPressed && it.key == Key.Q && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
                                         state.saveTypingWordState()
@@ -1174,7 +1190,7 @@ fun Caption(
         ) {
             var selectable by remember { mutableStateOf(false) }
             val dropMenuFocusRequester = remember { FocusRequester() }
-            var isFocused by remember { mutableStateOf(false) }
+//            var isFocused by remember { mutableStateOf(false) }
             val focusManager = LocalFocusManager.current
             var isPathWrong by remember { mutableStateOf(false) }
             val playCurrentCaption:()-> Unit = {
@@ -1242,7 +1258,6 @@ fun Caption(
                                     if(index<2 && index + 1 < size){
                                         focusManager.moveFocus(FocusDirection.Next)
                                         focusManager.moveFocus(FocusDirection.Next)
-                                        focusManager.moveFocus(FocusDirection.Next)
                                     }
                                     true
                                 }
@@ -1260,9 +1275,9 @@ fun Caption(
                                 else -> false
                             }
                         }
-                        .onFocusChanged {
-                            isFocused = it.isFocused
-                        }
+//                        .onFocusChanged {
+//                            isFocused = it.isFocused
+//                        }
                 )
                 Text(
                     textAlign = TextAlign.Start,
@@ -1384,44 +1399,6 @@ fun Caption(
             }
             if (isPathWrong) {
                 Text("视频地址错误", color = Color.Red)
-            }
-            if(isFocused){
-                TooltipArea(
-                    tooltip = {
-                        Surface(
-                            elevation = 4.dp,
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
-                            ),
-                            shape = RectangleShape
-                        ) {
-                            Row(modifier = Modifier.padding(10.dp)){
-                                Text(text = "复制单词" )
-                                CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
-                                    val ctrl = LocalCtrl.current
-                                    Text(text = " $ctrl+B")
-                                }
-                            }
-
-                        }
-                    },
-                    delayMillis = 300,
-                    tooltipPlacement = TooltipPlacement.ComponentRect(
-                        anchor = Alignment.TopCenter,
-                        alignment = Alignment.TopCenter,
-                        offset = DpOffset.Zero
-                    )
-                ) {
-                    IconButton(onClick = { selectable = !selectable }){
-                        var tint = if(selectable) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
-                        Icon(
-                            Icons.Filled.ContentCopy,
-                            contentDescription = "Localized description",
-                            tint = tint
-                        )
-                    }
-                }
             }
         }
     }

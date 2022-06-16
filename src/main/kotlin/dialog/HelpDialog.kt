@@ -1,5 +1,6 @@
 package dialog
 
+import LocalCtrl
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -102,6 +103,18 @@ fun HelpDialog(close: () -> Unit) {
                                 Spacer(Modifier.fillMaxHeight().width(2.dp).background(MaterialTheme.colors.primary))
                             }
                         }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .clickable { currentPage = "activeCopy" }) {
+                            Text("激活复制", modifier = Modifier.padding(start = 16.dp))
+                            if(currentPage == "activeCopy"){
+                                Spacer(Modifier.fillMaxHeight().width(2.dp).background(MaterialTheme.colors.primary))
+                            }
+                        }
                     }
                     Divider(Modifier.width(1.dp).fillMaxHeight())
 
@@ -110,6 +123,7 @@ fun HelpDialog(close: () -> Unit) {
                         "subtitles" -> {SubtitlesPage()}
                         "matroska" -> {MatroskaPage()}
                         "youtube" -> {YouTubeDownloadPage()}
+                        "activeCopy" -> {ActiveCopyPage()}
                     }
                 }
             }
@@ -503,6 +517,16 @@ fun YouTubeDownloadPage(){
             adapter = rememberScrollbarAdapter(stateVertical)
         )
     }
-
 }
 
+@Composable
+fun ActiveCopyPage(){
+    Box(Modifier.fillMaxSize()){
+        Row(Modifier.align(Alignment.Center)){
+            SelectionContainer {
+                val ctrl = LocalCtrl.current
+                Text("如果想复制正在抄写的字幕或文本可以使用快捷键 $ctrl + B 激活复制功能。")
+            }
+        }
+    }
+}

@@ -21,9 +21,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.TypingSubtitles
-import components.TypingWord
-import components.computeVideoBounds
+import components.*
 import components.flatlaf.UpdateFlatLaf
 import data.VocabularyType
 import dialog.*
@@ -78,12 +76,42 @@ fun main() = application {
             ) {
                 MaterialTheme(colors = state.colors) {
                     state.global.fontSize = computeFontSize(state.global.textStyle)
-                    WindowMenuBar(
-                        state = state,
-                        close = {close()}
-                    )
+                    WindowMenuBar(state = state, close = {close()})
                     MenuDialogs(state)
-
+                    val scope = rememberCoroutineScope()
+                    val changeTheme:(Boolean) -> Unit = {
+                        scope.launch {
+                            state.global.isDarkTheme = it
+                            state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
+                            state.saveGlobalState()
+                        }
+                    }
+                    val saveGlobalState:() -> Unit = {
+                        scope.launch {
+                            state.saveGlobalState()
+                        }
+                    }
+                    val saveSubtitlesState:() -> Unit = {
+                        scope.launch {
+                            state.saveTypingSubtitlesState()
+                        }
+                    }
+                    val saveTextState:() -> Unit = {
+                        scope.launch {
+                            state.saveTypingTextState()
+                        }
+                    }
+                    val backToHome:() -> Unit = {
+                        scope.launch {
+                            state.global.type = WORD
+                            state.saveGlobalState()
+                        }
+                    }
+                    val openLoadingDialog:() -> Unit = {
+                        if(isWindows()) {
+                            state.loadingFileChooserVisible = true
+                        }
+                    }
                     when (state.global.type) {
                         WORD -> {
                             // 显示器缩放
@@ -99,34 +127,13 @@ fun main() = application {
                             )
                         }
                         SUBTITLES -> {
-                            val scope = rememberCoroutineScope()
-                            var typingSubtitles = state.typingSubtitles
                             TypingSubtitles(
-                                typingSubtitles = typingSubtitles,
+                                typingSubtitles = state.typingSubtitles,
                                 globalState = state.global,
-                                saveSubtitlesState = {
-                                    scope.launch {
-                                        state.saveTypingSubtitlesState()
-                                    }
-                                },
-                                saveGlobalState = {
-                                    scope.launch {
-                                        state.saveGlobalState()
-                                    }
-                                },
-                                saveIsDarkTheme = {
-                                    scope.launch {
-                                        state.global.isDarkTheme = it
-                                        state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
-                                        state.saveGlobalState()
-                                    }
-                                },
-                                toTypingWord = {
-                                    scope.launch {
-                                        state.global.type = WORD
-                                        state.saveGlobalState()
-                                    }
-                                },
+                                saveSubtitlesState = { saveSubtitlesState() },
+                                saveGlobalState = { saveGlobalState() },
+                                setIsDarkTheme = { changeTheme(it) },
+                                backToHome = { backToHome() },
                                 isOpenSettings = state.openSettings,
                                 setIsOpenSettings = { state.openSettings = it },
                                 window = window,
@@ -135,10 +142,27 @@ fun main() = application {
                                 videoVolume = state.global.videoVolume,
                                 mediaPlayerComponent = state.videoPlayerComponent,
                                 futureFileChooser = state.futureFileChooser,
+                                openLoadingDialog = { openLoadingDialog()},
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
                             )
                         }
 
+                        TEXT -> {
+                            TypingText(
+                                title = title,
+                                window = window,
+                                globalState = state.global,
+                                textState = state.typingText,
+                                saveTextState = { saveTextState() },
+                                backToHome = { backToHome() },
+                                isOpenSettings = state.openSettings,
+                                setIsOpenSettings = {state.openSettings = it},
+                                setIsDarkTheme = { changeTheme(it) },
+                                futureFileChooser = state.futureFileChooser,
+                                openLoadingDialog = { openLoadingDialog()},
+                                closeLoadingDialog = { state.loadingFileChooserVisible = false },
+                            )
+                        }
                     }
 
                 }
@@ -168,11 +192,34 @@ private fun computeTitle(state: AppState): String {
             }
         }
         SUBTITLES -> {
-            val fileName = File(state.typingSubtitles.mediaPath).nameWithoutExtension
-            return fileName + " - " + state.typingSubtitles.trackDescription
+            val mediaPath = state.typingSubtitles.mediaPath
+           return if(mediaPath.isNotEmpty()){
+               try{
+                   val fileName = File(mediaPath).nameWithoutExtension
+                   fileName + " - " + state.typingSubtitles.trackDescription
+               }catch (exception:Exception){
+                   "抄写字幕"
+               }
+
+            }else{
+                "抄写字幕"
+            }
+
         }
         else -> {
-            return "Anki"
+            val textPath = state.typingText.textPath
+            return if(textPath.isNotEmpty()){
+                try{
+                    val fileName = File(textPath).nameWithoutExtension
+                    fileName
+                }catch (exception :Exception){
+                    "抄写文本"
+                }
+
+            }else {
+                "抄写文本"
+            }
+
         }
     }
 
@@ -262,13 +309,24 @@ private fun FrameWindowScope.WindowMenuBar(
         Separator()
         Item("退出(X)", mnemonic = 'X', onClick = { close() })
     }
+    Menu("章节(C)", mnemonic = 'C') {
+        val enable = state.global.type == WORD
+        Item(
+            "选择章节(C)", mnemonic = 'C',
+            enabled = enable,
+            onClick = {
+                state.openSelectChapter = true
+            },
+        )
+    }
     Menu("字幕(S)", mnemonic = 'S') {
-        val enableTypingSubtitles = (state.global.type == WORD)
+        val enableTypingSubtitles = (state.global.type != SUBTITLES)
         Item(
             "抄写字幕(T)", mnemonic = 'T',
             enabled = enableTypingSubtitles,
             onClick = {
                 state.global.type = SUBTITLES
+                state.saveGlobalState()
             },
         )
         var showLinkVocabulary by remember { mutableStateOf(false) }
@@ -288,13 +346,14 @@ private fun FrameWindowScope.WindowMenuBar(
             onClick = { showLinkVocabulary = true },
         )
     }
-    Menu("章节(C)", mnemonic = 'C') {
-        val enable = state.global.type == WORD
+    Menu("文本(T)", mnemonic = 'T') {
+        val enable = state.global.type != TEXT
         Item(
-            "选择章节(C)", mnemonic = 'C',
+            "抄写文本(T)", mnemonic = 'T',
             enabled = enable,
             onClick = {
-                state.openSelectChapter = true
+                state.global.type = TEXT
+                state.saveGlobalState()
             },
         )
     }

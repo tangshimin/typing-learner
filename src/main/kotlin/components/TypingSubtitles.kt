@@ -82,8 +82,8 @@ fun TypingSubtitles(
     globalState: GlobalState,
     saveSubtitlesState: () -> Unit,
     saveGlobalState: () -> Unit,
-    saveIsDarkTheme: (Boolean) -> Unit,
-    toTypingWord: () -> Unit,
+    setIsDarkTheme: (Boolean) -> Unit,
+    backToHome: () -> Unit,
     isOpenSettings: Boolean,
     setIsOpenSettings: (Boolean) -> Unit,
     window: ComposeWindow,
@@ -92,6 +92,7 @@ fun TypingSubtitles(
     videoVolume: Float,
     mediaPlayerComponent: Component,
     futureFileChooser: FutureTask<JFileChooser>,
+    openLoadingDialog: () -> Unit,
     closeLoadingDialog: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -108,6 +109,7 @@ fun TypingSubtitles(
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
     var mediaType by remember { mutableStateOf(computeMediaType(typingSubtitles.mediaPath)) }
+    var pgUp by remember { mutableStateOf(false) }
     val audioPlayerComponent = LocalAudioPlayerComponent.current
 
     /** 读取字幕文件*/
@@ -237,28 +239,36 @@ fun TypingSubtitles(
         }
 
     }
+
     /** 打开文件对话框 */
     val openFileChooser: () -> Unit = {
-        val fileChooser = futureFileChooser.get()
-        fileChooser.dialogTitle = "打开"
-        fileChooser.fileSystemView = FileSystemView.getFileSystemView()
-        fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
-        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
-        fileChooser.isAcceptAllFileFilterUsed = false
-        fileChooser.isMultiSelectionEnabled = true
-        val fileFilter = FileNameExtensionFilter("1个 mkv 视频，或 1个视频(mp4、mkv) + 1个字幕(srt)","mkv","srt","mp4")
-        fileChooser.addChoosableFileFilter(fileFilter)
-        fileChooser.selectedFile = null
-        if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-            val files = fileChooser.selectedFiles.toList()
-            parseImportFile(files,OpenMode.Open)
-            closeLoadingDialog()
-        } else {
-            closeLoadingDialog()
-        }
-        fileChooser.selectedFile = null
-        fileChooser.isMultiSelectionEnabled = false
-        fileChooser.removeChoosableFileFilter(fileFilter)
+
+        // 打开 windows 的文件选择器很慢，有时候会等待超过2秒
+        openLoadingDialog()
+
+        Thread(Runnable{
+            val fileChooser = futureFileChooser.get()
+            fileChooser.dialogTitle = "打开"
+            fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+            fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
+            fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+            fileChooser.isAcceptAllFileFilterUsed = false
+            fileChooser.isMultiSelectionEnabled = true
+            val fileFilter = FileNameExtensionFilter("1个 mkv 视频，或 1个视频(mp4、mkv) + 1个字幕(srt)","mkv","srt","mp4")
+            fileChooser.addChoosableFileFilter(fileFilter)
+            fileChooser.selectedFile = null
+            if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                val files = fileChooser.selectedFiles.toList()
+                parseImportFile(files,OpenMode.Open)
+                closeLoadingDialog()
+            } else {
+                closeLoadingDialog()
+            }
+            fileChooser.selectedFile = null
+            fileChooser.isMultiSelectionEnabled = false
+            fileChooser.removeChoosableFileFilter(fileFilter)
+        }).start()
+
     }
 
     /**  使用按钮播放视频时调用的回调函数   */
@@ -407,8 +417,8 @@ fun TypingSubtitles(
     /** 当前界面的快捷键 */
     val boxKeyEvent: (KeyEvent) -> Boolean = { keyEvent ->
         when {
-            (keyEvent.isCtrlPressed && keyEvent.key == Key.T && keyEvent.type == KeyEventType.KeyUp) -> {
-                toTypingWord()
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.W && keyEvent.type == KeyEventType.KeyUp) -> {
+                backToHome()
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.O && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -422,16 +432,17 @@ fun TypingSubtitles(
                 }
                 true
             }
-            (keyEvent.isCtrlPressed && keyEvent.key == Key.A && keyEvent.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.H && keyEvent.type == KeyEventType.KeyUp) -> {
                 setCurrentCaptionVisible(!typingSubtitles.currentCaptionVisible)
                 true
             }
-            (keyEvent.isCtrlPressed && keyEvent.key == Key.W && keyEvent.type == KeyEventType.KeyUp) -> {
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.G && keyEvent.type == KeyEventType.KeyUp) -> {
                 setNotWroteCaptionVisible(!typingSubtitles.notWroteCaptionVisible)
                 true
             }
+
             (keyEvent.isCtrlPressed && keyEvent.key == Key.D && keyEvent.type == KeyEventType.KeyUp) -> {
-                saveIsDarkTheme(!globalState.isDarkTheme)
+                setIsDarkTheme(!globalState.isDarkTheme)
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.M && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -479,13 +490,13 @@ fun TypingSubtitles(
                 setCurrentCaptionVisible = {setCurrentCaptionVisible(it)},
                 notWroteCaptionVisible = typingSubtitles.notWroteCaptionVisible,
                 setNotWroteCaptionVisible = {setNotWroteCaptionVisible(it)},
-                back = { toTypingWord() },
+                backToHome = { backToHome() },
                 trackSize = typingSubtitles.trackSize,
                 openFile = { showOpenFile = true },
                 openFileChooser = { openFileChooser() },
                 selectTrack = { selectTypingSubTitles() },
                 isDarkTheme = globalState.isDarkTheme,
-                setIsDarkTheme = { saveIsDarkTheme(it) },
+                setIsDarkTheme = { setIsDarkTheme(it) },
                 isPlayKeystrokeSound = globalState.isPlayKeystrokeSound,
                 setIsPlayKeystrokeSound = { setIsPlayKeystrokeSound(it) },
             )
@@ -523,7 +534,8 @@ fun TypingSubtitles(
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
                             var selectable by remember { mutableStateOf(false) }
-                            val focusRequester = remember { FocusRequester() }
+                            val selectRequester = remember { FocusRequester() }
+                            val textFieldRequester = remember { FocusRequester() }
                             val next :() -> Unit = {
                                 scope.launch {
                                     val end =
@@ -532,7 +544,6 @@ fun TypingSubtitles(
                                         listState.scrollToItem(index)
                                     }
                                    if(index+1 != captionList.size){
-                                       focusManager.moveFocus(FocusDirection.Next)
                                        focusManager.moveFocus(FocusDirection.Next)
                                        focusManager.moveFocus(FocusDirection.Next)
                                        focusManager.moveFocus(FocusDirection.Next)
@@ -546,8 +557,7 @@ fun TypingSubtitles(
                                         if(top < 0) top = 0
                                         listState.scrollToItem(top)
                                         typingSubtitles.currentIndex = index-1
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
+                                        pgUp = true
                                     }else if(typingSubtitles.currentIndex > 0){
                                         focusManager.moveFocus(FocusDirection.Previous)
                                         focusManager.moveFocus(FocusDirection.Previous)
@@ -684,16 +694,16 @@ fun TypingSubtitles(
 
                                 Spacer(Modifier.width(20.dp))
                                 Box(Modifier.width(IntrinsicSize.Max)) {
+                                    if (typingSubtitles.currentIndex == index) {
+                                        Divider(
+                                            Modifier.align(Alignment.BottomCenter)
+                                                .background(MaterialTheme.colors.primary)
+                                        )
+                                    }
+
                                     CompositionLocalProvider(
                                         LocalTextInputService provides null
                                     ) {
-                                        if (typingSubtitles.currentIndex == index) {
-                                            Divider(
-                                                Modifier.align(Alignment.BottomCenter)
-                                                    .background(MaterialTheme.colors.primary)
-                                            )
-                                        }
-
                                         BasicTextField(
                                             value = textFieldValue,
                                             onValueChange = { checkTyping(it) },
@@ -709,6 +719,7 @@ fun TypingSubtitles(
                                                 .align(Alignment.CenterStart)
                                                 .focusable()
                                                 .onKeyEvent { textFieldKeyEvent(it) }
+                                                .focusRequester(textFieldRequester)
                                                 .onFocusChanged {
                                                     if (it.isFocused) {
                                                         scope.launch {
@@ -723,7 +734,14 @@ fun TypingSubtitles(
                                                     }
                                                 }
                                         )
-
+                                        if(pgUp){
+                                            SideEffect {
+                                                if(typingSubtitles.currentIndex == index){
+                                                    textFieldRequester.requestFocus()
+                                                    pgUp = false
+                                                }
+                                            }
+                                        }
                                     }
                                     Text(
                                         text = buildAnnotatedString {
@@ -789,7 +807,6 @@ fun TypingSubtitles(
                                     )
 
 
-
                                     DropdownMenu(
                                         expanded = selectable,
                                         focusable = true,
@@ -809,7 +826,7 @@ fun TypingSubtitles(
                                             ),
                                             modifier = Modifier.focusable()
                                                 .height(32.dp)
-                                                .focusRequester(focusRequester)
+                                                .focusRequester(selectRequester)
                                                 .onKeyEvent {
                                                     if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                                         scope.launch { selectable = !selectable }
@@ -818,14 +835,14 @@ fun TypingSubtitles(
                                                 }
                                         )
                                         LaunchedEffect(Unit) {
-                                            focusRequester.requestFocus()
+                                            selectRequester.requestFocus()
                                         }
 
                                     }
 
                                 }
 
-                                Row(Modifier.width(126.dp).height(IntrinsicSize.Max)) {
+                                Row(Modifier.width(48.dp).height(IntrinsicSize.Max)) {
                                     if (typingSubtitles.currentIndex == index) {
                                         TooltipArea(
                                             tooltip = {
@@ -915,43 +932,6 @@ fun TypingSubtitles(
                                             }
 
                                         }
-
-                                        TooltipArea(
-                                            tooltip = {
-                                                Surface(
-                                                    elevation = 4.dp,
-                                                    border = BorderStroke(
-                                                        1.dp,
-                                                        MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
-                                                    ),
-                                                    shape = RectangleShape
-                                                ) {
-                                                    Row(modifier = Modifier.padding(10.dp)){
-                                                        Text(text = "复制单词" )
-                                                        CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
-                                                            val ctrl = LocalCtrl.current
-                                                            Text(text = " $ctrl+B")
-                                                        }
-                                                    }
-
-                                                }
-                                            },
-                                            delayMillis = 300,
-                                            tooltipPlacement = TooltipPlacement.ComponentRect(
-                                                anchor = Alignment.TopCenter,
-                                                alignment = Alignment.TopCenter,
-                                                offset = DpOffset.Zero
-                                            )
-                                        ) {
-                                            IconButton(onClick = { selectable = !selectable }){
-                                                Icon(
-                                                    Icons.Filled.ContentCopy,
-                                                    contentDescription = "Localized description",
-                                                    tint = if(selectable)MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
-                                                )
-                                            }
-                                        }
-
 
                                     }
                                 }
@@ -1231,16 +1211,16 @@ fun Settings(
 @Composable
 fun SubtitlesSidebar(
     isOpen: Boolean,
-    isDarkTheme: Boolean,
     currentCaptionVisible: Boolean,
     setCurrentCaptionVisible:(Boolean) -> Unit,
     notWroteCaptionVisible: Boolean,
     setNotWroteCaptionVisible:(Boolean) -> Unit,
+    isDarkTheme: Boolean,
     setIsDarkTheme: (Boolean) -> Unit,
     isPlayKeystrokeSound: Boolean,
     setIsPlayKeystrokeSound: (Boolean) -> Unit,
     trackSize: Int,
-    back: () -> Unit,
+    backToHome: () -> Unit,
     openFile: () -> Unit,
     openFileChooser: () -> Unit,
     selectTrack: () -> Unit,
@@ -1260,21 +1240,21 @@ fun SubtitlesSidebar(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().height(48.dp).clickable { back() }.padding(start = 16.dp, end = 8.dp)
+                modifier = Modifier.fillMaxWidth().height(48.dp).clickable { backToHome() }.padding(start = 16.dp, end = 8.dp)
             ) {
                 Row {
                     Text("记忆单词", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "$ctrl+T",
+                        text = "$ctrl+W",
                         color = MaterialTheme.colors.onBackground
                     )
                 }
                 Spacer(Modifier.width(15.dp))
                 Icon(
-                    Icons.Filled.Title,
+                    imageVector = Icons.Filled.Translate,
                     contentDescription = "Localized description",
-                    tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground,
+                    tint = tint,
                     modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
                 )
             }
@@ -1331,6 +1311,7 @@ fun SubtitlesSidebar(
                     )
                 }
             }
+            Divider()
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -1340,7 +1321,7 @@ fun SubtitlesSidebar(
                     Text("当前字幕", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "$ctrl+A",
+                        text = "$ctrl+H",
                         color = MaterialTheme.colors.onBackground
                     )
                 }
@@ -1362,7 +1343,7 @@ fun SubtitlesSidebar(
                     Text("未写字幕", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        text = "$ctrl+W",
+                        text = "$ctrl+G",
                         color = MaterialTheme.colors.onBackground
                     )
                 }
@@ -1375,7 +1356,7 @@ fun SubtitlesSidebar(
                     onCheckedChange = {setNotWroteCaptionVisible(!notWroteCaptionVisible) },
                 )
             }
-
+            Divider()
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,

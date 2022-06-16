@@ -47,6 +47,7 @@ fun TypingWordSidebar(state: AppState) {
                 Spacer(Modifier.fillMaxWidth().height(if (isMacOS()) 78.dp else 48.dp))
                 Divider()
                 val ctrl = LocalCtrl.current
+                val tint = if (MaterialTheme.colors.isLight) Color.DarkGray else MaterialTheme.colors.onBackground
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -62,7 +63,7 @@ fun TypingWordSidebar(state: AppState) {
                         Text("抄写字幕", color = MaterialTheme.colors.onBackground)
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "$ctrl+T",
+                            text = "$ctrl+U",
                             color = MaterialTheme.colors.onBackground
                         )
                     }
@@ -71,10 +72,39 @@ fun TypingWordSidebar(state: AppState) {
                     Icon(
                         Icons.Filled.Subtitles,
                         contentDescription = "Localized description",
-                        tint = MaterialTheme.colors.onBackground,
+                        tint = tint,
                         modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
                     )
                 }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        scope.launch {
+                            state.global.type = TypingType.TEXT
+                            state.saveGlobalState()
+                        }
+
+                    }.padding(start = 16.dp, end = 8.dp)
+                ) {
+                    Row {
+                        Text("抄写文本", color = MaterialTheme.colors.onBackground)
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = "$ctrl+T",
+                            color = MaterialTheme.colors.onBackground
+                        )
+                    }
+
+                    Spacer(Modifier.width(15.dp))
+                    Icon(
+                        Icons.Filled.Title,
+                        contentDescription = "Localized description",
+                        tint = tint,
+                        modifier = Modifier.size(48.dp, 48.dp).padding(top = 12.dp, bottom = 12.dp)
+                    )
+                }
+                Divider()
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -273,6 +303,7 @@ fun TypingWordSidebar(state: AppState) {
                         },
                     )
                 }
+                Divider()
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -371,7 +402,7 @@ fun TypingWordSidebar(state: AppState) {
                         Text("提示音效", color = MaterialTheme.colors.onBackground)
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "$ctrl+W",
+                            text = "$ctrl+Q",
                             color = MaterialTheme.colors.onBackground
                         )
                     }
@@ -389,7 +420,7 @@ fun TypingWordSidebar(state: AppState) {
 
                         )
                 }
-
+                Divider()
                 var expanded by remember { mutableStateOf(false) }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -554,9 +585,6 @@ fun TypingWordSidebar(state: AppState) {
                 adapter = rememberScrollbarAdapter(stateVertical)
             )
         }
-
-
-
     }
 }
 

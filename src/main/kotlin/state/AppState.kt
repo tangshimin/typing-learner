@@ -44,6 +44,9 @@ class AppState {
     /** 抄写字幕的可观察的状态 */
     var typingSubtitles: TypingSubtitlesState = loadTypingSubtitlesState()
 
+    /** 抄写文本的可观察状态 */
+    var typingText: TextState = loadTypingTextState()
+
     /** 当前单词的正确次数 */
     var wordCorrectTime by mutableStateOf(0)
 
@@ -177,6 +180,24 @@ class AppState {
         }
     }
 
+    /** 加载抄写文本的配置信息 */
+    private fun loadTypingTextState():TextState{
+        val typingTextSetting = getTextSettingsFile()
+        return if(typingTextSetting.exists()){
+            try{
+                val dataTextState = Json.decodeFromString<DataTextState>(typingTextSetting.readText())
+                TextState(dataTextState)
+            }catch (exception:Exception){
+                FlatLightLaf.setup()
+                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingTextSetting")
+                TextState(DataTextState())
+            }
+
+        }else{
+            TextState(DataTextState())
+        }
+    }
+
 
     /** 初始化视频播放窗口 */
     @OptIn(ExperimentalComposeUiApi::class)
@@ -264,6 +285,22 @@ class AppState {
                 val json = jsonBuilder.encodeToString(typingSubtitlesData)
                 val typingSubtitlesSetting = getSubtitlesSettingsFile()
                 typingSubtitlesSetting.writeText(json)
+            }
+        }
+    }
+
+    /** 保持抄写文本的配置信息 */
+    fun saveTypingTextState(){
+        runBlocking {
+            launch {
+                val dataTextState = DataTextState(
+                    typingText.textPath,
+                    typingText.currentIndex,
+                    typingText.firstVisibleItemIndex,
+                )
+                val json = jsonBuilder.encodeToString(dataTextState)
+                val typingTextSetting = getTextSettingsFile()
+                typingTextSetting.writeText(json)
             }
         }
     }
@@ -570,6 +607,12 @@ private fun getWordSettingsFile(): File {
 private fun getSubtitlesSettingsFile(): File {
     val settingsDir = getSettingsDirectory()
     return File(settingsDir, "TypingSubtitlesSettings.json")
+}
+
+/** 获取抄写文本的配置文件 */
+private fun getTextSettingsFile():File{
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "TypingTextSettings.json")
 }
 
 /**
