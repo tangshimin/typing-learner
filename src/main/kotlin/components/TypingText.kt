@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -225,7 +224,7 @@ fun TypingText(
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
                             var selectable by remember { mutableStateOf(false) }
-                            val focusRequester = remember { FocusRequester() }
+                            val selectRequester = remember { FocusRequester() }
                             val textFieldRequester = remember { FocusRequester() }
 
                             val next :() -> Unit = {
@@ -483,7 +482,7 @@ fun TypingText(
                                             ),
                                             modifier = Modifier.focusable()
                                                 .padding(top = 2.5.dp,bottom = 2.5.dp)
-                                                .focusRequester(focusRequester)
+                                                .focusRequester(selectRequester)
                                                 .onKeyEvent {
                                                     if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                                         scope.launch { selectable = !selectable }
@@ -492,7 +491,7 @@ fun TypingText(
                                                 }
                                         )
                                         LaunchedEffect(Unit) {
-                                            focusRequester.requestFocus()
+                                            selectRequester.requestFocus()
                                         }
 
                                     }
