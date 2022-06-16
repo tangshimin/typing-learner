@@ -254,7 +254,7 @@ fun TypingSubtitles(
             fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
             fileChooser.isAcceptAllFileFilterUsed = false
             fileChooser.isMultiSelectionEnabled = true
-            val fileFilter = FileNameExtensionFilter("1个 mkv 视频，或 1个视频(mp4、mkv) + 1个字幕(srt)","mkv","srt","mp4")
+            val fileFilter = FileNameExtensionFilter("1个 mkv 视频，或 1个媒体(mp3、wav、aac、mp4、mkv) + 1个字幕(srt)","mp3","wav","aac","mkv","srt","mp4")
             fileChooser.addChoosableFileFilter(fileFilter)
             fileChooser.selectedFile = null
             if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -1078,7 +1078,7 @@ fun OpenFileComponent(
 
             Text(
                 text = "可以拖放一个有字幕的 MKV 视频或\n"+
-                        "字幕(SRT) + 视频(MP4、MKV)到这里\n",
+                        "字幕(SRT) + 媒体(MP3、WAV、AAC、MP4、MKV)到这里\n",
                 color = MaterialTheme.colors.primary,
                 modifier = Modifier.padding(top = 14.dp,end = 20.dp)
             )
