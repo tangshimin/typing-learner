@@ -53,7 +53,7 @@ import dialog.replaceNewLine
 import kotlinx.coroutines.launch
 import player.*
 import state.GlobalState
-import state.TypingSubtitlesState
+import state.SubtitlesState
 import state.getSettingsDirectory
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
@@ -78,7 +78,7 @@ import javax.swing.filechooser.FileSystemView
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun TypingSubtitles(
-    typingSubtitles: TypingSubtitlesState,
+    subtitlesState: SubtitlesState,
     globalState: GlobalState,
     saveSubtitlesState: () -> Unit,
     saveGlobalState: () -> Unit,
@@ -108,17 +108,17 @@ fun TypingSubtitles(
     val videoPlayerBounds by remember { mutableStateOf(Rectangle(0, 0, 540, 303)) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     var loading by remember { mutableStateOf(false) }
-    var mediaType by remember { mutableStateOf(computeMediaType(typingSubtitles.mediaPath)) }
+    var mediaType by remember { mutableStateOf(computeMediaType(subtitlesState.mediaPath)) }
     var pgUp by remember { mutableStateOf(false) }
     val audioPlayerComponent = LocalAudioPlayerComponent.current
 
     /** 读取字幕文件*/
-    if (typingSubtitles.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
+    if (subtitlesState.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
         parseSubtitles(
-            subtitlesPath = typingSubtitles.subtitlesPath,
+            subtitlesPath = subtitlesState.subtitlesPath,
             setMaxLength = {
                 scope.launch {
-                    typingSubtitles.sentenceMaxLength = it
+                    subtitlesState.sentenceMaxLength = it
                     saveSubtitlesState()
                 }
             },
@@ -127,14 +127,14 @@ fun TypingSubtitles(
                 captionList.addAll(it)
             },
             resetSubtitlesState = {
-                typingSubtitles.mediaPath = ""
-                typingSubtitles.subtitlesPath = ""
-                typingSubtitles.trackID = 0
-                typingSubtitles.trackDescription = ""
-                typingSubtitles.trackSize = 0
-                typingSubtitles.currentIndex = 0
-                typingSubtitles.firstVisibleItemIndex = 0
-                typingSubtitles.sentenceMaxLength = 0
+                subtitlesState.mediaPath = ""
+                subtitlesState.subtitlesPath = ""
+                subtitlesState.trackID = 0
+                subtitlesState.trackDescription = ""
+                subtitlesState.trackSize = 0
+                subtitlesState.currentIndex = 0
+                subtitlesState.firstVisibleItemIndex = 0
+                subtitlesState.sentenceMaxLength = 0
             }
         )
     }
@@ -166,7 +166,7 @@ fun TypingSubtitles(
             scope.launch {
                 Thread(Runnable{
                     if (file.extension == "mkv") {
-                        if (typingSubtitles.mediaPath != file.absolutePath) {
+                        if (subtitlesState.mediaPath != file.absolutePath) {
                             selectedPath = file.absolutePath
                             parseTrackList(
                                 mediaPlayerComponent,
@@ -199,26 +199,26 @@ fun TypingSubtitles(
 
 
             if(first.extension == "srt" && formatList.contains(last.extension)){
-                typingSubtitles.trackID = -1
-                typingSubtitles.trackSize = 0
-                typingSubtitles.currentIndex = 0
-                typingSubtitles.firstVisibleItemIndex = 0
-                typingSubtitles.subtitlesPath = first.absolutePath
-                typingSubtitles.mediaPath = last.absolutePath
-                typingSubtitles.trackDescription = first.nameWithoutExtension
+                subtitlesState.trackID = -1
+                subtitlesState.trackSize = 0
+                subtitlesState.currentIndex = 0
+                subtitlesState.firstVisibleItemIndex = 0
+                subtitlesState.subtitlesPath = first.absolutePath
+                subtitlesState.mediaPath = last.absolutePath
+                subtitlesState.trackDescription = first.nameWithoutExtension
                 captionList.clear()
-                mediaType = computeMediaType(typingSubtitles.mediaPath)
+                mediaType = computeMediaType(subtitlesState.mediaPath)
                 if(openMode == OpenMode.Open) showOpenFile = false
             }else if(formatList.contains(first.extension) && last.extension == "srt"){
-                typingSubtitles.trackID = -1
-                typingSubtitles.trackSize = 0
-                typingSubtitles.currentIndex = 0
-                typingSubtitles.firstVisibleItemIndex = 0
-                typingSubtitles.mediaPath = first.absolutePath
-                typingSubtitles.subtitlesPath = last.absolutePath
-                typingSubtitles.trackDescription = last.nameWithoutExtension
+                subtitlesState.trackID = -1
+                subtitlesState.trackSize = 0
+                subtitlesState.currentIndex = 0
+                subtitlesState.firstVisibleItemIndex = 0
+                subtitlesState.mediaPath = first.absolutePath
+                subtitlesState.subtitlesPath = last.absolutePath
+                subtitlesState.trackDescription = last.nameWithoutExtension
                 captionList.clear()
-                mediaType = computeMediaType(typingSubtitles.mediaPath)
+                mediaType = computeMediaType(subtitlesState.mediaPath)
                 if(openMode == OpenMode.Open) showOpenFile = false
             }else if(first.extension == "mp4" && last.extension == "mp4"){
                 JOptionPane.showMessageDialog(window, "${modeString}了2个 MP4 格式的视频，\n需要1个媒体（mp3、aac、wav、mp4、mkv）和1个 srt 字幕")
@@ -273,14 +273,14 @@ fun TypingSubtitles(
 
     /**  使用按钮播放视频时调用的回调函数   */
     val playCurrentCaption: (Caption) -> Unit = { caption ->
-        val file = File(typingSubtitles.mediaPath)
+        val file = File(subtitlesState.mediaPath)
         if (file.exists() ) {
             if (!isPlaying) {
                 scope.launch {
                     isPlaying = true
-                    val playTriple = Triple(caption, typingSubtitles.mediaPath, typingSubtitles.trackID)
+                    val playTriple = Triple(caption, subtitlesState.mediaPath, subtitlesState.trackID)
                     // 使用内部字幕轨道
-                    if(typingSubtitles.trackID != -1){
+                    if(subtitlesState.trackID != -1){
                         play(
                             window = playerWindow,
                             setIsPlaying = { isPlaying = it },
@@ -297,8 +297,8 @@ fun TypingSubtitles(
                                 audioPlayerComponent = audioPlayerComponent,
                                 volume = videoVolume,
                                 caption = caption,
-                                videoPath = typingSubtitles.mediaPath,
-                                subtitlePath = typingSubtitles.subtitlesPath
+                                videoPath = subtitlesState.mediaPath,
+                                subtitlePath = subtitlesState.subtitlesPath
                             )
                         }else{
                             play(
@@ -307,8 +307,8 @@ fun TypingSubtitles(
                                 videoPlayerComponent= mediaPlayerComponent,
                                 volume= videoVolume,
                                 caption=caption,
-                                videoPath=typingSubtitles.mediaPath,
-                                subtitlePath=typingSubtitles.subtitlesPath,
+                                videoPath=subtitlesState.mediaPath,
+                                subtitlePath=subtitlesState.subtitlesPath,
                                 bounds= videoPlayerBounds
                             )
                         }
@@ -325,7 +325,7 @@ fun TypingSubtitles(
     /** 保存轨道 ID 时被调用的回调函数 */
     val saveTrackID: (Int) -> Unit = {
         scope.launch {
-            typingSubtitles.trackID = it
+            subtitlesState.trackID = it
             saveSubtitlesState()
         }
     }
@@ -333,7 +333,7 @@ fun TypingSubtitles(
     /** 保存轨道名称时被调用的回调函数 */
     val saveTrackDescription: (String) -> Unit = {
         scope.launch {
-            typingSubtitles.trackDescription = it
+            subtitlesState.trackDescription = it
             saveSubtitlesState()
         }
     }
@@ -341,14 +341,14 @@ fun TypingSubtitles(
     /** 保存轨道数量时被调用的回调函数 */
     val saveTrackSize: (Int) -> Unit = {
         scope.launch {
-            typingSubtitles.trackSize = it
+            subtitlesState.trackSize = it
             saveSubtitlesState()
         }
     }
 
     /** 保存视频路径时被调用的回调函数 */
     val saveVideoPath: (String) -> Unit = {
-        typingSubtitles.mediaPath = it
+        subtitlesState.mediaPath = it
         mediaType = "video"
         saveSubtitlesState()
     }
@@ -356,9 +356,9 @@ fun TypingSubtitles(
     /** 保存一个新的字幕时被调用的回调函数 */
     val saveSubtitlesPath: (String) -> Unit = {
         scope.launch {
-            typingSubtitles.subtitlesPath = it
-            typingSubtitles.firstVisibleItemIndex = 0
-            typingSubtitles.currentIndex = 0
+            subtitlesState.subtitlesPath = it
+            subtitlesState.firstVisibleItemIndex = 0
+            subtitlesState.currentIndex = 0
             focusManager.clearFocus()
             /** 把之前的字幕列表清除才能触发解析字幕的函数重新运行 */
             captionList.clear()
@@ -385,7 +385,7 @@ fun TypingSubtitles(
                         mediaPlayerComponent,
                         window,
                         playerWindow,
-                        typingSubtitles.mediaPath,
+                        subtitlesState.mediaPath,
                         setTrackList = {
                             setTrackList(it)
                         },
@@ -402,7 +402,7 @@ fun TypingSubtitles(
     /** 设置当前字幕的可见性 */
     val setCurrentCaptionVisible: (Boolean) -> Unit = {
         scope.launch {
-            typingSubtitles.currentCaptionVisible = !typingSubtitles.currentCaptionVisible
+            subtitlesState.currentCaptionVisible = !subtitlesState.currentCaptionVisible
             saveSubtitlesState()
         }
     }
@@ -410,7 +410,7 @@ fun TypingSubtitles(
     /** 设置未抄写字幕的可见性 */
     val setNotWroteCaptionVisible: (Boolean) -> Unit = {
         scope.launch {
-            typingSubtitles.notWroteCaptionVisible = !typingSubtitles.notWroteCaptionVisible
+            subtitlesState.notWroteCaptionVisible = !subtitlesState.notWroteCaptionVisible
             saveSubtitlesState()
         }
     }
@@ -427,17 +427,17 @@ fun TypingSubtitles(
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.S && keyEvent.type == KeyEventType.KeyUp) -> {
-                if(typingSubtitles.trackSize > 1){
+                if(subtitlesState.trackSize > 1){
                     selectTypingSubTitles()
                 }
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.H && keyEvent.type == KeyEventType.KeyUp) -> {
-                setCurrentCaptionVisible(!typingSubtitles.currentCaptionVisible)
+                setCurrentCaptionVisible(!subtitlesState.currentCaptionVisible)
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.G && keyEvent.type == KeyEventType.KeyUp) -> {
-                setNotWroteCaptionVisible(!typingSubtitles.notWroteCaptionVisible)
+                setNotWroteCaptionVisible(!subtitlesState.notWroteCaptionVisible)
                 true
             }
 
@@ -454,7 +454,7 @@ fun TypingSubtitles(
                 true
             }
             ((keyEvent.key == Key.Tab) && keyEvent.type == KeyEventType.KeyUp) -> {
-                val caption = captionList[typingSubtitles.currentIndex]
+                val caption = captionList[subtitlesState.currentIndex]
                 playCurrentCaption(caption)
                 true
             }
@@ -486,12 +486,12 @@ fun TypingSubtitles(
         Row(Modifier.fillMaxSize()) {
             SubtitlesSidebar(
                 isOpen = isOpenSettings,
-                currentCaptionVisible = typingSubtitles.currentCaptionVisible,
+                currentCaptionVisible = subtitlesState.currentCaptionVisible,
                 setCurrentCaptionVisible = {setCurrentCaptionVisible(it)},
-                notWroteCaptionVisible = typingSubtitles.notWroteCaptionVisible,
+                notWroteCaptionVisible = subtitlesState.notWroteCaptionVisible,
                 setNotWroteCaptionVisible = {setNotWroteCaptionVisible(it)},
                 backToHome = { backToHome() },
-                trackSize = typingSubtitles.trackSize,
+                trackSize = subtitlesState.trackSize,
                 openFile = { showOpenFile = true },
                 openFileChooser = { openFileChooser() },
                 selectTrack = { selectTypingSubTitles() },
@@ -508,7 +508,7 @@ fun TypingSubtitles(
 
                 if (captionList.isNotEmpty()) {
 
-                    val listState = rememberLazyListState(typingSubtitles.firstVisibleItemIndex)
+                    val listState = rememberLazyListState(subtitlesState.firstVisibleItemIndex)
                     val stateHorizontal = rememberScrollState(0)
                     val isAtTop by remember {
                         derivedStateOf {
@@ -517,7 +517,7 @@ fun TypingSubtitles(
                     }
                     val startTimeWidth = 50.dp
                     val endPadding = 10.dp
-                    val maxWidth = startTimeWidth + endPadding + (typingSubtitles.sentenceMaxLength * 13).dp
+                    val maxWidth = startTimeWidth + endPadding + (subtitlesState.sentenceMaxLength * 13).dp
                     val indexWidth = (captionList.size.toString().length * 14).dp
                     LazyColumn(
                         state = listState,
@@ -556,9 +556,9 @@ fun TypingSubtitles(
                                         var top = index - listState.layoutInfo.visibleItemsInfo.size
                                         if(top < 0) top = 0
                                         listState.scrollToItem(top)
-                                        typingSubtitles.currentIndex = index-1
+                                        subtitlesState.currentIndex = index-1
                                         pgUp = true
-                                    }else if(typingSubtitles.currentIndex > 0){
+                                    }else if(subtitlesState.currentIndex > 0){
                                         focusManager.moveFocus(FocusDirection.Previous)
                                         focusManager.moveFocus(FocusDirection.Previous)
                                     }
@@ -649,26 +649,26 @@ fun TypingSubtitles(
                                     .width(maxWidth)
                                     .padding(start = 150.dp)
                             ) {
-                                val alpha = if(typingSubtitles.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
-                                val lineColor =  if(index <  typingSubtitles.currentIndex){
+                                val alpha = if(subtitlesState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
+                                val lineColor =  if(index <  subtitlesState.currentIndex){
                                     MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
-                                }else if(typingSubtitles.currentIndex == index){
-                                    if(typingSubtitles.currentCaptionVisible){
+                                }else if(subtitlesState.currentIndex == index){
+                                    if(subtitlesState.currentCaptionVisible){
                                         MaterialTheme.colors.onBackground.copy(alpha = alpha)
                                     }else{
                                         Color.Transparent
                                     }
                                 }else{
-                                    if(typingSubtitles.notWroteCaptionVisible){
+                                    if(subtitlesState.notWroteCaptionVisible){
                                         MaterialTheme.colors.onBackground.copy(alpha = alpha)
                                     }else{
                                         Color.Transparent
                                     }
                                 }
-                                val indexColor =  if(index <=  typingSubtitles.currentIndex){
+                                val indexColor =  if(index <=  subtitlesState.currentIndex){
                                     MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
                                 }else{
-                                    if(typingSubtitles.notWroteCaptionVisible){
+                                    if(subtitlesState.notWroteCaptionVisible){
                                         MaterialTheme.colors.onBackground.copy(alpha = alpha)
                                     }else{
                                         Color.Transparent
@@ -694,7 +694,7 @@ fun TypingSubtitles(
 
                                 Spacer(Modifier.width(20.dp))
                                 Box(Modifier.width(IntrinsicSize.Max)) {
-                                    if (typingSubtitles.currentIndex == index) {
+                                    if (subtitlesState.currentIndex == index) {
                                         Divider(
                                             Modifier.align(Alignment.BottomCenter)
                                                 .background(MaterialTheme.colors.primary)
@@ -723,8 +723,8 @@ fun TypingSubtitles(
                                                 .onFocusChanged {
                                                     if (it.isFocused) {
                                                         scope.launch {
-                                                            typingSubtitles.currentIndex = index
-                                                            typingSubtitles.firstVisibleItemIndex =
+                                                            subtitlesState.currentIndex = index
+                                                            subtitlesState.firstVisibleItemIndex =
                                                                 listState.firstVisibleItemIndex
                                                             saveSubtitlesState()
                                                         }
@@ -736,7 +736,7 @@ fun TypingSubtitles(
                                         )
                                         if(pgUp){
                                             SideEffect {
-                                                if(typingSubtitles.currentIndex == index){
+                                                if(subtitlesState.currentIndex == index){
                                                     textFieldRequester.requestFocus()
                                                     pgUp = false
                                                 }
@@ -798,7 +798,7 @@ fun TypingSubtitles(
                                             .align(Alignment.CenterStart)
                                             .padding(bottom = 5.dp)
                                             .onGloballyPositioned { coordinates ->
-                                            if (typingSubtitles.currentIndex == index) {
+                                            if (subtitlesState.currentIndex == index) {
                                                 // 如果视频播放按钮被遮挡，就使用这个位置计算出视频播放器的位置
                                                 textRect = coordinates.boundsInWindow()
                                             }
@@ -843,7 +843,7 @@ fun TypingSubtitles(
                                 }
 
                                 Row(Modifier.width(48.dp).height(IntrinsicSize.Max)) {
-                                    if (typingSubtitles.currentIndex == index) {
+                                    if (subtitlesState.currentIndex == index) {
                                         TooltipArea(
                                             tooltip = {
                                                 Surface(
@@ -957,8 +957,8 @@ fun TypingSubtitles(
                             onClick = {
                                 scope.launch {
                                     listState.scrollToItem(0)
-                                    typingSubtitles.currentIndex = 0
-                                    typingSubtitles.firstVisibleItemIndex = 0
+                                    subtitlesState.currentIndex = 0
+                                    subtitlesState.firstVisibleItemIndex = 0
                                     focusManager.clearFocus()
                                     saveSubtitlesState()
                                 }
@@ -1007,7 +1007,7 @@ fun TypingSubtitles(
                                 trackList = trackList,
                                 setTrackList = { setTrackList(it) },
                                 setVideoPath = { saveVideoPath(it) },
-                                selectedPath = typingSubtitles.mediaPath,
+                                selectedPath = subtitlesState.mediaPath,
                                 setSelectedPath = { selectedPath = it },
                                 setSubtitlesPath = { saveSubtitlesPath(it) },
                                 setTrackSize = { saveTrackSize(it) },

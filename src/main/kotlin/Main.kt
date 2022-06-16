@@ -128,7 +128,7 @@ fun main() = application {
                         }
                         SUBTITLES -> {
                             TypingSubtitles(
-                                typingSubtitles = state.typingSubtitles,
+                                subtitlesState = state.typingSubtitles,
                                 globalState = state.global,
                                 saveSubtitlesState = { saveSubtitlesState() },
                                 saveGlobalState = { saveGlobalState() },

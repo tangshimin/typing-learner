@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 /** 记忆单词的数据类 */
 @ExperimentalSerializationApi
 @Serializable
-data class TypingWordData(
+data class DataWordState(
     val wordVisible: Boolean = true,
     val phoneticVisible: Boolean = true,
     val morphologyVisible: Boolean = true,
@@ -28,80 +28,80 @@ data class TypingWordData(
 
 /** 记忆单词的可观察状态 */
 @OptIn(ExperimentalSerializationApi::class)
-class TypingWordState(typingWordData: TypingWordData) {
+class WordState(dataWordState: DataWordState) {
 
     /**
      * 单词组件的可见性
      */
-    var wordVisible by mutableStateOf(typingWordData.wordVisible)
+    var wordVisible by mutableStateOf(dataWordState.wordVisible)
 
     /**
      * 音标组件的可见性
      */
-    var phoneticVisible by mutableStateOf(typingWordData.phoneticVisible)
+    var phoneticVisible by mutableStateOf(dataWordState.phoneticVisible)
 
     /**
      * 词型组件的可见性
      */
-    var morphologyVisible by mutableStateOf(typingWordData.morphologyVisible)
+    var morphologyVisible by mutableStateOf(dataWordState.morphologyVisible)
 
     /**
      * 定义组件的可见性
      */
-    var definitionVisible by mutableStateOf(typingWordData.definitionVisible)
+    var definitionVisible by mutableStateOf(dataWordState.definitionVisible)
 
     /**
      * 翻译组件的可见性
      */
-    var translationVisible by mutableStateOf(typingWordData.translationVisible)
+    var translationVisible by mutableStateOf(dataWordState.translationVisible)
 
     /**
      * 字幕组件的可见性
      */
-    var subtitlesVisible by mutableStateOf(typingWordData.subtitlesVisible)
+    var subtitlesVisible by mutableStateOf(dataWordState.subtitlesVisible)
 
     /**
      * 速度组件的可见性
      */
-    var speedVisible by mutableStateOf(typingWordData.speedVisible)
+    var speedVisible by mutableStateOf(dataWordState.speedVisible)
 
     /**
      * 是否播放提示音
      */
-    var isPlaySoundTips by mutableStateOf(typingWordData.isPlaySoundTips)
+    var isPlaySoundTips by mutableStateOf(dataWordState.isPlaySoundTips)
 
     /**
      * 提示音音量
      */
-    var soundTipsVolume by mutableStateOf(typingWordData.soundTipsVolume)
+    var soundTipsVolume by mutableStateOf(dataWordState.soundTipsVolume)
 
     /**
      * 选择发音，有英音、美音、日语
      */
-    var pronunciation by mutableStateOf(typingWordData.pronunciation)
+    var pronunciation by mutableStateOf(dataWordState.pronunciation)
 
     /**
      * 是否是自动切换
      */
-    var isAuto by mutableStateOf(typingWordData.isAuto)
+    var isAuto by mutableStateOf(dataWordState.isAuto)
 
     /**
      * 当前单词的索引，从0开始，在标题栏显示的时候 +1
      */
-    var index by mutableStateOf(typingWordData.index)
+    var index by mutableStateOf(dataWordState.index)
 
     /**
      * 当前单词的章节，从1开始
      */
-    var chapter by mutableStateOf((typingWordData.index / 20) + 1)
+    var chapter by mutableStateOf((dataWordState.index / 20) + 1)
 
     /**
      * 词库的名称
      */
-    var vocabularyName by mutableStateOf(typingWordData.vocabularyName)
+    var vocabularyName by mutableStateOf(dataWordState.vocabularyName)
 
     /**
      * 词库的路径
      */
-    var vocabularyPath by mutableStateOf(typingWordData.vocabularyPath)
+    var vocabularyPath by mutableStateOf(dataWordState.vocabularyPath)
 }

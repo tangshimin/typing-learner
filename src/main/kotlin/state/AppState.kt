@@ -39,13 +39,13 @@ class AppState {
     var colors by mutableStateOf(createColors(global.isDarkTheme, global.primaryColor))
 
     /** 记忆单词的配置文件保存的状态 */
-    var typingWord: TypingWordState = loadTypingWordState()
+    var typingWord: WordState = loadWordState()
 
     /** 抄写字幕的可观察的状态 */
-    var typingSubtitles: TypingSubtitlesState = loadTypingSubtitlesState()
+    var typingSubtitles: SubtitlesState = loadSubtitlesState()
 
     /** 抄写文本的可观察状态 */
-    var typingText: TextState = loadTypingTextState()
+    var typingText: TextState = loadTextState()
 
     /** 当前单词的正确次数 */
     var wordCorrectTime by mutableStateOf(0)
@@ -146,42 +146,42 @@ class AppState {
 
 
     /** 加载应用记忆单词界面的设置信息 */
-    private fun loadTypingWordState(): TypingWordState {
+    private fun loadWordState(): WordState {
         val typingWordSettings = getWordSettingsFile()
         return if (typingWordSettings.exists()) {
             try {
-                val typingWordData = Json.decodeFromString<TypingWordData>(typingWordSettings.readText())
-                TypingWordState(typingWordData)
+                val dataWordState = Json.decodeFromString<DataWordState>(typingWordSettings.readText())
+                WordState(dataWordState)
             } catch (exception: Exception) {
                 FlatLightLaf.setup()
                 JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingWordSettings")
-                TypingWordState(TypingWordData())
+                WordState(DataWordState())
             }
 
         } else {
-            TypingWordState(TypingWordData())
+            WordState(DataWordState())
         }
     }
 
     /** 加载抄写字幕的配置信息 */
-    private fun loadTypingSubtitlesState(): TypingSubtitlesState {
+    private fun loadSubtitlesState(): SubtitlesState {
         val typingSubtitlesSetting = getSubtitlesSettingsFile()
         return if (typingSubtitlesSetting.exists()) {
             try {
-                val typingSubtitlesData = Json.decodeFromString<TypingSubtitlesData>(typingSubtitlesSetting.readText())
-                TypingSubtitlesState(typingSubtitlesData)
+                val dataSubtitlesState = Json.decodeFromString<DataSubtitlesState>(typingSubtitlesSetting.readText())
+                SubtitlesState(dataSubtitlesState)
             } catch (exception: Exception) {
                 FlatLightLaf.setup()
                 JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
-                TypingSubtitlesState(TypingSubtitlesData())
+                SubtitlesState(DataSubtitlesState())
             }
         } else {
-            TypingSubtitlesState(TypingSubtitlesData())
+            SubtitlesState(DataSubtitlesState())
         }
     }
 
     /** 加载抄写文本的配置信息 */
-    private fun loadTypingTextState():TextState{
+    private fun loadTextState():TextState{
         val typingTextSetting = getTextSettingsFile()
         return if(typingTextSetting.exists()){
             try{
@@ -240,7 +240,7 @@ class AppState {
     fun saveTypingWordState() {
         runBlocking {
             launch {
-                val typingWordData = TypingWordData(
+                val dataWordState = DataWordState(
                     typingWord.wordVisible,
                     typingWord.phoneticVisible,
                     typingWord.morphologyVisible,
@@ -257,7 +257,7 @@ class AppState {
                     typingWord.vocabularyPath,
                 )
 
-                val json = jsonBuilder.encodeToString(typingWordData)
+                val json = jsonBuilder.encodeToString(dataWordState)
                 val settings = getWordSettingsFile()
                 settings.writeText(json)
             }
@@ -269,7 +269,7 @@ class AppState {
     fun saveTypingSubtitlesState() {
         runBlocking {
             launch {
-                val typingSubtitlesData = TypingSubtitlesData(
+                val dataSubtitlesState = DataSubtitlesState(
                     typingSubtitles.mediaPath,
                     typingSubtitles.subtitlesPath,
                     typingSubtitles.trackID,
@@ -282,7 +282,7 @@ class AppState {
                     typingSubtitles.notWroteCaptionVisible,
                 )
 
-                val json = jsonBuilder.encodeToString(typingSubtitlesData)
+                val json = jsonBuilder.encodeToString(dataSubtitlesState)
                 val typingSubtitlesSetting = getSubtitlesSettingsFile()
                 typingSubtitlesSetting.writeText(json)
             }
