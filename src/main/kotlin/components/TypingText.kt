@@ -336,9 +336,7 @@ fun TypingText(
                             Row(
                                 horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .width(1200.dp)
-                                    .padding(start = 190.dp)
+                                modifier = Modifier.width(900.dp)
                             ) {
                                 val alpha = if(textState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
                                 val textColor =  if(index <  textState.currentIndex){
