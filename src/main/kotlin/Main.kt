@@ -356,6 +356,19 @@ private fun FrameWindowScope.WindowMenuBar(
                 state.saveGlobalState()
             },
         )
+        var showTextFormatDialog by remember { mutableStateOf(false) }
+        if(showTextFormatDialog){
+            TextFormatDialog(
+                close = {showTextFormatDialog = false},
+            futureFileChooser= state.futureFileChooser,
+            openLoadingDialog = {state.loadingFileChooserVisible = true},
+            closeLoadingDialog = {state.loadingFileChooserVisible = false},
+            )
+        }
+        Item(
+            "文本格式化(F)", mnemonic = 'F',
+            onClick = { showTextFormatDialog = true },
+        )
     }
     var aboutDialogVisible by remember { mutableStateOf(false) }
     var donateDialogVisible by remember { mutableStateOf(false) }

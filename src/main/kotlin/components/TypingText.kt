@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dialog.FormatDialog
 import kotlinx.coroutines.launch
 import player.isMacOS
 import player.isWindows
@@ -78,12 +79,20 @@ fun TypingText(
     val lastModified by remember { mutableStateOf(File(textState.textPath).lastModified()) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
+    /** 显示格式化对话框 */
+    var showFormatDialog by remember{ mutableStateOf(false) }
+    /** 这一行的字母超过了 75 个字母*/
+    var row by remember { mutableStateOf( -1) }
+    var formatPath by remember{ mutableStateOf("") }
+
+
     /** 播放按键音效 */
     val playKeySound = {
         if (globalState.isPlayKeystrokeSound) {
             playSound("audio/keystroke.wav", globalState.keystrokeVolume)
         }
     }
+
 
     /** 改变文本路径 */
     val changeTextPath :(File) -> Unit = { file ->
@@ -95,6 +104,16 @@ fun TypingText(
         saveTextState()
     }
 
+    if(showFormatDialog){
+        FormatDialog(
+            close = {showFormatDialog = false},
+            row = row,
+            formatPath = formatPath,
+            futureFileChooser = futureFileChooser,
+            changeTextPath = {changeTextPath(it)}
+        )
+    }
+
     /** 解析打开的文件 */
     val parseImportFile: (List<File>, OpenMode) -> Unit = { files, openMode ->
         val file = files.first()
@@ -103,7 +122,15 @@ fun TypingText(
                 if(file.extension == "txt"){
                     // 拖放的文件和已有的文件不一样，或者文件路径一样，但是后面又修改了。
                     if(textState.textPath != file.absolutePath || lastModified == file.lastModified()){
-                        changeTextPath(file)
+                        val result = isGreaterThan75(file)
+                        if(!result.first){
+                            changeTextPath(file)
+                        }else{
+                            formatPath = file.absolutePath
+                            row = result.second + 1
+                            showFormatDialog = true
+                        }
+
                     }else {
                         JOptionPane.showMessageDialog(window, "文件已打开")
                     }
@@ -160,11 +187,6 @@ fun TypingText(
             else -> false
         }
     }
-
-
-
-
-
 
     /**  处理拖放文件的函数 */
     val transferHandler = createTransferHandler(
@@ -658,4 +680,18 @@ fun TypingTextSidebar(
 
         }
     }
+}
+
+
+/** 检测文本的每一行长度，是否超过 75 个字母 */
+private fun isGreaterThan75(file:File):Pair<Boolean,Int> {
+    file.useLines { lines ->
+        lines.forEachIndexed { index,line ->
+            if(line.length > 75){
+                return Pair(true,index)
+            }
+        }
+    }
+
+    return Pair(false,-1)
 }
