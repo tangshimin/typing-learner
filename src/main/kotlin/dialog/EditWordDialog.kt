@@ -469,7 +469,7 @@ fun SettingTimeLine(
         resizable = false,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(610.dp, 700.dp)
+            size = DpSize(700.dp, 700.dp)
         ),
     ) {
         val playerBounds by remember {
@@ -485,7 +485,6 @@ fun SettingTimeLine(
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
@@ -533,6 +532,7 @@ fun SettingTimeLine(
                      * 调整时间轴的精度
                      */
                     var precise by remember { mutableStateOf("1S") }
+                    Divider()
                     Row(Modifier.width(540.dp).height(303.dp).padding(top = 40.dp)
                         .onGloballyPositioned { coordinates ->
                             val rect = coordinates.boundsInWindow()

@@ -111,10 +111,10 @@ fun MergeVocabularyDialog(
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
-            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
         ) {
 
             Box {
+                Divider(Modifier.align(Alignment.TopCenter))
                 var merging by remember { mutableStateOf(false) }
                 Column(
                     verticalArrangement = Arrangement.Center,
