@@ -1073,49 +1073,50 @@ fun OpenFileComponent(
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
         var loading by remember { mutableStateOf(false) }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.width(IntrinsicSize.Max).align(Alignment.Center)
-        ) {
-
+        Column( modifier = Modifier.width(IntrinsicSize.Max).align(Alignment.Center)){
             Text(
                 text = "可以拖放一个有字幕的 MKV 视频或\n"+
                         "字幕(SRT) + 媒体(MP3、WAV、AAC、MP4、MKV)到这里\n",
                 color = MaterialTheme.colors.primary,
-                modifier = Modifier.padding(top = 14.dp,end = 20.dp)
             )
-            OutlinedButton(
-                modifier = Modifier.padding(end = 20.dp),
-                onClick = { openFileChooser() }) {
-                Text("打开")
-            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
 
-            SelectTrack(
-                close = { cancel() },
-                parentComponent = parentComponent,
-                setTrackId = { setTrackId(it) },
-                setTrackDescription = { setTrackDescription(it) },
-                trackList = trackList,
-                setTrackList = { setTrackList(it) },
-                setVideoPath = { setVideoPath(it) },
-                selectedPath = selectedPath,
-                setSelectedPath = { setSelectedPath(it) },
-                setSubtitlesPath = { setSubtitlesPath(it) },
-                setTrackSize = { setTrackSize(it) },
-                setIsLoading = { loading = it }
-            )
-            if (showCancel) {
-                OutlinedButton(onClick = {
-                    setTrackList(listOf())
-                    setSelectedPath("")
-                    cancel()
-                }) {
-                    Text("取消")
+            ) {
+                OutlinedButton(
+                    modifier = Modifier.padding(end = 20.dp),
+                    onClick = { openFileChooser() }) {
+                    Text("打开")
+                }
+
+                SelectTrack(
+                    close = { cancel() },
+                    parentComponent = parentComponent,
+                    setTrackId = { setTrackId(it) },
+                    setTrackDescription = { setTrackDescription(it) },
+                    trackList = trackList,
+                    setTrackList = { setTrackList(it) },
+                    setVideoPath = { setVideoPath(it) },
+                    selectedPath = selectedPath,
+                    setSelectedPath = { setSelectedPath(it) },
+                    setSubtitlesPath = { setSubtitlesPath(it) },
+                    setTrackSize = { setTrackSize(it) },
+                    setIsLoading = { loading = it }
+                )
+                if (showCancel) {
+                    OutlinedButton(onClick = {
+                        setTrackList(listOf())
+                        setSelectedPath("")
+                        cancel()
+                    }) {
+                        Text("取消")
+                    }
                 }
             }
         }
+
         if (loading) {
-            CircularProgressIndicator(Modifier.width(60.dp).align(Alignment.Center).padding(bottom = 200.dp))
+            CircularProgressIndicator(Modifier.width(60.dp).align(Alignment.Center).padding(bottom = 220.dp))
         }
     }
 
