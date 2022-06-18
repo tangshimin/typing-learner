@@ -3,9 +3,16 @@ package lyric;
 import java.io.*;
 import java.util.List;
 /**
- * FileManager: All method that deal with the file
- *
- * @author  IntelleBitnify
+ * FileManager: All method that deal with the file<br>
+ * this code copy from <a href="https://github.com/IntelleBitnify/LyricConverter">LyricConverter</a>
+ * The following changes were made to the code.<br>
+ * 1. removed all println<br>
+ * 2. modified the readLRC() parameter to change the file name to an absolute path<br>
+ * 3. modified processLRC(), added exception catch to Double.parseDouble()<br>
+ * 4. modified the parameter of writeSRT() to change the file name to an absolute path<br>
+ * Modified time: 2022/3/18
+ * 
+ * @author IntelleBitnify
  * @version 1.0 (10/6/2019)
  */
 public class FileManager
@@ -14,14 +21,14 @@ public class FileManager
      * Read the .lrc file
      * 
      * @param   inSong                   The object of SongLyric that will hold entire lyric from the file
-     * @param   inFilename               The filename that it reads from
+     * @param   inputPath               The path that it reads from
      * 
      * @return  Modify the state of the SongLyric object
      * 
      * @author  IntelleBitnify
      * @version 1.0 (10/6/2019)
      *********************************************************************/
-    public static void readLRC(SongLyric inSong, String inFilename)
+    public static void readLRC(SongLyric inSong, String inputPath)
     {
         //Define data structure
         int i;
@@ -35,7 +42,7 @@ public class FileManager
 
         try //Mandatory IO try catch
         {
-            fileRdr = new FileReader("./Input/" + inFilename);
+            fileRdr = new FileReader(inputPath);
             bufRdr = new BufferedReader(fileRdr);
 
             //Read the first line
@@ -91,56 +98,55 @@ public class FileManager
 
         //Set Processed to each line lyric object
 
-        //Step 1: Save the timestamp in seconds from [minutesseconds.miliseconds] the seconds used to be 100 for 1 minutes instead of 60
-        inTimestamp = Double.parseDouble(subLyric[0]); //Convert to real number from string
-        inTimestamp = (((int) (inTimestamp / 100)) * 60) + (inTimestamp % 100);
+        try{
+            //Step 1: Save the timestamp in seconds from [minutesseconds.miliseconds] the seconds used to be 100 for 1 minutes instead of 60
+            inTimestamp = Double.parseDouble(subLyric[0]); //Convert to real number from string
+            inTimestamp = (((int) (inTimestamp / 100)) * 60) + (inTimestamp % 100);
+            //Step 2: Set the timestamp
+            lrc.setTimestamp(inTimestamp);
 
-        //Step 2: Set the timestamp
-        lrc.setTimestamp(inTimestamp);
+            //Step 3: Set the lyric
+            if (subLyric.length == 1) //If the lyric is blank
+            {
+                lrc.setLyric(""); //Set a blank lyric
+            }
+            else //If the lyric contain a lyric
+            {
+                lrc.setLyric(subLyric[1]); //Set the lyric
+            }
 
-        //Step 3: Set the lyric
-        if (subLyric.length == 1) //If the lyric is blank
-        {
-            lrc.setLyric(""); //Set a blank lyric
+            //Add each line lyric to the song lyric
+            inSongLyric.addLyric(lrc);
+        }catch (NumberFormatException formatException ){
+            formatException.printStackTrace();
         }
-        else //If the lyric contain a lyric
-        {
-            lrc.setLyric(subLyric[1]); //Set the lyric
-        }
-
-        //Add each line lyric to the song lyric
-        inSongLyric.addLyric(lrc);
     }
 
     /********************************************************************
      * Write the file to the format of .srt file
      * 
-     * @param   inSong                   The object of SongLyric that hold entire lyric
-     * @param   inFilename               The filename that it will write to
+     * @param   inSongLyric              The object of SongLyric that hold entire lyric
+     * @param   outPath               The path that it will write to
      * 
      * @return  Output to the .srt file
      * 
      * @author  IntelleBitnify
      * @version 1.0 (10/6/2019)
      *********************************************************************/
-    public static void writeSRT(SongLyric inSongLyric, String inFilename)
+    public static void writeSRT(SongLyric inSongLyric, String outPath)
     {
         //Define data structure
         int i, to, from, from_hours, from_minutes, from_seconds, from_miliseconds, to_hours, to_minutes, to_seconds, to_miliseconds;
         List<Lyric> inSong;
-        String filename;
         FileWriter fileWrtr;
         PrintWriter pw;
-
-        System.out.println(">> INFO: Converting to .srt ..");
 
         //Define default value
         fileWrtr = null;
         inSong = inSongLyric.getSong();
-        filename = inFilename.split("\\.")[0];
         try //Mandatory IO try catch
         {
-            fileWrtr = new FileWriter("./Output/" + filename + "_converted.srt");
+            fileWrtr = new FileWriter(outPath);
             pw = new PrintWriter(fileWrtr);
 
             //SRT data:
@@ -200,7 +206,6 @@ public class FileManager
                 pw.println();
             }
             fileWrtr.close();
-            System.out.println(">> INFO: Succesfully convert! File saved to ../Output/" + filename + "_converted.srt");
         }
 
         catch (IOException a)
@@ -221,32 +226,29 @@ public class FileManager
     /********************************************************************
      * Write the file to the format of .lrc file
      * 
-     * @param   inSong                   The object of SongLyric that hold entire lyric
-     * @param   inFilename               The filename that it will write to
+     * @param   inSongLyric              The object of SongLyric that hold entire lyric
+     * @param   outPath               The path that it will write to
      * 
      * @return  Output to the .srt file
      * 
      * @author  IntelleBitnify
      * @version 1.0 (10/6/2019)
      *********************************************************************/
-    public static void writeLRC(SongLyric inSongLyric, String inFilename)
+    public static void writeLRC(SongLyric inSongLyric, String outPath)
     {
         //Define data structure
         int i, minutes, seconds, miliseconds;
         List<Lyric> inSong;
-        String filename;
         FileWriter fileWrtr;
         PrintWriter pw;
 
-        System.out.println(">> INFO: Converting to .lrc ..");
 
         //Define default value
         fileWrtr = null;
         inSong = inSongLyric.getSong();
-        filename = inFilename.split("\\.")[0];
         try //Mandatory IO try catch
         {
-            fileWrtr = new FileWriter("./Output/" + filename + "_converted.lrc");
+            fileWrtr = new FileWriter(outPath);
             pw = new PrintWriter(fileWrtr);
 
             //LRC data: [minutes:seconds.miliseconds]lyric
@@ -263,7 +265,6 @@ public class FileManager
                 pw.println((inSong.get(i)).getLyric());
             }
             fileWrtr.close();
-            System.out.println(">> INFO: Succesfully convert! File saved to ../Output/" + filename + "_converted.lrc");
         }
 
         catch (IOException a)

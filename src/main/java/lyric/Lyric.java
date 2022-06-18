@@ -1,8 +1,8 @@
 package lyric;
 
 /**
- * Lyric: Contain timestamp and lyric text.
- *
+ * Lyric: Contain timestamp and lyric text.<br>
+ * this code copy from <a href="https://github.com/IntelleBitnify/LyricConverter">LyricConverter</a><br>
  * @author  IntelleBitnify
  * @version 1.0 (10/6/2019)
  */

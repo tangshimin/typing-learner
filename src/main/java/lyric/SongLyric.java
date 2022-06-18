@@ -3,7 +3,8 @@ package lyric;
 import java.util.ArrayList;
 import java.util.List;
 /**
- * SongLyric: Class that hold an entire song lyric with its timestamp.
+ * SongLyric: Class that hold an entire song lyric with its timestamp.<br>
+ * this code copy from <a href="https://github.com/IntelleBitnify/LyricConverter">LyricConverter</a><br>
  *
  * @author  IntelleBitnify
  * @version 1.0 (10/6/2019)
@@ -18,7 +19,7 @@ public class SongLyric
     /************************************************************
      * Default Constructor: 
      * Creates the object with default SongLyric state
-     * 
+     *
      * @return address of new Lyric object
      * 
      * @author  IntelleBitnify
