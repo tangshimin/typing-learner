@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import player.isMacOS
 import player.isWindows
 import java.util.*
 import kotlin.concurrent.schedule
@@ -525,7 +526,36 @@ fun ActiveCopyPage(){
         Row(Modifier.align(Alignment.Center)){
             SelectionContainer {
                 val ctrl = LocalCtrl.current
-                Text("如果想复制正在抄写的字幕或文本可以使用快捷键 $ctrl + B 激活复制功能。")
+                val annotatedString = buildAnnotatedString {
+
+                    val background = if(MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
+                    val shift = if (isMacOS()) "⇧" else "Shift"
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("如果想复制正在抄写的字幕或文本可以先抄写到要复制的词，然后使用")
+                    }
+
+                    withStyle(style = SpanStyle(
+                        color = MaterialTheme.colors.primary,
+                        background = background
+                    )) {
+                        append("  $shift + ←  ")
+                    }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("选择要复制的单词\n或者使用快捷键")
+                    }
+                    withStyle(style = SpanStyle(
+                        color = MaterialTheme.colors.primary,
+                        background = background
+                    )) {
+                        append("  $ctrl + B  ")
+                    }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("激活复制功能。")
+                    }
+
+                }
+                Text(annotatedString)
+
             }
         }
     }
