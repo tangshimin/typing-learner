@@ -27,6 +27,7 @@ import data.VocabularyType
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import dialog.LyricToSubtitlesDialog
 import player.*
 import state.AppState
 import state.TypingType.*
@@ -344,6 +345,20 @@ private fun FrameWindowScope.WindowMenuBar(
             "链接字幕词库(L)", mnemonic = 'L',
             enabled = enableLinkVocabulary,
             onClick = { showLinkVocabulary = true },
+        )
+        var showLyricDialog by remember{mutableStateOf(false)}
+        if(showLyricDialog){
+            LyricToSubtitlesDialog(
+                close = {showLyricDialog = false},
+                futureFileChooser = state.futureFileChooser,
+                openLoadingDialog = {state.loadingFileChooserVisible = true},
+                closeLoadingDialog = {state.loadingFileChooserVisible = false}
+            )
+        }
+        Item(
+            "歌词转字幕(C)",mnemonic = 'C',
+            enabled = true,
+            onClick = {showLyricDialog = true}
         )
     }
     Menu("文本(T)", mnemonic = 'T') {
