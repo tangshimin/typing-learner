@@ -363,6 +363,7 @@ fun TypingSubtitles(
             subtitlesState.subtitlesPath = it
             subtitlesState.firstVisibleItemIndex = 0
             subtitlesState.currentIndex = 0
+            // 清除 focus 后，当前正在抄写的字幕数据会被清除
             focusManager.clearFocus()
             /** 把之前的字幕列表清除才能触发解析字幕的函数重新运行 */
             captionList.clear()
@@ -536,6 +537,7 @@ fun TypingSubtitles(
                     ) {
                         itemsIndexed(captionList) { index, caption ->
                             val captionContent = caption.content
+                            // 当 709 行的 BasicTextField 失去焦点时自动清理 typingResult 和 textFieldValue
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
                             var selectable by remember { mutableStateOf(false) }

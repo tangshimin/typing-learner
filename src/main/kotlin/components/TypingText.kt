@@ -97,6 +97,8 @@ fun TypingText(
     /** 改变文本路径 */
     val changeTextPath :(File) -> Unit = { file ->
         textState.textPath = file.absolutePath
+        // 清除 focus 后，当前正在抄写的文本数据会被清除
+        focusManager.clearFocus()
         textState.currentIndex = 0
         textState.firstVisibleItemIndex = 0
         lines.clear()
@@ -243,6 +245,7 @@ fun TypingText(
                     ) {
                         itemsIndexed(lines) {index,item ->
                             val line = item.ifEmpty { " " }
+                            // 当 384 行的 BasicTextField 失去焦点时自动清理 typingResult 和 textFieldValue
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
                             var textFieldValue by remember { mutableStateOf("") }
                             var selectable by remember { mutableStateOf(false) }
@@ -575,6 +578,17 @@ fun TypingText(
 }
  fun readAllLines(textPath:String):SnapshotStateList<String>{
      val list = mutableStateListOf<String>()
+     try{
+         val lines = Files.readAllLines(Paths.get(textPath))
+         list.addAll(lines)
+     }catch (exception:Exception){
+         println(exception.message)
+     }
+
+    return list
+}
+ fun readAllLines2(textPath:String):List<String>{
+     val list = mutableListOf<String>()
      try{
          val lines = Files.readAllLines(Paths.get(textPath))
          list.addAll(lines)
