@@ -597,12 +597,10 @@ fun TypingSubtitles(
                                                 typingResult.add(Pair(inputChar, false))
                                             }
                                         }
-                                        if(input.length >= captionContent.length){
+                                        if(input.length == captionContent.length){
                                             next()
                                         }
 
-                                    }else{
-                                        next()
                                     }
                                 }
                             }

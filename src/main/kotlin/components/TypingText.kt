@@ -307,12 +307,10 @@ fun TypingText(
                                                 typingResult.add(Pair(inputChar, false))
                                             }
                                         }
-                                        if(input.length >= line.length){
+                                        if(input.length == line.length){
                                             next()
                                         }
 
-                                    }else{
-                                        next()
                                     }
                                 }
                             }
