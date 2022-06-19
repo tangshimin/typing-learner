@@ -1,5 +1,6 @@
 package data
 
+import player.isMacOS
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -88,7 +89,11 @@ object Dictionary {
         val dir = System.getProperty(property)
         return if (dir != null) {
             // 打包之后的环境
-            "jdbc:h2:./app/resources/dictionary/ecdict;ACCESS_MODE_DATA=r"
+            if(isMacOS()){
+                "jdbc:h2:file:/Applications/Typing Learner.app/Contents/app/resources/dictionary/ecdict;ACCESS_MODE_DATA=r"
+            }else{
+                "jdbc:h2:./app/resources/dictionary/ecdict;ACCESS_MODE_DATA=r"
+            }
         } else {
             // 开发环境
             "jdbc:h2:./resources/common/dictionary/ecdict;ACCESS_MODE_DATA=r"
