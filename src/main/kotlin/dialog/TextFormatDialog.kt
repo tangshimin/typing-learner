@@ -1,7 +1,7 @@
 package dialog
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +46,7 @@ fun TextFormatDialog(
         var saveEnable by remember { mutableStateOf(false) }
         val saveList = remember { mutableStateListOf<String>() }
         var successful by remember { mutableStateOf(false) }
+        var limit by remember { mutableStateOf(75) }
 
         val setFile: (File) -> Unit = { file ->
             path = file.absolutePath
@@ -139,8 +140,8 @@ fun TextFormatDialog(
                 if (file.exists()) {
                     File(path).useLines { lines ->
                         lines.forEach { line ->
-                            if (line.length > 75) {
-                                val subLines = split(line)
+                            if (line.length > limit) {
+                                val subLines = split(line,limit)
                                 saveList.addAll(subLines)
 
                             } else {
@@ -164,12 +165,38 @@ fun TextFormatDialog(
                 Divider()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.Top,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Text("每行最多 75 个字母，如果超出 75 个字母就换行", modifier = Modifier.padding(bottom = 20.dp))
+                    Text(text = "每行最多 75 个字母，如果超出 75 个字母抄写时不能完成显示。\n" +
+                                "格式化就是重新调整每一行的字母数量，使其不超过 75 个字母。\n"+
+                                "如果要抄写的文本是汉语、日语或韩语，每行的限制不能超过 37 个文字。",
+                        modifier = Modifier.padding(top = 20.dp, bottom = 13.dp))
+                    Column (Modifier.selectableGroup().padding(bottom = 150.dp)){
+                    var selected by  remember { mutableStateOf(true) }
+                        Row (verticalAlignment = Alignment.CenterVertically){
+                            Text("75")
+                            RadioButton(
+                                selected = selected,
+                                onClick = {
+                                    selected = true
+                                    limit = 75
+                                }
+                            )
+                        }
+                        Row (verticalAlignment = Alignment.CenterVertically){
+                            Text("37")
+                            RadioButton(
+                                selected = !selected,
+                                onClick = {
+                                    selected = false
+                                    limit = 37
+                                }
+                            )
+                        }
+                    }
                     if (fileName.isNotEmpty()) {
-                        val bottom = if (successful) 5.dp else 20.dp
+                        val bottom = if (successful) 20.dp else 40.dp
                         Text(fileName, modifier = Modifier.padding(bottom = bottom))
                     }
                     if (successful) {
@@ -183,19 +210,25 @@ fun TextFormatDialog(
                         OutlinedButton(onClick = { openFileChooser() }) {
                             Text("打开")
                         }
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(28.dp))
                         OutlinedButton(
                             onClick = { formatText() },
                             enabled = formatEnable,
                         ) {
                             Text("格式化")
                         }
-                        Spacer(Modifier.width(10.dp))
+                        Spacer(Modifier.width(28.dp))
                         OutlinedButton(
                             onClick = { saveFileChooser() },
                             enabled = saveEnable
                         ) {
                             Text("保存")
+                        }
+                        Spacer(Modifier.width(28.dp))
+                        OutlinedButton(
+                            onClick = { close() },
+                        ) {
+                            Text("取消")
                         }
                     }
                 }
@@ -206,11 +239,20 @@ fun TextFormatDialog(
     }
 }
 
-private fun split(line: String): List<String> {
+private fun split(line: String,limit:Int): List<String> {
     val lines = mutableListOf<String>()
-    if (line.length > 75) {
-        val subLine = line.substring(0..74)
-        val index = subLine.reversed().indexOf(" ")
+    if (line.length > limit) {
+        val end = limit - 1
+        val subLine = line.substring(0..end)
+
+        // 为了避免把最后一个英语单词切割了，一行只保留 0 到最后一个空格，
+        // 中文不用空格区分单词，所以为 0.
+        val index = if(limit == 75){
+            subLine.reversed().indexOf(" ")
+        }else {
+            0
+        }
+
         if (index > 0) {
             val last = subLine.lastIndexOf(" ")
             lines.add(subLine.substring(0, last + 1))
@@ -218,9 +260,9 @@ private fun split(line: String): List<String> {
             lines.add(subLine)
         }
 
-        var start = 75 - index
+        val start = limit - index
         val remainString = line.substring(start)
-        val subLines = split(remainString)
+        val subLines = split(remainString,limit)
         lines.addAll(subLines)
     } else {
         lines.add(line)
@@ -266,7 +308,7 @@ fun FormatDialog(
                         formatFile.useLines { lines ->
                             lines.forEach { line ->
                                 if (line.length > 75) {
-                                    val subLines = split(line)
+                                    val subLines = split(line,75)
                                     saveList.addAll(subLines)
                                 } else {
                                     saveList.add(line)

@@ -68,6 +68,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.FutureTask
+import java.util.regex.Pattern
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
@@ -111,6 +112,8 @@ fun TypingSubtitles(
     var mediaType by remember { mutableStateOf(computeMediaType(subtitlesState.mediaPath)) }
     var pgUp by remember { mutableStateOf(false) }
     val audioPlayerComponent = LocalAudioPlayerComponent.current
+
+    var charWidth by remember{ mutableStateOf(computeCharWidth(subtitlesState.trackDescription)) }
 
     /** 读取字幕文件*/
     if (subtitlesState.subtitlesPath.isNotEmpty() && captionList.isEmpty()) {
@@ -334,6 +337,7 @@ fun TypingSubtitles(
     val saveTrackDescription: (String) -> Unit = {
         scope.launch {
             subtitlesState.trackDescription = it
+            charWidth = computeCharWidth(it)
             saveSubtitlesState()
         }
     }
@@ -517,7 +521,8 @@ fun TypingSubtitles(
                     }
                     val startTimeWidth = 50.dp
                     val endPadding = 10.dp
-                    val maxWidth = startTimeWidth + endPadding + (subtitlesState.sentenceMaxLength * 13).dp
+
+                    val maxWidth = startTimeWidth + endPadding + (subtitlesState.sentenceMaxLength * charWidth).dp
                     val indexWidth = (captionList.size.toString().length * 14).dp
                     LazyColumn(
                         state = listState,
@@ -1684,4 +1689,10 @@ fun computeMediaType(mediaPath:String):String{
         }
     }
     return "video"
+}
+ private fun computeCharWidth(description:String):Int{
+    val regex = "Chinese|Japanese|Korean"
+    val pattern = Pattern.compile(regex,Pattern.CASE_INSENSITIVE)
+    val matcher = pattern.matcher(description)
+    return if(matcher.find()) 24 else 12
 }
