@@ -555,8 +555,13 @@ fun TypingText(
                             )
                         }
                     }
+                }else{
+                    Text(
+                        text = "可以拖放 TXT 文本到这里",
+                        color = MaterialTheme.colors.primary,
+                        modifier = Modifier.align(Alignment.Center)
+                        )
                 }
-
 
             }
         }
