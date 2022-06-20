@@ -635,17 +635,6 @@ fun TypingText(
 
     return list
 }
- fun readAllLines2(textPath:String):List<String>{
-     val list = mutableListOf<String>()
-     try{
-         val lines = Files.readAllLines(Paths.get(textPath))
-         list.addAll(lines)
-     }catch (exception:Exception){
-         println(exception.message)
-     }
-
-    return list
-}
 
 
 @Composable
