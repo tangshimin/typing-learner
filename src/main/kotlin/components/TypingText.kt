@@ -30,10 +30,12 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,6 +80,10 @@ fun TypingText(
     val lines = remember { readAllLines(textState.textPath) }
     val lastModified by remember { mutableStateOf(File(textState.textPath).lastModified()) }
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+    /** 汉语使用输入法输入文字时，可以一次输入多个汉字，可能会超出正在抄写的那一行的文本 */
+    var remainWords by remember{ mutableStateOf("") }
+    /** 正在抄写的下一行 */
+    var nextRowFull by remember{ mutableStateOf(false) }
 
     /** 显示格式化对话框 */
     var showFormatDialog by remember{ mutableStateOf(false) }
@@ -247,7 +253,7 @@ fun TypingText(
                             val line = item.ifEmpty { " " }
                             // 当 384 行的 BasicTextField 失去焦点时自动清理 typingResult 和 textFieldValue
                             val typingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
-                            var textFieldValue by remember { mutableStateOf("") }
+                            var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
                             var selectable by remember { mutableStateOf(false) }
                             val selectRequester = remember { FocusRequester() }
                             val textFieldRequester = remember { FocusRequester() }
@@ -279,16 +285,53 @@ fun TypingText(
 
                                 }
                             }
+                            if(remainWords.isNotEmpty() && textState.currentIndex == index ){
+                                // 最多只能跨两行,如果上一行剩余的单词超过了这一行，就只截取这一行的内容，剩下的丢弃
+                               if(remainWords.length >= line.length){
+                                    remainWords = remainWords.substring(0,line.length)
+                                }
+                                textFieldValue = TextFieldValue(remainWords, TextRange(remainWords.length))
+                                val inputChars = remainWords.toMutableList()
+                                for (i in inputChars.indices) {
+                                    val inputChar = inputChars[i]
+                                    val char = line[i]
+                                    if (inputChar == char) {
+                                        typingResult.add(Pair(inputChar, true))
+                                        // 方括号的语义很弱，又不好输入，所以可以使用空格替换
+                                    } else if (inputChar == ' ' && (char == '[' || char == ']')) {
+                                        typingResult.add(Pair(char, true))
+                                        // 音乐符号不好输入，所以可以使用空格替换
+                                    }else if (inputChar == ' ' && (char == '♪')) {
+                                        typingResult.add(Pair(char, true))
+                                        // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
+                                        inputChars.add(i,'♪')
+                                        inputChars.removeAt(i+1)
+                                        textFieldValue =  TextFieldValue(String(inputChars.toCharArray()),TextRange(inputChars.size))
+                                    } else {
+                                        typingResult.add(Pair(inputChar, false))
+                                    }
+                                }
 
+
+                                if(textFieldValue.text.length == line.length){
+                                    nextRowFull = true
+                                }
+                                remainWords = ""
+
+                            }
                             /** 检查输入的回调函数 */
                             val checkTyping: (String) -> Unit = { input ->
                                 scope.launch {
-                                    if (textFieldValue.length > line.length) {
-                                        typingResult.clear()
-                                        textFieldValue = ""
+                                    if (input.length > line.length) {
+                                        if(nextRowFull){
+                                            nextRowFull = false
+                                            next()
+                                        }else if (index+1 != lines.size){
+                                            remainWords = input.substring(line.length)
+                                        }
 
-                                    } else if (input.length <= line.length) {
-                                        textFieldValue = input
+                                    } else {
+                                        textFieldValue =  TextFieldValue(input,TextRange(input.length))
                                         typingResult.clear()
                                         val inputChars = input.toMutableList()
                                         for (i in inputChars.indices) {
@@ -305,7 +348,7 @@ fun TypingText(
                                                 // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
                                                 inputChars.add(i,'♪')
                                                 inputChars.removeAt(i+1)
-                                                textFieldValue = String(inputChars.toCharArray())
+                                                textFieldValue = TextFieldValue(String(inputChars.toCharArray()),TextRange(inputChars.size))
                                             } else {
                                                 typingResult.add(Pair(inputChar, false))
                                             }
@@ -384,7 +427,7 @@ fun TypingText(
                                     ) {
                                         BasicTextField(
                                             value = textFieldValue,
-                                            onValueChange = { checkTyping(it) },
+                                            onValueChange = { checkTyping(it.text) },
                                             singleLine = true,
                                             cursorBrush = SolidColor(MaterialTheme.colors.primary),
                                             textStyle = MaterialTheme.typography.h5.copy(
@@ -406,9 +449,9 @@ fun TypingText(
                                                                 listState.firstVisibleItemIndex
                                                             saveTextState()
                                                         }
-                                                    } else if (textFieldValue.isNotEmpty()) {
+                                                    } else if (textFieldValue.text.isNotEmpty()) {
                                                         typingResult.clear()
-                                                        textFieldValue = ""
+                                                        textFieldValue = TextFieldValue()
                                                     }
                                                 }
                                         )
