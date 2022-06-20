@@ -1,11 +1,16 @@
 package dialog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
@@ -172,29 +177,42 @@ fun TextFormatDialog(
                                 "格式化就是重新调整每一行的字母数量，使其不超过 75 个字母。\n"+
                                 "如果要抄写的文本是汉语、日语或韩语，每行的限制不能超过 37 个文字。",
                         modifier = Modifier.padding(top = 20.dp, bottom = 13.dp))
-                    Column (Modifier.selectableGroup().padding(bottom = 150.dp)){
-                    var selected by  remember { mutableStateOf(true) }
-                        Row (verticalAlignment = Alignment.CenterVertically){
-                            Text("75")
-                            RadioButton(
-                                selected = selected,
-                                onClick = {
-                                    selected = true
-                                    limit = 75
-                                }
-                            )
+                    var expanded by remember { mutableStateOf(false) }
+                    Box (Modifier.padding(bottom = 150.dp)){
+                        OutlinedButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier
+                                .width(87.dp)
+                                .background(Color.Transparent)
+                                .border(1.dp, Color.Transparent)
+                        ) {
+                            Text(text = "$limit")
+                            Icon(Icons.Default.ExpandMore, contentDescription = "Localized description")
                         }
-                        Row (verticalAlignment = Alignment.CenterVertically){
-                            Text("37")
-                            RadioButton(
-                                selected = !selected,
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.width(87.dp)
+                                .height(60.dp)
+                        ) {
+                            val text = if(limit == 75) "37" else "75"
+                            DropdownMenuItem(
                                 onClick = {
-                                    selected = false
-                                    limit = 37
-                                }
-                            )
+                                    scope.launch {
+                                        limit = if(text=="37") 37 else 75
+                                        expanded = false
+                                    }
+                                },
+                                modifier = Modifier.width(87.dp).height(40.dp)
+                            ) {
+
+                                Text(text)
+                            }
+
                         }
+
                     }
+
                     if (fileName.isNotEmpty()) {
                         val bottom = if (successful) 20.dp else 40.dp
                         Text(fileName, modifier = Modifier.padding(bottom = bottom))
