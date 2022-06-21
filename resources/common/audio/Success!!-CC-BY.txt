@@ -1,5 +1,0 @@
-来源：Freesound，源地址：https://freesound.org/people/jobro/sounds/60445/
-作者：	jobro
-许可：	CC-BY 保留署名许可协议 地址：https://creativecommons.org/licenses/by/3.0/
-描述：	当任务成功完成时，可以轻松播放。
-describe：A short fanfare to play when a task is finished successfully

@@ -470,6 +470,16 @@ fun AboutDialog(close: () -> Unit) {
                                     text = "Success!!",
                                     url = "https://freesound.org/people/jobro/sounds/60445/"
                                 )
+                                Text("|", modifier = Modifier.padding(start = 5.dp,end =5.dp))
+                                LinkText(
+                                    text = "short beep",
+                                    url = "https://freesound.org/people/LittleJohn13/sounds/566677/"
+                                )
+                                Text("|", modifier = Modifier.padding(start = 5.dp,end =5.dp))
+                                LinkText(
+                                    text = "hint",
+                                    url = "https://freesound.org/people/dland/sounds/320181/"
+                                )
                             }
                         }
                     }
