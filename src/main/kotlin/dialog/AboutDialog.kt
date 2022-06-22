@@ -36,7 +36,10 @@ import javax.swing.event.HyperlinkEvent
  * 关于 对话框
  */
 @Composable
-fun AboutDialog(close: () -> Unit) {
+fun AboutDialog(
+    version: String,
+    close: () -> Unit
+) {
     Dialog(
         title = "关于",
         icon = painterResource("logo/logo.png"),
@@ -106,7 +109,7 @@ fun AboutDialog(close: () -> Unit) {
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
-                                    Text("Typing Leaner v1.0.0 64-bit")
+                                    Text("Typing Leaner $version 64-bit")
                                 }
                             }
 
@@ -273,6 +276,22 @@ fun AboutDialog(close: () -> Unit) {
                                         url = "https://opensource.org/licenses/eclipse-1.0.php"
                                     )
                                 }
+
+                            }
+                            Row(horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
+                                Row{
+                                    LinkText(
+                                        text = "OkHttp",
+                                        url = "https://github.com/square/okhttp"
+                                    )
+                                    Spacer(Modifier.width(5.dp))
+                                    Text("4.10.0")
+                                }
+                                LinkText(
+                                    text = "Apache-2.0",
+                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
+                                )
 
                             }
                             Row(horizontalArrangement = Arrangement.SpaceBetween,

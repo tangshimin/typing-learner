@@ -21,19 +21,23 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.*
+import components.TypingSubtitles
+import components.TypingText
+import components.TypingWord
+import components.computeVideoBounds
 import components.flatlaf.UpdateFlatLaf
+import data.GitHubRelease
 import data.VocabularyType
 import dialog.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import dialog.LyricToSubtitlesDialog
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import player.*
-import state.AppState
+import state.*
 import state.TypingType.*
-import state.computeFontSize
-import state.getResourcesFile
-import state.rememberAppState
 import theme.createColors
 import java.io.File
 import javax.swing.JFileChooser
@@ -389,11 +393,20 @@ private fun FrameWindowScope.WindowMenuBar(
     var donateDialogVisible by remember { mutableStateOf(false) }
     var helpDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
-//        Item("检查更新(U)", mnemonic = 'U', onClick = { println("点击 检查更新") })
+        val version = "v1.0.1"
+
         Item("帮助文档(H)", mnemonic = 'H', onClick = { helpDialogVisible = true})
         if(helpDialogVisible){
             HelpDialog(
                 close = {helpDialogVisible = false}
+            )
+        }
+        var showUpdateDialog by remember { mutableStateOf(false) }
+        Item("检查更新(U)", mnemonic = 'U', onClick = { showUpdateDialog = true })
+        if(showUpdateDialog){
+            UpdateDialog(
+                close = {showUpdateDialog = false},
+                version = version
             )
         }
         Item("捐赠", onClick = { donateDialogVisible = true })
@@ -405,6 +418,7 @@ private fun FrameWindowScope.WindowMenuBar(
         Item("关于(A)", mnemonic = 'A', onClick = { aboutDialogVisible = true })
         if (aboutDialogVisible) {
             AboutDialog(
+                version = version,
                 close = { aboutDialogVisible = false }
             )
         }
