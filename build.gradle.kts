@@ -28,7 +28,7 @@ dependencies {
     implementation("com.formdev:flatlaf:2.3")
     implementation("org.apache.opennlp:opennlp-tools:1.9.4")
     implementation("org.apache.pdfbox:pdfbox:2.0.24")
-    implementation("com.h2database:h2:2.1.210")
+    implementation("com.h2database:h2:2.1.212")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation(files("lib/ebml-reader-0.1.0.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))

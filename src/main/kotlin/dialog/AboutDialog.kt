@@ -263,7 +263,7 @@ fun AboutDialog(
                                         url = "https://www.h2database.com/html/main.html"
                                     )
                                     Spacer(Modifier.width(5.dp))
-                                    Text("2.1.210")
+                                    Text("2.1.212")
                                 }
                                 Row{
                                     LinkText(
