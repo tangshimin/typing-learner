@@ -393,7 +393,7 @@ private fun FrameWindowScope.WindowMenuBar(
     var donateDialogVisible by remember { mutableStateOf(false) }
     var helpDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
-        val version = "v1.0.1"
+        val version = "v1.0.2"
 
         Item("帮助文档(H)", mnemonic = 'H', onClick = { helpDialogVisible = true})
         if(helpDialogVisible){

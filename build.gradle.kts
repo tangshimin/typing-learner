@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.typinglearner"
-version = "1.0.1"
+version = "1.0.2"
 repositories {
     google()
     mavenCentral()
@@ -60,7 +60,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Typing Learner"
-            packageVersion = "1.0.1"
+            packageVersion = version.toString()
             modules("java.sql")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             copyright = "Copyright 2022 Shimin Tang. All rights reserved."
