@@ -42,7 +42,7 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 /**
- *  `src/main/resources` 文件夹里的文件会被打包到 qwerty-learner-desk.jar 里面，然后通过 getResource 访问，
+ *  `src/main/resources` 文件夹里的文件会被打包到 typing-learner.jar 里面，然后通过 getResource 访问，
  *   只读文件可以放在 `src/main/resources` 文件夹里面，需要修改的文件不能放在这个文件夹里面
  */
 compose.desktop {

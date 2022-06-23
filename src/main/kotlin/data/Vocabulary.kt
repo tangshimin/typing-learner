@@ -217,7 +217,7 @@ fun main() {
 
 /**
  * 主要用于批量转换词库，
- * 调用方式：convertWord(File("D:\\qwerty-learner-desktop\\resources\\common\\vocabulary"))
+ * 调用方式：convertWord(File("D:\\typing-learner\\resources\\common\\vocabulary"))
  */
 fun convertWord(dir: File) {
 
