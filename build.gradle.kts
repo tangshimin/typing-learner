@@ -32,6 +32,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation(files("lib/ebml-reader-0.1.0.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
+    testImplementation(compose("org.jetbrains.compose.ui:ui-test-junit4"))
 }
 
 
