@@ -23,6 +23,8 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import java.util.*
+import kotlin.concurrent.schedule
 
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
@@ -88,7 +90,9 @@ fun UpdateDialog(
             }
 
             LaunchedEffect(Unit) {
-                detectingUpdates(version)
+                Timer("update",false).schedule(500){
+                    detectingUpdates(version)
+                }
             }
 
             Column(
