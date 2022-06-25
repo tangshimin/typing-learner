@@ -63,7 +63,8 @@ fun UpdateDialog(
                         if (response.code == 200) {
                             if (response.body != null) {
                                 val string = response.body!!.string()
-                                val releases = Json.decodeFromString<GitHubRelease>(string)
+                                val format = Json { ignoreUnknownKeys = true }
+                                val releases = format.decodeFromString<GitHubRelease>(string)
                                 body = if (version != releases.tag_name) {
                                     downloadable = true
                                     "有可用更新，版本为：${releases.tag_name}"

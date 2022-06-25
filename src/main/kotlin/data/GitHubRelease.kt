@@ -9,23 +9,23 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GitHubRelease(
     val url: String,
+    val html_url: String,
     val assets_url: String,
     val upload_url: String,
-    val html_url: String,
+    val tarball_url: String?,
+    val zipball_url: String?,
     val id: Int,
-    val author: Author,
     val node_id: String,
     val tag_name: String,
     val target_commitish: String,
     val name: String?,
+    val body: String?,
     val draft: Boolean,
     val prerelease: Boolean,
     val created_at: String,
     val published_at: String?,
+    val author: Author,
     val assets: List<Assert>,
-    val tarball_url: String?,
-    val zipball_url: String?,
-    val body: String?,
 )
 
 @ExperimentalSerializationApi
@@ -49,8 +49,8 @@ data class Assert(
 @ExperimentalSerializationApi
 @Serializable
 data class Author(
-//    val name:String?,
-//    val email:String?,
+    val name:String? = null,
+    val email:String? = null,
     val login: String,
     val id: Int,
     val node_id: String,
