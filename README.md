@@ -40,7 +40,8 @@
 13. 学习完整个词库之后，还有一个重新随机排序整个词库的功能。
    
 
-## 应用平台：Windows / macOS   [下载地址](https://github.com/tangshimin/typing-learner/releases)
+## 应用平台：Windows / macOS   
+### [下载地址](https://github.com/tangshimin/typing-learner/releases)
 
 ## 数据来源
 #### 内置词库
