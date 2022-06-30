@@ -126,19 +126,21 @@ fun Word(
                     ) -> {
                 playKeySound()
                 lastInputTime = System.currentTimeMillis()
-                // 计时器
+                // 如果计时器没有启动，就启动一个新的计时器
                 if (!state.speed.isStart) {
                     state.speed.isStart = true
                     state.speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
                         state.speed.time = state.speed.time.plusSeconds(1)
                     }
-                    // 超过一分钟没有输入自动暂停
+                    // 超过一分钟没有输入自动取消计时器
                     state.speed.autoPauseTimer =
                         fixedRateTimer("autoPause", false, 0L, 60 * 1000) {
                             val span = System.currentTimeMillis() - lastInputTime
                             if (span > 60 * 1000) {
                                 state.speed.isStart = false
+                                // 取消计时器
                                 state.speed.timer.cancel()
+                                state.speed.autoPauseTimer.cancel()
                             }
                         }
                 }
