@@ -132,7 +132,8 @@ class AppState {
         val globalSettings = getGlobalSettingsFile()
         return if (globalSettings.exists()) {
             try {
-                val globalData = Json.decodeFromString<GlobalData>(globalSettings.readText())
+                val decodeFormat = Json { ignoreUnknownKeys = true }
+                val globalData = decodeFormat.decodeFromString<GlobalData>(globalSettings.readText())
                 GlobalState(globalData)
             } catch (exception: Exception) {
                 FlatLightLaf.setup()
@@ -150,7 +151,8 @@ class AppState {
         val typingWordSettings = getWordSettingsFile()
         return if (typingWordSettings.exists()) {
             try {
-                val dataWordState = Json.decodeFromString<DataWordState>(typingWordSettings.readText())
+                val decodeFormat = Json { ignoreUnknownKeys = true }
+                val dataWordState = decodeFormat.decodeFromString<DataWordState>(typingWordSettings.readText())
                 WordState(dataWordState)
             } catch (exception: Exception) {
                 FlatLightLaf.setup()
@@ -168,7 +170,8 @@ class AppState {
         val typingSubtitlesSetting = getSubtitlesSettingsFile()
         return if (typingSubtitlesSetting.exists()) {
             try {
-                val dataSubtitlesState = Json.decodeFromString<DataSubtitlesState>(typingSubtitlesSetting.readText())
+                val decodeFormat = Json { ignoreUnknownKeys = true }
+                val dataSubtitlesState = decodeFormat.decodeFromString<DataSubtitlesState>(typingSubtitlesSetting.readText())
                 SubtitlesState(dataSubtitlesState)
             } catch (exception: Exception) {
                 FlatLightLaf.setup()
@@ -185,7 +188,8 @@ class AppState {
         val typingTextSetting = getTextSettingsFile()
         return if(typingTextSetting.exists()){
             try{
-                val dataTextState = Json.decodeFromString<DataTextState>(typingTextSetting.readText())
+                val decodeFormat = Json { ignoreUnknownKeys = true }
+                val dataTextState = decodeFormat.decodeFromString<DataTextState>(typingTextSetting.readText())
                 TextState(dataTextState)
             }catch (exception:Exception){
                 FlatLightLaf.setup()
@@ -233,7 +237,7 @@ class AppState {
                     global.size.height.value,
                     global.placement
                 )
-                val json = jsonBuilder.encodeToString(globalData)
+                val json = encodeBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()
                 settings.writeText(json)
             }
@@ -262,7 +266,7 @@ class AppState {
                     typingWord.vocabularyPath,
                 )
 
-                val json = jsonBuilder.encodeToString(dataWordState)
+                val json = encodeBuilder.encodeToString(dataWordState)
                 val settings = getWordSettingsFile()
                 settings.writeText(json)
             }
@@ -287,7 +291,7 @@ class AppState {
                     typingSubtitles.notWroteCaptionVisible,
                 )
 
-                val json = jsonBuilder.encodeToString(dataSubtitlesState)
+                val json = encodeBuilder.encodeToString(dataSubtitlesState)
                 val typingSubtitlesSetting = getSubtitlesSettingsFile()
                 typingSubtitlesSetting.writeText(json)
             }
@@ -303,7 +307,7 @@ class AppState {
                     typingText.currentIndex,
                     typingText.firstVisibleItemIndex,
                 )
-                val json = jsonBuilder.encodeToString(dataTextState)
+                val json = encodeBuilder.encodeToString(dataTextState)
                 val typingTextSetting = getTextSettingsFile()
                 typingTextSetting.writeText(json)
             }
@@ -448,7 +452,7 @@ class AppState {
     fun saveCurrentVocabulary() {
         runBlocking {
             launch {
-                val json = jsonBuilder.encodeToString(vocabulary.serializeVocabulary)
+                val json = encodeBuilder.encodeToString(vocabulary.serializeVocabulary)
                 val file = getResourcesFile(typingWord.vocabularyPath)
                 file.writeText(json)
             }
@@ -495,7 +499,7 @@ class AppState {
                 val serializeList = mutableListOf<RecentItem>()
                 serializeList.addAll(recentList)
 
-                val json = jsonBuilder.encodeToString(serializeList)
+                val json = encodeBuilder.encodeToString(serializeList)
                 val recentListFile = getRecentListFile()
                 recentListFile.writeText(json)
             }
@@ -509,7 +513,7 @@ class AppState {
                 recentList.remove(recentItem)
                 val serializeList = mutableListOf<RecentItem>()
                 serializeList.addAll(recentList)
-                val json = jsonBuilder.encodeToString(serializeList)
+                val json = encodeBuilder.encodeToString(serializeList)
                 val recentListFile = getRecentListFile()
                 recentListFile.writeText(json)
             }
@@ -538,7 +542,8 @@ class MutableSpeedState {
     var autoPauseTimer by mutableStateOf(Timer())
 }
 
-val jsonBuilder = Json {
+/** 序列化配置 */
+private val encodeBuilder = Json {
     prettyPrint = true
     encodeDefaults = true
 }
