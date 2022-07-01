@@ -171,19 +171,15 @@ fun TypingWord(
                             when {
                                 (it.isCtrlPressed && it.key == Key.U && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        if (!state.isDictation) {
-                                           state.global.type = TypingType.SUBTITLES
-                                            state.saveGlobalState()
-                                        }
+                                        state.global.type = TypingType.SUBTITLES
+                                        state.saveGlobalState()
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        if (!state.isDictation) {
-                                            state.global.type = TypingType.TEXT
-                                            state.saveGlobalState()
-                                        }
+                                        state.global.type = TypingType.TEXT
+                                        state.saveGlobalState()
                                     }
                                     true
                                 }
@@ -237,13 +233,6 @@ fun TypingWord(
                                         if (!state.isDictation) {
                                             state.saveTypingWordState()
                                         }
-                                    }
-                                    true
-                                }
-                                (it.isCtrlPressed && it.key == Key.T && it.type == KeyEventType.KeyUp) -> {
-                                    scope.launch {
-                                        state.global.type = TypingType.SUBTITLES
-                                        state.saveGlobalState()
                                     }
                                     true
                                 }
