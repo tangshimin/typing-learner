@@ -76,6 +76,7 @@ fun Word(
     correctTime: Int,
     wrongTime: Int,
     toNext: () -> Unit,
+    previous: () -> Unit,
     dictationSkip: () -> Unit,
     textFieldValue: String,
     typingResult: List<Pair<Char, Boolean>>,
@@ -105,7 +106,7 @@ fun Word(
     var activeMenu by remember { mutableStateOf(false) }
     val textFieldKeyEvent: (KeyEvent) -> Boolean = { it: KeyEvent ->
         when {
-            ((it.key == Key.Enter || it.key == Key.NumPadEnter)
+            ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
                     && it.type == KeyEventType.KeyUp) -> {
                 toNext()
                 if (state.isDictation) {
@@ -113,6 +114,11 @@ fun Word(
                 }
                 true
             }
+            (it.key == Key.PageUp && it.type == KeyEventType.KeyUp) -> {
+                previous()
+                true
+            }
+
             (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
                 jumpToCaptions()
                 true

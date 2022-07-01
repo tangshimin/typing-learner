@@ -437,17 +437,22 @@ fun TypingWord(
                                 }
                             }
 
-                            /** 切换下一个单词 */
+                            /** 清除当前单词的状态 */
+                            val clear:() -> Unit = {
+                                wordTypingResult.clear()
+                                wordTextFieldValue = ""
+                                captionsTypingResultMap.clear()
+                                captionsTextFieldValue1 = ""
+                                captionsTextFieldValue2 = ""
+                                captionsTextFieldValue3 = ""
+                                state.wordCorrectTime = 0
+                                state.wordWrongTime = 0
+                            }
+
+                            /** 切换到下一个单词 */
                             val toNext: () -> Unit = {
                                 scope.launch {
-                                    wordTypingResult.clear()
-                                    wordTextFieldValue = ""
-                                    captionsTypingResultMap.clear()
-                                    captionsTextFieldValue1 = ""
-                                    captionsTextFieldValue2 = ""
-                                    captionsTextFieldValue3 = ""
-                                    state.wordCorrectTime = 0
-                                    state.wordWrongTime = 0
+                                    clear()
                                     if (state.isDictation) {
                                         if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
                                             /**
@@ -478,7 +483,18 @@ fun TypingWord(
                                     }
                                 }
                             }
-
+                            /** 切换到上一个单词 */
+                            val previous :() -> Unit = {
+                                scope.launch {
+                                    if(!state.isDictation){
+                                        clear()
+                                        if((state.typingWord.index) % 20 != 0 ){
+                                            state.typingWord.index -= 1
+                                            state.saveTypingWordState()
+                                        }
+                                    }
+                                }
+                            }
 
                             /** 检查输入的单词 */
                             val checkWordInput: (String) -> Unit = { input ->
@@ -608,6 +624,7 @@ fun TypingWord(
                                 correctTime = state.wordCorrectTime,
                                 wrongTime = state.wordWrongTime,
                                 toNext = { toNext() },
+                                previous = { previous() },
                                 dictationSkip = { dictationSkipCurrentWord() },
                                 textFieldValue = wordTextFieldValue,
                                 typingResult = wordTypingResult,
@@ -653,12 +670,18 @@ fun TypingWord(
                                 .height(intrinsicSize = IntrinsicSize.Max)
                                 .padding(bottom = 0.dp, start = startPadding)
                                 .onPreviewKeyEvent {
-                                    if ((it.key == Key.Enter || it.key == Key.NumPadEnter)
+                                    if ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
                                         && it.type == KeyEventType.KeyUp
                                     ) {
                                         toNext()
+                                        if (state.isDictation) {
+                                            dictationSkipCurrentWord()
+                                        }
                                         true
-                                    } else globalKeyEvent(it)
+                                    }else if(it.key == Key.PageUp && it.type == KeyEventType.KeyUp){
+                                    previous()
+                                    true
+                                }else globalKeyEvent(it)
                                 }
                             Captions(
                                 captionsVisible = state.typingWord.subtitlesVisible,
