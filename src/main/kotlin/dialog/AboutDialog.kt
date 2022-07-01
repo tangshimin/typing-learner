@@ -3,23 +3,15 @@ package dialog
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.pointer.PointerIconDefaults
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -28,9 +20,6 @@ import androidx.compose.ui.window.rememberDialogState
 import components.LinkText
 import player.isWindows
 import state.getResourcesFile
-import java.awt.Desktop
-import javax.swing.JEditorPane
-import javax.swing.event.HyperlinkEvent
 
 /**
  * 关于 对话框
@@ -207,54 +196,31 @@ fun AboutDialog(
                                 Text("软件")
                                 Text("License")
                             }
+                            val GPL2 = Pair( "GPL 2","https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html")
+                            val GPL3 = Pair( "GPL 3","https://www.gnu.org/licenses/gpl-3.0.en.html")
+                            val Apache2 = Pair( "Apache-2.0","https://www.apache.org/licenses/LICENSE-2.0")
+                            val MIT = Pair( "MIT","https://opensource.org/licenses/mit-license.php")
+
                             Divider()
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding( top = 5.dp,bottom = 5.dp),){
-                                Row{
-                                    LinkText(
-                                        text = "VLC Media Player",
-                                        url = "https://www.videolan.org/"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("3.17.4")
-                                }
-                                LinkText(
-                                    text = "GPL 2",
-                                    url = "https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html"
-                                )
-                            }
+                            Dependency(
+                                name = "VLC Media Player",
+                                url = "https://www.videolan.org/",
+                                version = "3.17.4",
+                                license = GPL2,
+                            )
+                            Dependency(
+                                name = "VLCJ",
+                                url = "https://github.com/caprica/vlcj",
+                                version = "4.7.1",
+                                license = GPL3,
+                            )
+                            Dependency(
+                                name = "FlatLaf",
+                                url = "https://github.com/JFormDesigner/FlatLaf",
+                                version = "2.3",
+                                license = Apache2,
+                            )
 
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "VLCJ",
-                                        url = "https://github.com/caprica/vlcj"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("4.7.1")
-                                }
-                                LinkText(
-                                    text = "GPL 3",
-                                    url = "https://www.gnu.org/licenses/gpl-3.0.en.html"
-                                )
-                            }
-
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "FlatLaf",
-                                        url = "https://github.com/JFormDesigner/FlatLaf"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("2.3")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
                             Row(horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
                                 Row{
@@ -278,179 +244,78 @@ fun AboutDialog(
                                 }
 
                             }
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "OkHttp",
-                                        url = "https://github.com/square/okhttp"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("4.10.0")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
 
-                            }
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "Apache OpenNLP",
-                                        url = "https://opennlp.apache.org/"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.9.4")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
+                            Dependency(
+                                name = "OkHttp",
+                                url = "https://github.com/square/okhttp",
+                                version = "4.10.0",
+                                license = Apache2,
+                            )
+                            Dependency(
+                                name = "Apache OpenNLP",
+                                url = "https://opennlp.apache.org/",
+                                version = "1.9.4",
+                                license = Apache2,
+                            )
+                            Dependency(
+                                name = "Apache PDFBox",
+                                url = "https://pdfbox.apache.org/",
+                                version = "2.0.24",
+                                license = Apache2,
+                            )
 
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "Apache PDFBox",
-                                        url = "https://pdfbox.apache.org/"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("2.0.24")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
+                            Dependency(
+                                name = "Compose Desktop",
+                                url = "https://github.com/JetBrains/compose-jb",
+                                version = "1.1.1",
+                                license = Apache2,
+                            )
 
+                            Dependency(
+                                name = "jetbrains compose material3",
+                                url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material3/material3",
+                                version = "1.0.1",
+                                license = Apache2,
+                            )
 
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "Compose Desktop",
-                                        url = "https://github.com/JetBrains/compose-jb"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.1.1")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
+                            Dependency(
+                                name = "material-icons-extended",
+                                url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material/material-icons-extended",
+                                version = "1.0.1",
+                                license = Apache2,
+                            )
 
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "jetbrains compose material3",
-                                        url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material3/material3"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.0.1")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
+                            Dependency(
+                                name = "kotlin",
+                                url = "https://github.com/JetBrains/kotlin",
+                                version = "1.6.10",
+                                license = Apache2,
+                            )
 
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "material-icons-extended",
-                                        url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material/material-icons-extended"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.0.1")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "kotlinx",
-                                        url = "https://github.com/JetBrains/kotlin"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.6.10")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "kotlinx-coroutines-core",
-                                        url = "https://github.com/Kotlin/kotlinx.coroutines"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.6.0")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "kotlinx-serialization-json",
-                                        url = "https://github.com/Kotlin/kotlinx.serialization"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.3.2")
-                                }
-                                LinkText(
-                                    text = "Apache-2.0",
-                                    url = "https://www.apache.org/licenses/LICENSE-2.0"
-                                )
-                            }
-
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "subtitleConvert",
-                                        url = "https://github.com/JDaren/subtitleConverter"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.0.2")
-                                }
-                                LinkText(
-                                    text = "MIT",
-                                    url = "https://opensource.org/licenses/mit-license.php"
-                                )
-                            }
-
-                            Row(horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
-                                Row{
-                                    LinkText(
-                                        text = "LyricConverter",
-                                        url = "https://github.com/IntelleBitnify/LyricConverter"
-                                    )
-                                    Spacer(Modifier.width(5.dp))
-                                    Text("1.0")
-                                }
-                                LinkText(
-                                    text = "MIT",
-                                    url = "https://opensource.org/licenses/mit-license.php"
-                                )
-                            }
+                            Dependency(
+                                name = "kotlinx-coroutines-core",
+                                url = "https://github.com/Kotlin/kotlinx.coroutines",
+                                version = "1.6.0",
+                                license = Apache2,
+                            )
+                            Dependency(
+                                name = "kotlinx-serialization-json",
+                                url = "https://github.com/Kotlin/kotlinx.serialization",
+                                version = "1.3.2",
+                                license = Apache2,
+                            )
+                            Dependency(
+                                name = "subtitleConvert",
+                                url = "https://github.com/JDaren/subtitleConverter",
+                                version = "1.0.2",
+                                license = MIT,
+                            )
+                            Dependency(
+                                name = "LyricConverter",
+                                url = "https://github.com/IntelleBitnify/LyricConverter",
+                                version = "1.0.",
+                                license = MIT,
+                            )
                             Row(horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
                                 Row{
@@ -515,5 +380,29 @@ fun AboutDialog(
             }
 
         }
+    }
+}
+
+@Composable
+fun Dependency(
+    name:String,
+    url:String,
+    version:String,
+    license:Pair<String,String>,
+){
+    Row(horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
+        Row{
+            LinkText(
+                text = name,
+                url = url
+            )
+            Spacer(Modifier.width(5.dp))
+            Text(version)
+        }
+        LinkText(
+            text = license.first,
+            url = license.second
+        )
     }
 }
