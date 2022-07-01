@@ -68,28 +68,28 @@ class AppState {
     /** 最近生成的词库列表 */
     var recentList = readRecentList()
 
-    /** 是否是默写模式 */
+    /** 是否是听写模式 */
     var isDictation by mutableStateOf(false)
 
-    /** 当前章节的正确数，主要用于默写模式 */
+    /** 当前章节的正确数，主要用于听写模式 */
     var chapterCorrectTime by mutableStateOf(0F)
 
-    /** 当前章节的错误数，主要用于默写模式 */
+    /** 当前章节的错误数，主要用于听写模式 */
     var chapterWrongTime by mutableStateOf(0F)
 
-    /** 默写模式的错误单词 */
+    /** 听写模式的错误单词 */
     val dictationWrongWords = mutableMapOf<Word, Int>()
 
-    /** 默写模式 -> 复习错误单词模式 */
+    /** 听写模式 -> 复习错误单词模式 */
     var isReviewWrongList by mutableStateOf(false)
 
-    /** 默写的单词 */
+    /** 听写的单词 */
     var dictationWords = listOf<Word>()
 
-    /** 默写模式的索引 */
+    /** 听写模式的索引 */
     var dictationIndex by mutableStateOf(0)
 
-    /** 进入默写模式之前需要保存变量 `typing` 的一些状态,退出默写模式后恢复 */
+    /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
     private var typingWordStateMap: MutableMap<String, Boolean> = mutableMapOf()
 
     /** 是否正在播放视频 */
@@ -338,7 +338,7 @@ class AppState {
 
 
     /**
-     * 为默写模式创建一个随机词汇表
+     * 为听写模式创建一个随机词汇表
     - 伪代码
     - 1 -> 0,19
     - 2 -> 20,39
@@ -360,7 +360,7 @@ class AppState {
     }
 
 
-    /** 进入默写模式，进入默写模式要保存好当前的状态，退出默写模式后再恢复 */
+    /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
     fun enterDictationMode() {
         val currentWord = getCurrentWord().value
         dictationWords = generateDictationWords(currentWord)
@@ -385,7 +385,7 @@ class AppState {
         isDictation = true
     }
 
-    /** 退出默写模式，恢复应用状态 */
+    /** 退出听写模式，恢复应用状态 */
     fun exitDictationMode() {
         // 恢复状态
         typingWord.isAuto = typingWordStateMap["isAuto"]!!
@@ -400,14 +400,14 @@ class AppState {
         isReviewWrongList = false
     }
 
-    /** 重置章节计数器,清空默写模式存储的错误单词 */
+    /** 重置章节计数器,清空听写模式存储的错误单词 */
     val resetChapterTime: () -> Unit = {
         chapterCorrectTime = 0F
         chapterWrongTime = 0F
         dictationWrongWords.clear()
     }
 
-    /** 进入复习错误单词模式，复习错误单词模式属于默写模式的子模式，并且利用了默写模式的单词列表。 */
+    /** 进入复习错误单词模式，复习错误单词模式属于听写模式的子模式，并且利用了听写模式的单词列表。 */
     fun enterReviewMode(reviewList: List<Word>) {
         // 先把 typing 的状态恢复
         exitDictationMode()

@@ -50,7 +50,7 @@ import kotlin.concurrent.fixedRateTimer
  * @param correctTime 单词的正确数
  * @param wrongTime 单词的错误数
  * @param toNext 当切换到下一个单词时被调用的回调
- * @param dictationSkip 当用户在默写模式按 Enter 键被调用的回调
+ * @param dictationSkip 当用户在听写模式按 Enter 键被调用的回调
  * @param textFieldValue 用户输入的字符串
  * @param typingResult 用户输入字符的结果
  * @param checkTyping 检查用户的输入是否正确的回调
@@ -58,10 +58,10 @@ import kotlin.concurrent.fixedRateTimer
  * @param setShowEditWordDialog 设置是否显示当前单元已经完成对话框
  * @param isVocabularyFinished 是否整个词库都已经学习完
  * @param setIsVocabularyFinished 设置是否整个词库都已经学习完
- * @param chapterCorrectTime 整个章节的正确数，在默写模式时使用
- * @param chapterWrongTime 整个章节的错误数，在默写模式时使用
- * @param dictationWrongWords 默写模式的错误单词
- * @param resetChapterTime 默写结束时被调用的回调，用于清理  [chapterWrongTime] 和 [resetChapterTime] 和 [dictationWrongWords]
+ * @param chapterCorrectTime 整个章节的正确数，在听写模式时使用
+ * @param chapterWrongTime 整个章节的错误数，在听写模式时使用
+ * @param dictationWrongWords 听写模式的错误单词
+ * @param resetChapterTime 听写结束时被调用的回调，用于清理  [chapterWrongTime] 和 [resetChapterTime] 和 [dictationWrongWords]
  * @param playKeySound 播放敲击键盘的音效
  */
 @OptIn(ExperimentalFoundationApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
@@ -497,17 +497,17 @@ fun Word(
     }
 
     /**
-     * 进入默写模式
+     * 进入听写模式
      */
     val enterDictation: () -> Unit = {
         scope.launch {
             state.saveTypingWordState()
-            // 正常地进入默写模式，或从复习错误单词进入默写模式
+            // 正常地进入听写模式，或从复习错误单词进入听写模式
             if (!state.isDictation || state.isReviewWrongList) {
                 state.isReviewWrongList = false
                 state.enterDictationMode()
             } else {
-                // 再默写一次
+                // 再听写一次
                 state.dictationIndex = 0
                 // 重新生成一个乱序的单词列表
                 state.dictationWords = state.generateDictationWords(wordValue)

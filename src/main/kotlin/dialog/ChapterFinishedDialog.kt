@@ -29,10 +29,10 @@ import data.Word
  * @param close 点击取消之后调用的回调函数
  * @param correctRate 正确率
  * @param isVocabularyFinished 是否整个词典的单词都已经学习完成
- * @param isDictation 是否是默写模式
+ * @param isDictation 是否是听写模式
  * @param isReviewWrongList 是否在复习错误单词
- * @param dictationWrongWords 默写模式的错误单词
- * @param enterDictation 进入默写模式后调用的回调函数
+ * @param dictationWrongWords 听写模式的错误单词
+ * @param enterDictation 进入听写模式后调用的回调函数
  * @param learnAgain 选择【重复本章】后调用的回调函数
  * @param reviewWrongWords 选择【复习错误单词】后调用的回调函数
  * @param nextChapter 选择【下一章】后调用的回调函数
@@ -79,7 +79,7 @@ fun ChapterFinishedDialog(
                     .onPreviewKeyEvent {
                         when {
                             (it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
-                                // 进入默写模式
+                                // 进入听写模式
                                 enterDictation()
                                 true
                             }
@@ -117,7 +117,7 @@ fun ChapterFinishedDialog(
                     } else if (isDictation) {
                         if (isReviewWrongList) {
                             "您已复习完错误单词"
-                        } else "您已默写完本章节"
+                        } else "您已听写完本章节"
 
                     } else "您已学习完本章节"
                     Text(text = "$title", color = MaterialTheme.colors.onBackground)
@@ -259,7 +259,7 @@ fun ChapterFinishedDialog(
                         OutlinedButton(
                             onClick = { enterDictation() }
                         ) {
-                            val text = if (isDictation) "(V)再默写一次" else "(V)默写本章"
+                            val text = if (isDictation) "(V)再听写一次" else "(V)听写本章"
                             Text(text = text, color = textColor)
                         }
                     }

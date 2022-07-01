@@ -220,7 +220,7 @@ private fun computeTitle(state: AppState): String {
                 val suffix = if (state.isDictation) {
                     if (state.isReviewWrongList) {
                         "复习错误单词 - ${state.dictationIndex + 1}"
-                    } else "默写模式 - ${state.dictationIndex + 1}"
+                    } else "听写模式 - ${state.dictationIndex + 1}"
                 } else {
                     "${state.typingWord.index + 1}"
                 }

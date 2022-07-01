@@ -423,8 +423,8 @@ fun TypingWord(
                             }
 
                             /**
-                             * 当用户在默写模式按 enter 调用的回调，
-                             * 在默写模式跳过单词也算一次错误
+                             * 当用户在听写模式按 enter 调用的回调，
+                             * 在听写模式跳过单词也算一次错误
                              */
                             val dictationSkipCurrentWord: () -> Unit = {
                                 if (state.wordCorrectTime == 0) {
@@ -462,8 +462,8 @@ fun TypingWord(
                                     if (state.isDictation) {
                                         if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
                                             /**
-                                             * 在默写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
-                                             * 在非默写模式下按Enter键就不会有这种感觉，因为按Enter键，
+                                             * 在听写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
+                                             * 在非听写模式下按Enter键就不会有这种感觉，因为按Enter键，
                                              * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
                                              */
                                             Timer("playChapterFinishedSound", false).schedule(1000) {
