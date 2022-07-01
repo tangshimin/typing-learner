@@ -6,8 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowPosition
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
@@ -24,6 +25,11 @@ data class GlobalData(
     val primaryColorValue: ULong = 18377412168996880384UL,
     val textStyle: String = "H2",
     val letterSpacing: Float = 5F,
+    val x:Float = 100F,
+    val y:Float = 100F,
+    val width:Float = 1030F,
+    val height:Float = 862F,
+    val placement:WindowPlacement = WindowPlacement.Floating
 )
 
 /** 全局的可观察状态 */
@@ -77,6 +83,31 @@ class GlobalState(globalData: GlobalData) {
      *  字间隔空
      */
     var letterSpacing by mutableStateOf((globalData.letterSpacing).sp)
+
+    /**
+     * 主窗口的位置
+     */
+    var position by mutableStateOf(WindowPosition(globalData.x.dp,globalData.y.dp))
+
+    /**
+     * 主窗口的尺寸
+     */
+    var size by mutableStateOf(DpSize(globalData.width.dp,globalData.height.dp))
+
+//    /**
+//     *  主窗口的宽度
+//     */
+//    var width by mutableStateOf(globalData.width.dp)
+//
+//    /**
+//     * 主窗口的高度
+//     */
+//    var height by mutableStateOf(globalData.height.dp)
+
+    /**
+     * 描述如何放置窗口在屏幕
+     */
+    var placement by mutableStateOf(globalData.placement)
 }
 @Composable
  fun computeFontSize(textStyle: String): TextUnit {

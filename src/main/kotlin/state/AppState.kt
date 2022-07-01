@@ -227,6 +227,11 @@ class AppState {
                     global.primaryColor.value,
                     global.textStyle,
                     global.letterSpacing.value,
+                    global.position.x.value,
+                    global.position.y.value,
+                    global.size.width.value,
+                    global.size.height.value,
+                    global.placement
                 )
                 val json = jsonBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()

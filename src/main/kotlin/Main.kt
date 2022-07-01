@@ -29,6 +29,9 @@ import components.flatlaf.UpdateFlatLaf
 import data.GitHubRelease
 import data.VocabularyType
 import dialog.*
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
@@ -66,9 +69,9 @@ fun main() = application {
             state.videoPlayerComponent.mediaPlayer().release()
         }
         val windowState = rememberWindowState(
-            position = WindowPosition(Alignment.Center),
-            placement = WindowPlacement.Maximized,
-            size = DpSize(1030.dp, 862.dp),
+            position = state.global.position,
+            placement = state.global.placement,
+            size = state.global.size,
         )
 
         val title = computeTitle(state)
@@ -171,11 +174,41 @@ fun main() = application {
                     }
 
                 }
+                LaunchedEffect(windowState) {
+                    snapshotFlow { windowState.size }
+                        .onEach{onWindowResize(windowState.size,state)}
+                        .launchIn(this)
+
+                    snapshotFlow { windowState.placement }
+                        .onEach {  onWindowPlacement(windowState.placement,state)}
+                        .launchIn(this)
+
+                    snapshotFlow { windowState.position }
+                        .onEach { onWindowRelocate(windowState.position,state) }
+                        .launchIn(this)
+                }
             }
 
         }
     }
 
+}
+@OptIn(ExperimentalSerializationApi::class)
+private fun onWindowResize(size: DpSize, state: AppState) {
+    state.global.size = size
+    state.saveGlobalState()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+private fun onWindowRelocate(position: WindowPosition, state: AppState) {
+    state.global.position = position as WindowPosition.Absolute
+    state.saveGlobalState()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+private fun onWindowPlacement(placement: WindowPlacement, state: AppState){
+    state.global.placement = placement
+    state.saveGlobalState()
 }
 
 
