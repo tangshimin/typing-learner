@@ -110,9 +110,9 @@ fun HelpDialog(close: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp)
-                                .clickable { currentPage = "activeCopy" }) {
-                            Text("激活复制", modifier = Modifier.padding(start = 16.dp))
-                            if(currentPage == "activeCopy"){
+                                .clickable { currentPage = "shortcutKey" }) {
+                            Text("快捷键", modifier = Modifier.padding(start = 16.dp))
+                            if(currentPage == "shortcutKey"){
                                 Spacer(Modifier.fillMaxHeight().width(2.dp).background(MaterialTheme.colors.primary))
                             }
                         }
@@ -124,7 +124,7 @@ fun HelpDialog(close: () -> Unit) {
                         "subtitles" -> {SubtitlesPage()}
                         "matroska" -> {MatroskaPage()}
                         "youtube" -> {YouTubeDownloadPage()}
-                        "activeCopy" -> {ActiveCopyPage()}
+                        "shortcutKey" -> {ShortcutKeyPage()}
                     }
                 }
             }
@@ -521,32 +521,41 @@ fun YouTubeDownloadPage(){
 }
 
 @Composable
-fun ActiveCopyPage(){
-    Box(Modifier.fillMaxSize()){
-        Row(Modifier.align(Alignment.Center)){
-            SelectionContainer {
+fun ShortcutKeyPage() {
+    Column(Modifier.fillMaxSize()) {
+        SelectionContainer {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.padding(start = 16.dp,top = 16.dp,bottom = 10.dp)
+            ) {
+                Text("激活复制", modifier = Modifier.padding(end = 20.dp))
                 val ctrl = LocalCtrl.current
                 val annotatedString = buildAnnotatedString {
 
-                    val background = if(MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
+                    val background = if (MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
                     val shift = if (isMacOS()) "⇧" else "Shift"
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("如果想复制正在抄写的字幕或文本可以先抄写到要复制的词，然后使用")
                     }
 
-                    withStyle(style = SpanStyle(
-                        color = MaterialTheme.colors.primary,
-                        background = background
-                    )) {
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
                         append("  $shift + ←  ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("选择要复制的单词\n或者使用快捷键")
                     }
-                    withStyle(style = SpanStyle(
-                        color = MaterialTheme.colors.primary,
-                        background = background
-                    )) {
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
                         append("  $ctrl + B  ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
@@ -555,8 +564,50 @@ fun ActiveCopyPage(){
 
                 }
                 Text(annotatedString)
-
             }
         }
+
+        SelectionContainer {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.padding(start = 16.dp,bottom = 10.dp)
+            ) {
+                Text("切换单词", modifier = Modifier.padding(end = 20.dp))
+                val annotatedString = buildAnnotatedString {
+
+                    val background = if (MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("切换到下一个单词用")
+                    }
+
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
+                        append("  Enter 或 PgDn  ")
+                    }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("切换到上一个单词用")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
+                        append("  PgUp  ")
+                    }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("在听写模式下，不能切换到上一个单词。")
+                    }
+
+                }
+                Text(annotatedString)
+            }
+        }
+
     }
 }
