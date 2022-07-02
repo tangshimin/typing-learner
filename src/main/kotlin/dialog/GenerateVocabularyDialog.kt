@@ -1440,10 +1440,6 @@ fun filterDocumentWords(
     replaceToLemma: Boolean
 ): List<Word> {
     val previewList = ArrayList(documentWords)
-    val numberList = ArrayList<Word>()
-    val notBncList = ArrayList<Word>()
-    val notFrqList = ArrayList<Word>()
-
     /**
      * Key 为需要转换为原型的单词，
      *  Value 是 Key 的原型词，还没有查词典，有可能词典里面没有。
@@ -1455,9 +1451,15 @@ fun filterDocumentWords(
      */
     val captionsMap = HashMap<String, MutableList<Caption>>()
     documentWords.forEach { word ->
-        if (numberFilter && (word.value.toDoubleOrNull() != null)) numberList.add(word)
-        if (notBncFilter && word.bnc == 0) notBncList.add(word)
-        if (notFrqFilter && word.frq == 0) notFrqList.add(word)
+
+        if (numberFilter && (word.value.toDoubleOrNull() != null)){
+            previewList.remove(word)
+        }else if (notBncFilter && word.bnc == 0){
+            previewList.remove(word)
+        }else if (notFrqFilter && word.frq == 0){
+            previewList.remove(word)
+        }
+
         val lemma = getWordLemma(word)
         if (replaceToLemma && !lemma.isNullOrEmpty()) {
             lemmaMap[word] = lemma
@@ -1485,9 +1487,7 @@ fun filterDocumentWords(
         word.captions = captions
         validLemmaMap[word.value] = word
     }
-    previewList.removeAll(numberList)
-    previewList.removeAll(notBncList)
-    previewList.removeAll(notFrqList)
+
     val toLemmaList = lemmaMap.keys
     for (word in toLemmaList) {
         val index = previewList.indexOf(word)
