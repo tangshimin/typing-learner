@@ -188,6 +188,11 @@ fun GenerateVocabularyDialog(
         /**
          * 是否过滤 BNC 词频为0的单词
          */
+        var numberFilter by remember { mutableStateOf(false) }
+
+        /**
+         * 是否过滤 BNC 词频为0的单词
+         */
         var notBncFilter by remember { mutableStateOf(false) }
 
         /**
@@ -333,6 +338,11 @@ fun GenerateVocabularyDialog(
                     Row(Modifier.fillMaxWidth()) {
                         Column(Modifier.width(540.dp).fillMaxHeight()) {
                             BasicFilter(
+                                numberFilter = numberFilter,
+                                setNumberFilter = {
+                                    numberFilter = it
+                                    filterState = Filtering
+                                },
                                 notBncFilter = notBncFilter,
                                 setNotBncFilter = {
                                     notBncFilter = it
@@ -436,7 +446,7 @@ fun GenerateVocabularyDialog(
 
                                         words.forEach { word -> documentWords.add(word) }
                                         filterState =
-                                            if (notBncFilter || notFrqFilter || replaceToLemma || selectedFileList.isNotEmpty()) {
+                                            if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || selectedFileList.isNotEmpty()) {
                                                 Filtering
                                             } else {
                                                 End
@@ -470,6 +480,7 @@ fun GenerateVocabularyDialog(
                                         Thread(Runnable {
                                             val filteredDocumentList = filterDocumentWords(
                                                 documentWords,
+                                                numberFilter,
                                                 notBncFilter,
                                                 notFrqFilter,
                                                 replaceToLemma
@@ -571,6 +582,7 @@ fun GenerateVocabularyDialog(
                                             filterState = Idle
                                             documentWords.clear()
                                             selectedFileList.clear()
+                                            numberFilter = false
                                             notBncFilter = false
                                             notFrqFilter = false
                                             replaceToLemma = false
@@ -749,6 +761,8 @@ private fun loadSummaryVocabulary(): Map<String, List<String>> {
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun BasicFilter(
+    numberFilter: Boolean,
+    setNumberFilter: (Boolean) -> Unit,
     notBncFilter: Boolean,
     setNotBncFilter: (Boolean) -> Unit,
     notFrqFilter: Boolean,
@@ -768,6 +782,21 @@ fun BasicFilter(
         Divider()
         val textWidth = 320.dp
         val textColor = MaterialTheme.colors.onBackground
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(Modifier.width(textWidth)) {
+                Text("过滤所有数字 ", color = MaterialTheme.colors.onBackground)
+            }
+            Checkbox(
+                checked = numberFilter,
+                onCheckedChange = { setNumberFilter(it) },
+                modifier = Modifier.size(30.dp, 30.dp)
+            )
+        }
+        Divider()
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -1405,12 +1434,14 @@ fun SelectFile(
 
 fun filterDocumentWords(
     documentWords: List<Word>,
+    numberFilter: Boolean,
     notBncFilter: Boolean,
     notFrqFilter: Boolean,
     replaceToLemma: Boolean
 ): List<Word> {
 
     val previewList = ArrayList(documentWords)
+    val numberList = ArrayList<Word>()
     val notBncList = ArrayList<Word>()
     val notFrqList = ArrayList<Word>()
 
@@ -1425,6 +1456,7 @@ fun filterDocumentWords(
      */
     val captionsMap = HashMap<String, MutableList<Caption>>()
     documentWords.forEach { word ->
+        if (numberFilter && (word.value.toDoubleOrNull() != null)) numberList.add(word)
         if (notBncFilter && word.bnc == 0) notBncList.add(word)
         if (notFrqFilter && word.frq == 0) notFrqList.add(word)
         val lemma = getWordLemma(word)
@@ -1454,6 +1486,7 @@ fun filterDocumentWords(
         word.captions = captions
         validLemmaMap[word.value] = word
     }
+    previewList.removeAll(numberList)
     previewList.removeAll(notBncList)
     previewList.removeAll(notFrqList)
     val toLemmaList = lemmaMap.keys
