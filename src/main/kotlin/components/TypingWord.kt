@@ -315,7 +315,9 @@ fun TypingWord(
                                 (it.isCtrlPressed && it.key == Key.Q && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
-                                        state.saveTypingWordState()
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
                                     }
                                     true
                                 }
@@ -328,7 +330,9 @@ fun TypingWord(
                                 (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.speedVisible = !state.typingWord.speedVisible
-                                        state.saveTypingWordState()
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
                                     }
                                     true
                                 }

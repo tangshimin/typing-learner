@@ -298,7 +298,9 @@ fun TypingWordSidebar(state: AppState) {
                         onCheckedChange = {
                             scope.launch {
                                 state.typingWord.speedVisible = it
-                                state.saveTypingWordState()
+                                if (!state.isDictation) {
+                                    state.saveTypingWordState()
+                                }
                             }
                         },
                     )
@@ -414,7 +416,9 @@ fun TypingWordSidebar(state: AppState) {
                         onCheckedChange = {
                             scope.launch {
                                 state.typingWord.isPlaySoundTips = it
-                                state.saveTypingWordState()
+                                if (!state.isDictation) {
+                                    state.saveTypingWordState()
+                                }
                             }
                         },
 
@@ -522,7 +526,9 @@ fun TypingWordSidebar(state: AppState) {
                                     onClick = {
                                         scope.launch {
                                             state.typingWord.pronunciation = "uk"
-                                            state.saveTypingWordState()
+                                            if (!state.isDictation) {
+                                                state.saveTypingWordState()
+                                            }
                                             expanded = false
                                         }
                                     },
@@ -534,7 +540,9 @@ fun TypingWordSidebar(state: AppState) {
                                     onClick = {
                                         scope.launch {
                                             state.typingWord.pronunciation = "us"
-                                            state.saveTypingWordState()
+                                            if (!state.isDictation) {
+                                                state.saveTypingWordState()
+                                            }
                                             expanded = false
                                         }
                                     },
@@ -549,7 +557,9 @@ fun TypingWordSidebar(state: AppState) {
                                     onClick = {
                                         scope.launch {
                                             state.typingWord.pronunciation = "jp"
-                                            state.saveTypingWordState()
+                                            if (!state.isDictation) {
+                                                state.saveTypingWordState()
+                                            }
                                             expanded = false
                                         }
                                     },
@@ -563,7 +573,9 @@ fun TypingWordSidebar(state: AppState) {
                                 onClick = {
                                     scope.launch {
                                         state.typingWord.pronunciation = "false"
-                                        state.saveTypingWordState()
+                                        if (!state.isDictation) {
+                                            state.saveTypingWordState()
+                                        }
                                         expanded = false
                                     }
                                 },
