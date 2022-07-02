@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -409,7 +408,7 @@ fun TypingSubtitles(
     /** 设置当前字幕的可见性 */
     val setCurrentCaptionVisible: (Boolean) -> Unit = {
         scope.launch {
-            subtitlesState.currentCaptionVisible = !subtitlesState.currentCaptionVisible
+            subtitlesState.currentCaptionVisible = it
             saveSubtitlesState()
         }
     }
@@ -417,12 +416,12 @@ fun TypingSubtitles(
     /** 设置未抄写字幕的可见性 */
     val setNotWroteCaptionVisible: (Boolean) -> Unit = {
         scope.launch {
-            subtitlesState.notWroteCaptionVisible = !subtitlesState.notWroteCaptionVisible
+            subtitlesState.notWroteCaptionVisible = it
             saveSubtitlesState()
         }
     }
 
-    /** 外部字幕的可见性 */
+    /** 设置外部字幕的可见性 */
     val setExternalSubtitlesVisible: (Boolean) -> Unit = {
         scope.launch {
             subtitlesState.externalSubtitlesVisible = it
