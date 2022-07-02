@@ -1,21 +1,22 @@
 package components
 
-//import androidx.compose.ui.text.font.FontStyle
-//import androidx.compose.ui.text.font.FontWeight
+
 import LocalCtrl
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Subtitles
+import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import dialog.SettingsDialog
 import kotlinx.coroutines.launch
 import player.isMacOS
 import player.isWindows
@@ -27,7 +28,6 @@ import theme.createColors
  * 侧边菜单
  */
 @OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
     kotlinx.serialization.ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class
 )
 @Composable

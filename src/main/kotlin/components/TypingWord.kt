@@ -145,23 +145,20 @@ fun TypingWord(
                          */
                         @OptIn(ExperimentalSerializationApi::class)
                         val shortcutPlay: (playTriple: Triple<Caption, String, Int>?) -> Unit = { playTriple ->
-                            if (playTriple != null) {
-                                if (!state.isPlaying) {
-                                    scope.launch {
-                                        val file = File(playTriple.second)
-                                        if (file.exists()) {
-                                            state.isPlaying = true
-                                            play(
-                                                window = state.videoPlayerWindow,
-                                                setIsPlaying = { state.isPlaying = it },
-                                                state.global.videoVolume,
-                                                playTriple,
-                                                state.videoPlayerComponent,
-                                                videoBounds
-                                            )
-                                        }
+                            if (playTriple != null && !state.isPlaying) {
+                                scope.launch {
+                                    val file = File(playTriple.second)
+                                    if (file.exists()) {
+                                        state.isPlaying = true
+                                        play(
+                                            window = state.videoPlayerWindow,
+                                            setIsPlaying = { state.isPlaying = it },
+                                            state.global.videoVolume,
+                                            playTriple,
+                                            state.videoPlayerComponent,
+                                            videoBounds
+                                        )
                                     }
-
                                 }
                             }
                         }
@@ -810,8 +807,7 @@ fun Morphology(
                 "0" -> {
                     lemma = pair[1]
                 }
-                "1" -> {
-                }
+
             }
         }
 
@@ -1206,7 +1202,6 @@ fun Caption(
         ) {
             var selectable by remember { mutableStateOf(false) }
             val dropMenuFocusRequester = remember { FocusRequester() }
-//            var isFocused by remember { mutableStateOf(false) }
             val focusManager = LocalFocusManager.current
             var isPathWrong by remember { mutableStateOf(false) }
             val playCurrentCaption:()-> Unit = {
