@@ -1439,7 +1439,6 @@ fun filterDocumentWords(
     notFrqFilter: Boolean,
     replaceToLemma: Boolean
 ): List<Word> {
-
     val previewList = ArrayList(documentWords)
     val numberList = ArrayList<Word>()
     val notBncList = ArrayList<Word>()
