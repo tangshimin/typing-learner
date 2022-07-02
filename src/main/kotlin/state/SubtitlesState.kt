@@ -20,6 +20,7 @@ data class DataSubtitlesState(
     var sentenceMaxLength: Int = 0,
     var currentCaptionVisible: Boolean = true,
     var notWroteCaptionVisible: Boolean = true,
+    var externalSubtitlesVisible: Boolean = true,
 )
 
 /** 抄写单词的可观察状态 */
@@ -61,5 +62,8 @@ class SubtitlesState(dataSubtitlesState: DataSubtitlesState) {
 
     /** 未抄写字幕的可见性 */
     var notWroteCaptionVisible by mutableStateOf(dataSubtitlesState.notWroteCaptionVisible)
+
+    /** 外部字幕的可见性 */
+    var externalSubtitlesVisible by mutableStateOf(dataSubtitlesState.externalSubtitlesVisible)
 
 }

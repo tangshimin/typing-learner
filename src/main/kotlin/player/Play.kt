@@ -75,6 +75,7 @@ fun play(
     caption: Caption,
     videoPath:String,
     subtitlePath:String,
+    showSubtitles:Boolean,
     bounds: Rectangle
 ) {
     window.size = bounds.size
@@ -82,12 +83,13 @@ fun play(
 
     val start = parseTime(caption.start)
     val end = parseTime(caption.end)
-
     videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
 
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-            mediaPlayer.subpictures().setSubTitleUri(subtitlePath)
+            if(showSubtitles){
+                mediaPlayer.subpictures().setSubTitleUri(subtitlePath)
+            }
             mediaPlayer.audio().setVolume((volume * 100).toInt())
         }
 
@@ -103,8 +105,15 @@ fun play(
     window.layout = null
     window.contentPane.add(videoPlayerComponent)
     window.isVisible = true
-    videoPlayerComponent.mediaPlayer().media()
-        .play(videoPath,  ":sub-text-scale=100",":start-time=$start", ":stop-time=$end")
+
+    if(showSubtitles){
+        videoPlayerComponent.mediaPlayer().media()
+            .play(videoPath,  ":sub-text-scale=100",":start-time=$start", ":stop-time=$end")
+    }else{
+        videoPlayerComponent.mediaPlayer().media()
+            .play(videoPath,  ":no-sub-autodetect-file",":sub-text-scale=100",":start-time=$start", ":stop-time=$end")
+    }
+
 }
 
 /**

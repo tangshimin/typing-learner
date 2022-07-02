@@ -289,6 +289,7 @@ class AppState {
                     typingSubtitles.sentenceMaxLength,
                     typingSubtitles.currentCaptionVisible,
                     typingSubtitles.notWroteCaptionVisible,
+                    typingSubtitles.externalSubtitlesVisible,
                 )
 
                 val json = encodeBuilder.encodeToString(dataSubtitlesState)

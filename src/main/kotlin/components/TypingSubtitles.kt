@@ -294,6 +294,7 @@ fun TypingSubtitles(
                         )
                         // 使用外部字幕
                     }else{
+                        // 音频
                         if(file.extension == "wav" || file.extension == "mp3"|| file.extension == "aac"){
                             play(
                                 setIsPlaying = {isPlaying = it},
@@ -311,7 +312,8 @@ fun TypingSubtitles(
                                 volume= videoVolume,
                                 caption=caption,
                                 videoPath=subtitlesState.mediaPath,
-                                subtitlePath=subtitlesState.subtitlesPath,
+                                subtitlePath=  subtitlesState.subtitlesPath,
+                                showSubtitles = subtitlesState.externalSubtitlesVisible,
                                 bounds= videoPlayerBounds
                             )
                         }
@@ -419,6 +421,15 @@ fun TypingSubtitles(
             saveSubtitlesState()
         }
     }
+
+    /** 外部字幕的可见性 */
+    val setExternalSubtitlesVisible: (Boolean) -> Unit = {
+        scope.launch {
+            subtitlesState.externalSubtitlesVisible = it
+            saveSubtitlesState()
+        }
+    }
+
     /** 当前界面的快捷键 */
     val boxKeyEvent: (KeyEvent) -> Boolean = { keyEvent ->
         when {
@@ -495,6 +506,8 @@ fun TypingSubtitles(
                 setCurrentCaptionVisible = {setCurrentCaptionVisible(it)},
                 notWroteCaptionVisible = subtitlesState.notWroteCaptionVisible,
                 setNotWroteCaptionVisible = {setNotWroteCaptionVisible(it)},
+                externalSubtitlesVisible = subtitlesState.externalSubtitlesVisible,
+                setExternalSubtitlesVisible = {setExternalSubtitlesVisible(it)},
                 backToHome = { backToHome() },
                 trackSize = subtitlesState.trackSize,
                 openFile = { showOpenFile = true },
@@ -1223,6 +1236,8 @@ fun SubtitlesSidebar(
     setCurrentCaptionVisible:(Boolean) -> Unit,
     notWroteCaptionVisible: Boolean,
     setNotWroteCaptionVisible:(Boolean) -> Unit,
+    externalSubtitlesVisible: Boolean,
+    setExternalSubtitlesVisible:(Boolean) -> Unit,
     isDarkTheme: Boolean,
     setIsDarkTheme: (Boolean) -> Unit,
     isPlayKeystrokeSound: Boolean,
@@ -1362,6 +1377,24 @@ fun SubtitlesSidebar(
                     colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
                     checked = notWroteCaptionVisible,
                     onCheckedChange = {setNotWroteCaptionVisible(!notWroteCaptionVisible) },
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
+            ) {
+                Row {
+                    Text("外部字幕", color = MaterialTheme.colors.onBackground)
+
+                }
+
+                Spacer(Modifier.width(15.dp))
+
+                Switch(
+                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
+                    checked = externalSubtitlesVisible,
+                    onCheckedChange = {setExternalSubtitlesVisible(!externalSubtitlesVisible) },
                 )
             }
             Divider()
