@@ -2,12 +2,12 @@ package data
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.ExperimentalComposeUiApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import state.getResourcesFile
+import state.getSettingsDirectory
 import java.io.File
 import javax.swing.JOptionPane
 
@@ -84,6 +84,18 @@ data class Word(
         return value.hashCode()
     }
 }
+fun Word.deepCopy():Word{
+    val newWord =  Word(
+        value, usphone, ukphone, definition, translation, pos, collins, oxford, tag, bnc, frq, exchange
+    )
+    externalCaptions.forEach { externalCaption ->
+        newWord.externalCaptions.add(externalCaption)
+    }
+    captions.forEach { caption ->
+        newWord.captions.add(caption)
+    }
+    return newWord
+}
 
 
 @Serializable
@@ -114,6 +126,8 @@ data class ExternalCaption(
         return content
     }
 }
+
+
 
 
 fun loadMutableVocabulary(path: String): MutableVocabulary {
@@ -187,6 +201,44 @@ fun loadVocabulary(path: String): Vocabulary {
 
 }
 
+fun loadHardMutableVocabulary():MutableVocabulary{
+    val hardFile = getHardVocabularyFile()
+    return if (hardFile.exists()) {
+        try {
+            val vocabulary = Json.decodeFromString<Vocabulary>(hardFile.readText())
+            MutableVocabulary(vocabulary)
+        } catch (exception: Exception) {
+            exception.printStackTrace()
+            val vocabulary = Vocabulary(
+                name = "HardVocabulary",
+                type = VocabularyType.DOCUMENT,
+                language = "",
+                size = 0,
+                relateVideoPath = "",
+                subtitlesTrackId = 0,
+                wordList = mutableListOf()
+            )
+            JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：${hardFile.absoluteFile}\n" + exception.message)
+            MutableVocabulary(vocabulary)
+        }
+
+    } else {
+        val vocabulary = Vocabulary(
+            name = "HardVocabulary",
+            type = VocabularyType.DOCUMENT,
+            language = "",
+            size = 0,
+            relateVideoPath = "",
+            subtitlesTrackId = 0,
+            wordList = mutableListOf()
+        )
+        MutableVocabulary(vocabulary)
+}}
+
+fun getHardVocabularyFile():File{
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "HardVocabulary.json")
+}
 
 fun saveVocabularyToTempDirectory(vocabulary: Vocabulary, directory: String) {
     val format = Json {

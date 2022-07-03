@@ -28,6 +28,7 @@ import components.computeVideoBounds
 import components.flatlaf.UpdateFlatLaf
 import data.GitHubRelease
 import data.VocabularyType
+import data.getHardVocabularyFile
 import dialog.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -295,7 +296,13 @@ private fun FrameWindowScope.WindowMenuBar(
                     state.loadingFileChooserVisible = false
                 }
             }).start()
+        })
 
+        Item("困难词库(K)", enabled = state.hardVocabulary.wordList.isNotEmpty(), mnemonic = 'K',onClick = {
+            val file = getHardVocabularyFile()
+            state.changeVocabulary(file, state.typingWord.hardVocabularyIndex)
+            state.global.type = WORD
+            state.saveGlobalState()
         })
 
         Menu("打开最近词库(R)",enabled = state.recentList.isNotEmpty(), mnemonic = 'R') {

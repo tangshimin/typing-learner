@@ -37,9 +37,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
-import data.Caption
-import data.VocabularyType
-import data.Word
+import data.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
@@ -128,6 +126,9 @@ fun TypingWord(
                         /** 当前正在学习的单词 */
                         val currentWord = state.getCurrentWord()
 
+                        /** 显示困难单词图标 */
+                        var showBookmark by remember { mutableStateOf(false) }
+
                         /** 单词发音的本地路径 */
                         val audioPath = getAudioPath(
                             word = currentWord.value,
@@ -162,6 +163,42 @@ fun TypingWord(
                                 }
                             }
                         }
+
+                        /** 处理加入到困难词库的函数 */
+                        val bookmarkClick :() -> Unit = {
+                            val contains = state.hardVocabulary.wordList.contains(currentWord)
+                            if(contains){
+                                state.hardVocabulary.wordList.remove(currentWord)
+                                if(state.vocabulary.name == "HardVocabulary"){
+                                    state.vocabulary.wordList.remove(currentWord)
+                                    state.vocabulary.size = state.vocabulary.wordList.size
+                                    state.saveCurrentVocabulary()
+                                }
+                            }else{
+
+                                val relateVideoPath = state.vocabulary.relateVideoPath
+                                val subtitlesTrackId = state.vocabulary.subtitlesTrackId
+                                val subtitlesName =
+                                    if (state.vocabulary.type == VocabularyType.SUBTITLES) state.vocabulary.name else ""
+                                val hardWord = currentWord.deepCopy()
+
+                                currentWord.captions.forEach { caption ->
+                                    val externalCaption = ExternalCaption(
+                                        relateVideoPath,
+                                        subtitlesTrackId,
+                                        subtitlesName,
+                                        caption.start,
+                                        caption.end,
+                                        caption.content
+                                    )
+                                    hardWord.externalCaptions.add(externalCaption)
+                                }
+                                hardWord.captions.clear()
+                                state.hardVocabulary.wordList.add(hardWord)
+                            }
+                            state.hardVocabulary.size = state.hardVocabulary.wordList.size
+                            state.saveHardVocabulary()
+                    }
 
                         /** 处理全局快捷键的回调函数 */
                         val globalKeyEvent: (KeyEvent) -> Boolean = {
@@ -331,6 +368,13 @@ fun TypingWord(
                                             state.saveTypingWordState()
                                         }
                                     }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.I && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        bookmarkClick()
+                                    }
+                                    showBookmark = true
                                     true
                                 }
                                 else -> false
@@ -643,6 +687,9 @@ fun TypingWord(
                                 playKeySound = { playKeySound() },
                                 jumpToCaptions = { jumpToCaptions() },
                                 focusRequester = wordFocusRequester,
+                                showBookmark = showBookmark,
+                                notShowBookmark = {showBookmark = false},
+                                bookmarkClick = {bookmarkClick()}
                             )
                             Phonetic(
                                 word = currentWord,

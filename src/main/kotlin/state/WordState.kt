@@ -22,6 +22,7 @@ data class DataWordState(
     val pronunciation: String = "us",
     val isAuto: Boolean = false,
     val index: Int = 0,
+    val hardVocabularyIndex: Int = 0,
     var vocabularyName: String = "四级",
     var vocabularyPath: String = "vocabulary/大学英语/四级.json",
 )
@@ -91,6 +92,11 @@ class WordState(dataWordState: DataWordState) {
     var index by mutableStateOf(dataWordState.index)
 
     /**
+     * 困难词库的索引，从0开始，在标题栏显示的时候 +1
+     */
+    var hardVocabularyIndex by mutableStateOf(dataWordState.hardVocabularyIndex)
+
+    /**
      * 当前单词的章节，从1开始
      */
     var chapter by mutableStateOf((dataWordState.index / 20) + 1)
@@ -101,7 +107,7 @@ class WordState(dataWordState: DataWordState) {
     var vocabularyName by mutableStateOf(dataWordState.vocabularyName)
 
     /**
-     * 词库的路径
+     * 当前正在学习的词库的路径
      */
     var vocabularyPath by mutableStateOf(dataWordState.vocabularyPath)
 }

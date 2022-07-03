@@ -1,5 +1,6 @@
 package components
 
+import LocalCtrl
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -38,11 +39,13 @@ import state.AppState
 import state.getResourcesFile
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.*
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.DataLine
 import javax.sound.sampled.FloatControl
 import kotlin.concurrent.fixedRateTimer
+import kotlin.concurrent.schedule
 
 /** 单词组件
  * @param state 应用程序的状态
@@ -93,8 +96,11 @@ fun Word(
     resetChapterTime: () -> Unit,
     playKeySound: () -> Unit,
     jumpToCaptions: () -> Unit,
-    focusRequester: FocusRequester
-    ) {
+    focusRequester: FocusRequester,
+    showBookmark:Boolean,
+    notShowBookmark: () -> Unit,
+    bookmarkClick: () -> Unit,
+) {
 
     /**
      * 协程构建器
@@ -331,6 +337,11 @@ fun Word(
                                 val index = state.typingWord.index
                                 state.vocabulary.wordList.removeAt(index)
                                 state.vocabulary.size = state.vocabulary.wordList.size
+                                if(state.vocabulary.name == "HardVocabulary"){
+                                    state.hardVocabulary.wordList.remove(word)
+                                    state.hardVocabulary.size = state.hardVocabulary.wordList.size
+                                    state.saveCurrentVocabulary()
+                                }
                                 state.saveCurrentVocabulary()
                                 showConfirmationDialog = false
                             }
@@ -420,6 +431,40 @@ fun Word(
                             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
                             shape = RectangleShape
                         ) {
+                            val ctrl = LocalCtrl.current
+                            Row(modifier = Modifier.padding(10.dp)){
+                                Text(text = "加入到困难词库" )
+                                CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                                    Text(text = " $ctrl + ")
+                                    Text(text = "I",fontFamily =fontFamily)
+                                }
+                            }
+                        }
+                    },
+                    delayMillis = 300,
+                    tooltipPlacement = TooltipPlacement.ComponentRect(
+                        anchor = Alignment.TopCenter,
+                        alignment = Alignment.TopCenter,
+                        offset = DpOffset.Zero
+                    )
+                ) {
+                    val contains = state.hardVocabulary.wordList.contains(word)
+                    IconButton(onClick = { bookmarkClick() }) {
+                        val icon = if(contains) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder
+                        Icon(
+                            icon,
+                            contentDescription = "Localized description",
+                            tint = MaterialTheme.colors.primary
+                        )
+                    }
+                }
+                TooltipArea(
+                    tooltip = {
+                        Surface(
+                            elevation = 4.dp,
+                            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                            shape = RectangleShape
+                        ) {
                             Text(text = "复制", modifier = Modifier.padding(10.dp))
                         }
                     },
@@ -439,6 +484,26 @@ fun Word(
                             tint = MaterialTheme.colors.primary
                         )
                     }
+                }
+            }
+        }
+        if(showBookmark && !activeMenu){
+            val contains = state.hardVocabulary.wordList.contains(word)
+            Row(horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.align(Alignment.TopCenter)){
+                IconButton(onClick = {},modifier = Modifier.padding(start = 48.dp)) {
+                    val icon = if(contains) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder
+                    Icon(
+                        icon,
+                        contentDescription = "Localized description",
+                        tint = MaterialTheme.colors.primary,
+                    )
+                }
+            }
+
+            SideEffect{
+                Timer("不显示 Bookmark 图标", false).schedule(300) {
+                   notShowBookmark()
                 }
             }
         }

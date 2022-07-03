@@ -62,8 +62,11 @@ class AppState {
     /** 文件选择器，如果不提前加载反应会很慢 */
     var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(global.isDarkTheme)
 
-    /** 词库 */
+    /** 当前正在学习的词库 */
     var vocabulary = loadMutableVocabulary(typingWord.vocabularyPath)
+
+    /** 困难词库 */
+    var hardVocabulary = loadHardMutableVocabulary()
 
     /** 最近生成的词库列表 */
     var recentList = readRecentList()
@@ -262,6 +265,7 @@ class AppState {
                     typingWord.pronunciation,
                     typingWord.isAuto,
                     typingWord.index,
+                    typingWord.hardVocabularyIndex,
                     typingWord.vocabularyName,
                     typingWord.vocabularyPath,
                 )
@@ -422,7 +426,15 @@ class AppState {
     fun changeVocabulary(file: File,index: Int) {
         val newVocabulary = loadMutableVocabulary(file.absolutePath)
         if(newVocabulary.wordList.size>0){
-            saveToRecentList(vocabulary.name, typingWord.vocabularyPath,typingWord.index)
+
+            // 把困难词库的索引保存在 typingWord.
+            if(vocabulary.name == "HardVocabulary"){
+                typingWord.hardVocabularyIndex = typingWord.index
+            }else{
+                // 保存当前词库的索引到最近列表,
+                saveToRecentList(vocabulary.name, typingWord.vocabularyPath,typingWord.index)
+            }
+
             vocabulary = newVocabulary
             typingWord.vocabularyName = file.nameWithoutExtension
             typingWord.vocabularyPath = file.absolutePath
@@ -455,6 +467,16 @@ class AppState {
             launch {
                 val json = encodeBuilder.encodeToString(vocabulary.serializeVocabulary)
                 val file = getResourcesFile(typingWord.vocabularyPath)
+                file.writeText(json)
+            }
+        }
+    }
+    /** 保存困难词库 */
+    fun saveHardVocabulary(){
+        runBlocking {
+            launch {
+                val json = encodeBuilder.encodeToString(hardVocabulary.serializeVocabulary)
+                val file = getHardVocabularyFile()
                 file.writeText(json)
             }
         }
