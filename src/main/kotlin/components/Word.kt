@@ -100,6 +100,8 @@ fun Word(
     showBookmark:Boolean,
     notShowBookmark: () -> Unit,
     bookmarkClick: () -> Unit,
+    showDeleteDialog:Boolean,
+    setShowDeleteDialog: (Boolean) -> Unit,
 ) {
 
     /**
@@ -326,30 +328,29 @@ fun Word(
             )
         }
         val clipboardManager = LocalClipboardManager.current
+
+        if (showDeleteDialog) {
+            ConfirmationDelete(
+                message = "确定要删除单词 $wordValue ?",
+                confirm = {
+                    scope.launch {
+                        val index = state.typingWord.index
+                        state.vocabulary.wordList.removeAt(index)
+                        state.vocabulary.size = state.vocabulary.wordList.size
+                        if(state.vocabulary.name == "HardVocabulary"){
+                            state.hardVocabulary.wordList.remove(word)
+                            state.hardVocabulary.size = state.hardVocabulary.wordList.size
+                            state.saveCurrentVocabulary()
+                        }
+                        state.saveCurrentVocabulary()
+                        setShowDeleteDialog(false)
+                    }
+                },
+                close = {  setShowDeleteDialog(false) }
+            )
+        }
         if (activeMenu) {
             Row(modifier = Modifier.align(Alignment.TopCenter)) {
-                var showConfirmationDialog by remember { mutableStateOf(false) }
-                if (showConfirmationDialog) {
-                    ConfirmationDelete(
-                        message = "确定要删除单词 $wordValue ?",
-                        confirm = {
-                            scope.launch {
-                                val index = state.typingWord.index
-                                state.vocabulary.wordList.removeAt(index)
-                                state.vocabulary.size = state.vocabulary.wordList.size
-                                if(state.vocabulary.name == "HardVocabulary"){
-                                    state.hardVocabulary.wordList.remove(word)
-                                    state.hardVocabulary.size = state.hardVocabulary.wordList.size
-                                    state.saveCurrentVocabulary()
-                                }
-                                state.saveCurrentVocabulary()
-                                showConfirmationDialog = false
-                            }
-                        },
-                        close = { showConfirmationDialog = false }
-                    )
-                }
-
                 TooltipArea(
                     tooltip = {
                         Surface(
@@ -357,7 +358,13 @@ fun Word(
                             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
                             shape = RectangleShape
                         ) {
-                            Text(text = "删除", modifier = Modifier.padding(10.dp))
+                            Row(modifier = Modifier.padding(10.dp)){
+                                Text(text = "删除单词" )
+                                CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                                    Text(text = " Delete ")
+
+                                }
+                            }
                         }
                     },
                     delayMillis = 300,
@@ -367,7 +374,7 @@ fun Word(
                         offset = DpOffset.Zero
                     )
                 ) {
-                    IconButton(onClick = { showConfirmationDialog = true }) {
+                    IconButton(onClick = { setShowDeleteDialog(true) }) {
                         Icon(
                             Icons.Filled.Delete,
                             contentDescription = "Localized description",
@@ -690,12 +697,26 @@ fun ConfirmationDelete(message: String, confirm: () -> Unit, close: () -> Unit) 
             shape = RectangleShape,
             border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
         ) {
+            val focusRequester = remember { FocusRequester() }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxSize()
                     .background(MaterialTheme.colors.background)
+                    .focusRequester(focusRequester)
+                    .onKeyEvent { keyEvent ->
+                        if(keyEvent.key == Key.Y && keyEvent.type == KeyEventType.KeyUp){
+                            confirm()
+                            true
+                        }else if((keyEvent.key == Key.N || keyEvent.key == Key.Escape )&& keyEvent.type == KeyEventType.KeyUp){
+                            close()
+                            true
+                        }else false
+                    }
             ) {
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp)
@@ -706,11 +727,11 @@ fun ConfirmationDelete(message: String, confirm: () -> Unit, close: () -> Unit) 
                 Spacer(Modifier.height(20.dp))
                 Row {
                     OutlinedButton(onClick = { confirm() }) {
-                        Text("确定")
+                        Text("确定(Y)")
                     }
                     Spacer(Modifier.width(10.dp))
                     OutlinedButton(onClick = { close() }) {
-                        Text("取消")
+                        Text("取消(N)")
                     }
                 }
             }

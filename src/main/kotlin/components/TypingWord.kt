@@ -129,6 +129,9 @@ fun TypingWord(
                         /** 显示困难单词图标 */
                         var showBookmark by remember { mutableStateOf(false) }
 
+                        /** 显示删除对话框 */
+                        var showConfirmationDialog by remember { mutableStateOf(false) }
+
                         /** 单词发音的本地路径 */
                         val audioPath = getAudioPath(
                             word = currentWord.value,
@@ -375,6 +378,12 @@ fun TypingWord(
                                         bookmarkClick()
                                     }
                                     showBookmark = true
+                                    true
+                                }
+                                (it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        showConfirmationDialog = true
+                                    }
                                     true
                                 }
                                 else -> false
@@ -689,8 +698,11 @@ fun TypingWord(
                                 focusRequester = wordFocusRequester,
                                 showBookmark = showBookmark,
                                 notShowBookmark = {showBookmark = false},
-                                bookmarkClick = {bookmarkClick()}
+                                bookmarkClick = {bookmarkClick()},
+                                showDeleteDialog = showConfirmationDialog,
+                                setShowDeleteDialog = {showConfirmationDialog = it}
                             )
+
                             Phonetic(
                                 word = currentWord,
                                 phoneticVisible = state.typingWord.phoneticVisible
