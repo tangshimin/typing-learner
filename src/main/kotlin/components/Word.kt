@@ -540,7 +540,9 @@ fun Word(
     val learnAgain: () -> Unit = {
         decreaseIndex()
         resetChapterTime()
+        state.saveTypingWordState()
         changeShowChapterFinishedDialog(false)
+        setIsVocabularyFinished(false)
     }
 
     /**
@@ -586,6 +588,7 @@ fun Word(
             focusRequester.requestFocus()
             resetChapterTime()
             changeShowChapterFinishedDialog(false)
+            setIsVocabularyFinished(false)
         }
     }
 
