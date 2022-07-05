@@ -11,7 +11,7 @@
     
     demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
 2. 抄写字幕，可以抄写你感兴趣的电影、电视剧、纪录片、TED演讲、歌词。可以抄写多种语言的字幕。
-3. 抄写字幕界面也可用来练习听力，可用重复的播放一句字幕，直到听懂为止。
+3. 抄写字幕界面也可用来练习听力，可用重复的播放一句字幕，直到听懂为止。切换到下一条字幕用 `Enter` 或 `↓`键。
 
     https://user-images.githubusercontent.com/16540656/174944474-e5947df9-c8ed-4546-9c67-057fe52c2d51.mp4
     
