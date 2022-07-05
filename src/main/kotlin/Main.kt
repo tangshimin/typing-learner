@@ -124,12 +124,17 @@ fun main() = application {
                             val density = LocalDensity.current.density
                             // 视频播放器的位置，大小
                             val videoBounds = computeVideoBounds(windowState, state.openSettings,density)
+                            val currentWord = if(state.vocabulary.wordList.isNotEmpty()){
+                                state.getCurrentWord()
+                            }else  null
+
                             TypingWord(
                                 window = window,
                                 title = title,
                                 state = state,
                                 audioPlayer = audioPlayerComponent,
-                                videoBounds = videoBounds
+                                videoBounds = videoBounds,
+                                currentWord = currentWord
                             )
                         }
                         SUBTITLES -> {

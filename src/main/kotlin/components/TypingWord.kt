@@ -70,6 +70,7 @@ fun TypingWord(
     window: ComposeWindow,
     title: String,
     audioPlayer: AudioPlayerComponent,
+    currentWord: Word?,
     state: AppState,
     videoBounds: Rectangle,
 ) {
@@ -125,14 +126,11 @@ fun TypingWord(
                 /** 速度组件的状态 */
                 var speed = remember { MutableSpeedState() }
 
-                if (state.vocabulary.wordList.isNotEmpty()) {
+                if (currentWord != null) {
                     Box(
                         Modifier.align(Alignment.Center)
                             .padding(end = endPadding,bottom = 58.dp)
                     ) {
-
-                        /** 当前正在学习的单词 */
-                        val currentWord = state.getCurrentWord()
 
                         /** 显示困难单词图标 */
                         var showBookmark by remember { mutableStateOf(false) }

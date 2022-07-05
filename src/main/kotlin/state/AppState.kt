@@ -311,7 +311,7 @@ class AppState {
     /** 根据索引返回单词 */
     private fun getWord(index: Int): Word {
         val size = vocabulary.wordList.size
-        return if (index in 0..size) {
+        return if (index in 0 until size) {
             vocabulary.wordList[index]
         } else {
             // 如果用户使用编辑器修改了索引，并且不在单词列表的范围以内，就把索引改成0。
