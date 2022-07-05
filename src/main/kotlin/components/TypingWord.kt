@@ -77,6 +77,8 @@ fun TypingWord(
     /** 协程构建器 */
     val scope = rememberCoroutineScope()
 
+    val typingWord = state.typingWord
+
     /**  处理拖放文件的函数 */
     val transferHandler = createTransferHandler(
         showWrongMessage = { message ->
@@ -420,7 +422,10 @@ fun TypingWord(
                             var chapterWrongTime by remember { mutableStateOf(0F)}
 
                             /** 听写模式的错误单词，主要用于听写模式计算正确率*/
-                            val dictationWrongWords = remember { mutableMapOf<Word, Int>()}
+                            val dictationWrongWords = remember { mutableStateMapOf<Word, Int>()}
+
+                            /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
+                            var typingWordStateMap = remember{ mutableStateMapOf<String, Boolean>() }
 
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
@@ -463,6 +468,57 @@ fun TypingWord(
                                 chapterCorrectTime = 0F
                                 chapterWrongTime = 0F
                                 dictationWrongWords.clear()
+                            }
+
+                            /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
+                            fun enterDictationMode() {
+                                val currentWord = state.getCurrentWord().value
+                                state.dictationWords = state.generateDictationWords(currentWord)
+                                state.dictationIndex = 0
+                                // 先保存状态
+                                typingWordStateMap["isAuto"] = typingWord.isAuto
+                                typingWordStateMap["wordVisible"] = typingWord.wordVisible
+                                typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
+                                typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
+                                typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
+                                typingWordStateMap["translationVisible"] = typingWord.translationVisible
+                                typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
+                                // 再改变状态
+                                typingWord.isAuto = true
+                                typingWord.wordVisible = false
+                                typingWord.phoneticVisible = false
+                                typingWord.definitionVisible = false
+                                typingWord.morphologyVisible = false
+                                typingWord.translationVisible = false
+                                typingWord.subtitlesVisible = false
+
+                                state.isDictation = true
+                            }
+
+                            /** 退出听写模式，恢复应用状态 */
+                            fun exitDictationMode() {
+                                // 恢复状态
+                                typingWord.isAuto = typingWordStateMap["isAuto"]!!
+                                typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
+                                typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
+                                typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
+                                typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
+                                typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
+                                typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
+
+                                state.isDictation = false
+                                state.isReviewWrongList = false
+                            }
+
+
+                            /** 进入复习错误单词模式，复习错误单词模式属于听写模式的子模式，并且利用了听写模式的单词列表。 */
+                            fun enterReviewMode(reviewList: List<Word>) {
+                                // 先把 typing 的状态恢复
+                                exitDictationMode()
+                                state.isDictation = true
+                                state.isReviewWrongList = true
+                                state.dictationWords = reviewList
+                                state.dictationIndex = 0
                             }
 
                             /** 播放错误音效 */
@@ -565,6 +621,7 @@ fun TypingWord(
                                     }
                                 }
                             }
+
                             /** 切换到上一个单词 */
                             val previous :() -> Unit = {
                                 scope.launch {
@@ -704,6 +761,7 @@ fun TypingWord(
                                     wordWrongTime = 0
 
                                     if (state.isDictation) {
+                                        exitDictationMode()
                                         resetChapterTime()
                                     }
 
@@ -743,6 +801,9 @@ fun TypingWord(
                                 showDeleteDialog = showConfirmationDialog,
                                 setShowDeleteDialog = {showConfirmationDialog = it},
                                 speed = speed,
+                                enterReviewMode = {enterReviewMode(it)},
+                                exitDictationMode = {exitDictationMode()},
+                                enterDictationMode = {enterDictationMode()}
                             )
 
                             Phonetic(

@@ -104,6 +104,9 @@ fun Word(
     showDeleteDialog:Boolean,
     setShowDeleteDialog: (Boolean) -> Unit,
     speed: MutableSpeedState,
+    enterReviewMode: (List<Word>) -> Unit,
+    exitDictationMode: () -> Unit,
+    enterDictationMode: () -> Unit,
 ) {
 
     /**
@@ -560,7 +563,7 @@ fun Word(
     val reviewWrongWords: () -> Unit = {
         val reviewList = dictationWrongWords.keys.toList()
         if (reviewList.isNotEmpty()) {
-            state.enterReviewMode(reviewList)
+            enterReviewMode(reviewList)
             resetChapterTime()
             changeShowChapterFinishedDialog(false)
         }
@@ -570,7 +573,7 @@ fun Word(
      * 下一章
      */
     val nextChapter: () -> Unit = {
-        if (state.isDictation) state.exitDictationMode()
+        if (state.isDictation) exitDictationMode()
         state.typingWord.index += 1
         state.typingWord.chapter++
         resetChapterTime()
@@ -587,7 +590,7 @@ fun Word(
             // 正常地进入听写模式，或从复习错误单词进入听写模式
             if (!state.isDictation || state.isReviewWrongList) {
                 state.isReviewWrongList = false
-                state.enterDictationMode()
+                enterDictationMode()
             } else {
                 // 再听写一次
                 state.dictationIndex = 0

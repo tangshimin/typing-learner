@@ -77,9 +77,6 @@ class AppState {
     /** 听写模式的索引 */
     var dictationIndex by mutableStateOf(0)
 
-    /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
-    private var typingWordStateMap: MutableMap<String, Boolean> = mutableMapOf()
-
     /** 是否正在播放视频 */
     var isPlaying by mutableStateOf(false)
 
@@ -348,58 +345,6 @@ class AppState {
         return list
     }
 
-
-    /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
-    fun enterDictationMode() {
-        val currentWord = getCurrentWord().value
-        dictationWords = generateDictationWords(currentWord)
-        dictationIndex = 0
-        // 先保存状态
-        typingWordStateMap["isAuto"] = typingWord.isAuto
-        typingWordStateMap["wordVisible"] = typingWord.wordVisible
-        typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
-        typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
-        typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
-        typingWordStateMap["translationVisible"] = typingWord.translationVisible
-        typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
-        // 再改变状态
-        typingWord.isAuto = true
-        typingWord.wordVisible = false
-        typingWord.phoneticVisible = false
-        typingWord.definitionVisible = false
-        typingWord.morphologyVisible = false
-        typingWord.translationVisible = false
-        typingWord.subtitlesVisible = false
-
-        isDictation = true
-    }
-
-    /** 退出听写模式，恢复应用状态 */
-    fun exitDictationMode() {
-        // 恢复状态
-        typingWord.isAuto = typingWordStateMap["isAuto"]!!
-        typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
-        typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
-        typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
-        typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
-        typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
-        typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
-
-        isDictation = false
-        isReviewWrongList = false
-    }
-
-
-    /** 进入复习错误单词模式，复习错误单词模式属于听写模式的子模式，并且利用了听写模式的单词列表。 */
-    fun enterReviewMode(reviewList: List<Word>) {
-        // 先把 typing 的状态恢复
-        exitDictationMode()
-        isDictation = true
-        isReviewWrongList = true
-        dictationWords = reviewList
-        dictationIndex = 0
-    }
-
     /** 改变词库 */
     fun changeVocabulary(file: File,index: Int) {
         val newVocabulary = loadMutableVocabulary(file.absolutePath)
@@ -417,9 +362,10 @@ class AppState {
             typingWord.vocabularyName = file.nameWithoutExtension
             typingWord.vocabularyPath = file.absolutePath
 
-            if (isDictation) {
-                exitDictationMode()
-            }
+//            if (isDictation) {
+//                exitDictationMode()
+//            }
+
             typingWord.chapter = (index / 20) + 1
             typingWord.index = index
             vocabularyChanged = true
