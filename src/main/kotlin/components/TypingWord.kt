@@ -413,6 +413,15 @@ fun TypingWord(
                             /** 当前单词的错误次数 */
                             var wordWrongTime by remember {mutableStateOf(0)}
 
+                            /** 当前章节的正确数，主要用于听写模式计算正确率 */
+                            var chapterCorrectTime by remember { mutableStateOf(0F)}
+
+                            /** 当前章节的错误数，主要用于听写模式计算正确率 */
+                            var chapterWrongTime by remember { mutableStateOf(0F)}
+
+                            /** 听写模式的错误单词，主要用于听写模式计算正确率*/
+                            val dictationWrongWords = remember { mutableMapOf<Word, Int>()}
+
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
@@ -449,6 +458,13 @@ fun TypingWord(
 
                             val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
+                            /** 重置章节计数器,清空听写模式存储的错误单词 */
+                            val resetChapterTime: () -> Unit = {
+                                chapterCorrectTime = 0F
+                                chapterWrongTime = 0F
+                                dictationWrongWords.clear()
+                            }
+
                             /** 播放错误音效 */
                             val playBeepSound = {
                                 if (state.typingWord.isPlaySoundTips) {
@@ -483,10 +499,10 @@ fun TypingWord(
                              */
                             val dictationSkipCurrentWord: () -> Unit = {
                                 if (wordCorrectTime == 0) {
-                                    state.chapterWrongTime++
-                                    val dictationWrongTime = state.dictationWrongWords[currentWord]
+                                    chapterWrongTime++
+                                    val dictationWrongTime = dictationWrongWords[currentWord]
                                     if (dictationWrongTime == null) {
-                                        state.dictationWrongWords[currentWord] = 1
+                                        dictationWrongWords[currentWord] = 1
                                     }
                                 }
                             }
@@ -589,12 +605,12 @@ fun TypingWord(
                                             playBeepSound()
                                             wordWrongTime++
                                             if (state.isDictation) {
-                                                state.chapterWrongTime++
-                                                val dictationWrongTime = state.dictationWrongWords[currentWord]
+                                                chapterWrongTime++
+                                                val dictationWrongTime = dictationWrongWords[currentWord]
                                                 if (dictationWrongTime != null) {
-                                                    state.dictationWrongWords[currentWord] = dictationWrongTime + 1
+                                                    dictationWrongWords[currentWord] = dictationWrongTime + 1
                                                 } else {
-                                                    state.dictationWrongWords[currentWord] = 1
+                                                    dictationWrongWords[currentWord] = 1
                                                 }
                                             }
                                             Timer("cleanInputChar", false).schedule(50) {
@@ -608,7 +624,7 @@ fun TypingWord(
                                         // 输入完全正确
                                         speed.correctCount = speed.correctCount + 1
                                         playSuccessSound()
-                                        if (state.isDictation) state.chapterCorrectTime++
+                                        if (state.isDictation) chapterCorrectTime++
                                         if (state.typingWord.isAuto) {
                                             Timer("cleanInputChar", false).schedule(50) {
                                                 toNext()
@@ -686,6 +702,11 @@ fun TypingWord(
                                 if(state.vocabularyChanged){
                                     wordCorrectTime = 0
                                     wordWrongTime = 0
+
+                                    if (state.isDictation) {
+                                        resetChapterTime()
+                                    }
+
                                     state.vocabularyChanged = false
                                 }
                             }
@@ -709,10 +730,10 @@ fun TypingWord(
                                 setShowEditWordDialog = { showEditWordDialog = it },
                                 isVocabularyFinished = isVocabularyFinished,
                                 setIsVocabularyFinished = { isVocabularyFinished = it },
-                                chapterCorrectTime = state.chapterCorrectTime,
-                                chapterWrongTime = state.chapterWrongTime,
-                                dictationWrongWords = state.dictationWrongWords,
-                                resetChapterTime = { state.resetChapterTime() },
+                                chapterCorrectTime = chapterCorrectTime,
+                                chapterWrongTime = chapterWrongTime,
+                                dictationWrongWords = dictationWrongWords,
+                                resetChapterTime = { resetChapterTime() },
                                 playKeySound = { playKeySound() },
                                 jumpToCaptions = { jumpToCaptions() },
                                 focusRequester = wordFocusRequester,

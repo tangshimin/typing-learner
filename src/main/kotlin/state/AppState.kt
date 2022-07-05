@@ -68,15 +68,6 @@ class AppState {
     /** 是否是听写模式 */
     var isDictation by mutableStateOf(false)
 
-    /** 当前章节的正确数，主要用于听写模式 */
-    var chapterCorrectTime by mutableStateOf(0F)
-
-    /** 当前章节的错误数，主要用于听写模式 */
-    var chapterWrongTime by mutableStateOf(0F)
-
-    /** 听写模式的错误单词 */
-    val dictationWrongWords = mutableMapOf<Word, Int>()
-
     /** 听写模式 -> 复习错误单词模式 */
     var isReviewWrongList by mutableStateOf(false)
 
@@ -398,12 +389,6 @@ class AppState {
         isReviewWrongList = false
     }
 
-    /** 重置章节计数器,清空听写模式存储的错误单词 */
-    val resetChapterTime: () -> Unit = {
-        chapterCorrectTime = 0F
-        chapterWrongTime = 0F
-        dictationWrongWords.clear()
-    }
 
     /** 进入复习错误单词模式，复习错误单词模式属于听写模式的子模式，并且利用了听写模式的单词列表。 */
     fun enterReviewMode(reviewList: List<Word>) {
@@ -434,7 +419,6 @@ class AppState {
 
             if (isDictation) {
                 exitDictationMode()
-                resetChapterTime()
             }
             typingWord.chapter = (index / 20) + 1
             typingWord.index = index
