@@ -127,8 +127,6 @@ class AppState {
     /** 本地缓存的单词发音列表 */
     var audioSet = loadAudioSet()
 
-    /** 速度组件的状态 */
-    var speed = MutableSpeedState()
 
     /** 加载全局的设置信息 */
     private fun loadGlobalState(): GlobalState {

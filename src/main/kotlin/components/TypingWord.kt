@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
+import state.MutableSpeedState
 import state.TypingType
 import theme.createColors
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
@@ -52,6 +53,8 @@ import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 import kotlin.concurrent.schedule
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 /**
  * 应用程序的核心组件
@@ -117,6 +120,9 @@ fun TypingWord(
                     )
                 }
 
+                /** 速度组件的状态 */
+                var speed = remember { MutableSpeedState() }
+
                 if (state.vocabulary.wordList.isNotEmpty()) {
                     Box(
                         Modifier.align(Alignment.Center)
@@ -131,6 +137,7 @@ fun TypingWord(
 
                         /** 显示删除对话框 */
                         var showConfirmationDialog by remember { mutableStateOf(false) }
+
 
                         /** 单词发音的本地路径 */
                         val audioPath = getAudioPath(
@@ -573,7 +580,7 @@ fun TypingWord(
                                             // 字母输入错误
                                             done = false
                                             wordTypingResult.add(Pair(wordChar, false))
-                                            state.speed.wrongCount = state.speed.wrongCount + 1
+                                            speed.wrongCount = speed.wrongCount + 1
                                             playBeepSound()
                                             state.wordWrongTime++
                                             if (state.isDictation) {
@@ -594,7 +601,7 @@ fun TypingWord(
                                     // 用户输入的单词完全正确
                                     if (wordTypingResult.size == currentWord.value.length && done) {
                                         // 输入完全正确
-                                        state.speed.correctCount = state.speed.correctCount + 1
+                                        speed.correctCount = speed.correctCount + 1
                                         playSuccessSound()
                                         if (state.isDictation) state.chapterCorrectTime++
                                         if (state.typingWord.isAuto) {
@@ -700,7 +707,8 @@ fun TypingWord(
                                 notShowBookmark = {showBookmark = false},
                                 bookmarkClick = {bookmarkClick()},
                                 showDeleteDialog = showConfirmationDialog,
-                                setShowDeleteDialog = {showConfirmationDialog = it}
+                                setShowDeleteDialog = {showConfirmationDialog = it},
+                                speed = speed,
                             )
 
                             Phonetic(
@@ -786,7 +794,7 @@ fun TypingWord(
                 val speedAlignment = Alignment.TopEnd
                 Speed(
                     speedVisible = state.typingWord.speedVisible,
-                    speed = state.speed,
+                    speed = speed,
                     modifier = Modifier
                         .width(IntrinsicSize.Max)
                         .align(speedAlignment)

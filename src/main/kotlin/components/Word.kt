@@ -36,6 +36,7 @@ import dialog.EditWordDialog
 import kotlinx.coroutines.launch
 import player.AudioButton
 import state.AppState
+import state.MutableSpeedState
 import state.getResourcesFile
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -102,6 +103,7 @@ fun Word(
     bookmarkClick: () -> Unit,
     showDeleteDialog:Boolean,
     setShowDeleteDialog: (Boolean) -> Unit,
+    speed: MutableSpeedState,
 ) {
 
     /**
@@ -141,20 +143,20 @@ fun Word(
                 playKeySound()
                 lastInputTime = System.currentTimeMillis()
                 // 如果计时器没有启动，就启动一个新的计时器
-                if (!state.speed.isStart) {
-                    state.speed.isStart = true
-                    state.speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
-                        state.speed.time = state.speed.time.plusSeconds(1)
+                if (!speed.isStart) {
+                    speed.isStart = true
+                    speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
+                        speed.time = speed.time.plusSeconds(1)
                     }
                     // 超过一分钟没有输入自动取消计时器
-                    state.speed.autoPauseTimer =
+                    speed.autoPauseTimer =
                         fixedRateTimer("autoPause", false, 0L, 60 * 1000) {
                             val span = System.currentTimeMillis() - lastInputTime
                             if (span > 60 * 1000) {
-                                state.speed.isStart = false
+                                speed.isStart = false
                                 // 取消计时器
-                                state.speed.timer.cancel()
-                                state.speed.autoPauseTimer.cancel()
+                                speed.timer.cancel()
+                                speed.autoPauseTimer.cancel()
                             }
                         }
                 }
