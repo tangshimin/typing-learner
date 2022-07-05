@@ -47,12 +47,6 @@ class AppState {
     /** 抄写文本的可观察状态 */
     var typingText: TextState = loadTextState()
 
-    /** 当前单词的正确次数 */
-    var wordCorrectTime by mutableStateOf(0)
-
-    /** 当前单词的错误次数 */
-    var wordWrongTime by mutableStateOf(0)
-
     /** 视频播放窗口 */
     var videoPlayerWindow = createVideoPlayerWindow()
 
@@ -127,6 +121,7 @@ class AppState {
     /** 本地缓存的单词发音列表 */
     var audioSet = loadAudioSet()
 
+    var vocabularyChanged by mutableStateOf(false)
 
     /** 加载全局的设置信息 */
     private fun loadGlobalState(): GlobalState {
@@ -443,8 +438,7 @@ class AppState {
             }
             typingWord.chapter = (index / 20) + 1
             typingWord.index = index
-            wordCorrectTime = 0
-            wordWrongTime = 0
+            vocabularyChanged = true
             saveTypingWordState()
         }
     }
