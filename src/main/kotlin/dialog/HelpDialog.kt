@@ -153,7 +153,7 @@ fun DocumentPage(){
                 contentDescription = "document-2",
                 modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
             )
-            Text("\n3. 在预览区可以看到程序生成的单词。有一些太简单的字母和数字，你可以点击左边的过滤词频顺序为0的词。")
+            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
                 painter = painterResource("screenshot/document-$theme/document-3.png"),
                 contentDescription = "document-3",
@@ -259,7 +259,7 @@ fun SubtitlesPage(){
                 contentDescription = "Subtitles-2",
                 modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
             )
-            Text("\n3. 在预览区可以看到程序生成的单词。有一些太简单的字母和数字，你可以点击左边的过滤词频顺序为0的词。")
+            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
                 painter = painterResource("screenshot/subtitles-$theme/Subtitles-3.png"),
                 contentDescription = "Subtitles-3",
@@ -342,7 +342,7 @@ fun MatroskaPage(){
                 contentDescription = "mkv-2",
                 modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
             )
-            Text("\n3. 在预览区可以看到程序生成的单词。有一些太简单的字母和数字，你可以点击左边的过滤词频顺序为0的词。")
+            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-3.png"),
                 contentDescription = "mkv-3",
@@ -417,7 +417,7 @@ fun YouTubeDownloadPage(){
             val clipboard = LocalClipboardManager.current
             val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
             Row(verticalAlignment = Alignment.CenterVertically){
-                Text("使用强大的视频下载程序，可以下载 1000+ 视频网站的视频 ")
+
                 val annotatedString = buildAnnotatedString {
                     pushStringAnnotation(tag = "youtube-dl", annotation = "https://github.com/ytdl-org/youtube-dl")
                     withStyle(style = SpanStyle(color = blueColor)) {
@@ -436,7 +436,8 @@ fun YouTubeDownloadPage(){
                             uriHandler.openUri(it.item)
                         }
                     })
-                Text(" 下载英语字幕和视频的命令：")
+                Text(" 非常强大的视频下载程序，可以下载 1000+ 视频网站的视频，")
+                Text("下载英语字幕和视频的命令：")
             }
             val command = "youtube-dl.exe  --proxy \"URL\" --sub-lang en --convert-subs srt --write-sub URL"
             Row(verticalAlignment = Alignment.CenterVertically,
