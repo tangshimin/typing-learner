@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import components.computeBottom
 import components.toAwt
 import components.toCompose
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -508,12 +509,9 @@ fun SettingTestStyle(
                 .background(if (MaterialTheme.colors.isLight) Color.LightGray else MaterialTheme.colors.background)
         ) {
             var textHeight by remember { mutableStateOf(0.dp) }
-            var bottom = 0.dp
-            var smallStyleList =
+            val smallStyleList =
                 listOf("H5", "H6", "Subtitle1", "Subtitle2", "Body1", "Body2", "Button", "Caption", "Overline")
-            if (smallStyleList.contains(state.global.textStyle)) bottom = (36.dp - textHeight).div(2)
-            if (bottom < 0.dp) bottom = 0.dp
-            if (bottom > 7.5.dp) bottom = 5.dp
+            val bottom = computeBottom(textStyle = state.global.textStyle, textHeight = textHeight,)
             var previewWord = state.getCurrentWord().value
             if (previewWord.isEmpty()) {
                 previewWord = "Typing"
@@ -539,7 +537,7 @@ fun SettingTestStyle(
             )
             Spacer(Modifier.width(5.dp))
             Column(verticalArrangement = Arrangement.SpaceBetween) {
-                var top = (textHeight - 36.dp).div(2)
+                val top = (textHeight - 36.dp).div(2)
                 var numberFontSize = LocalTextStyle.current.fontSize
                 if (smallStyleList.contains(state.global.textStyle)) numberFontSize =
                     MaterialTheme.typography.overline.fontSize

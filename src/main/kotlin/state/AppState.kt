@@ -77,9 +77,6 @@ class AppState {
     /** 听写模式的索引 */
     var dictationIndex by mutableStateOf(0)
 
-    /** 是否正在播放视频 */
-    var isPlaying by mutableStateOf(false)
-
     /** 是否打开选择章节窗口 */
     var openSelectChapter by mutableStateOf(false)
 
@@ -95,9 +92,7 @@ class AppState {
     /** 是否显示【过滤词库】窗口 */
     var filterVocabulary by mutableStateOf(false)
 
-    /**
-     * 是否显示【从文档生成词库】窗口
-     */
+    /** 是否显示【从文档生成词库】窗口 */
     var generateVocabularyFromDocument by mutableStateOf(false)
 
     /** 是否显示【从字幕文件生成词库】窗口 */
@@ -229,7 +224,6 @@ class AppState {
     }
 
     /** 保存记忆单词的设置信息 */
-    @OptIn(ExperimentalComposeUiApi::class)
     fun saveTypingWordState() {
         runBlocking {
             launch {
@@ -361,11 +355,6 @@ class AppState {
             vocabulary = newVocabulary
             typingWord.vocabularyName = file.nameWithoutExtension
             typingWord.vocabularyPath = file.absolutePath
-
-//            if (isDictation) {
-//                exitDictationMode()
-//            }
-
             typingWord.chapter = (index / 20) + 1
             typingWord.index = index
             vocabularyChanged = true
@@ -470,8 +459,8 @@ class AppState {
         if (!audioDir.exists()) {
             audioDir.mkdir()
         }
-        var set = mutableSetOf<String>()
-        set.addAll(audioDir.list())
+        val set = mutableSetOf<String>()
+        audioDir.list()?.let { set.addAll(it) }
         return set
     }
 }
