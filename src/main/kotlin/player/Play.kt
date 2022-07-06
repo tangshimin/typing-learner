@@ -7,6 +7,9 @@ import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import java.awt.Component
 import java.awt.EventQueue
 import java.awt.Rectangle
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.swing.JFrame
@@ -33,13 +36,29 @@ fun play(
     val trackId = playTriple.third
     window.size = bounds.size
     window.location = bounds.location
-
+    var pause = false
     val start = parseTime(caption.start)
     val end = parseTime(caption.end)
+    val keyListener = object: KeyAdapter() {
+        override fun keyPressed(keyeEvent: KeyEvent) {
+            if(keyeEvent.keyCode == 32){
+                if(pause){
+                    pause = false
+                    videoPlayerComponent.mediaPlayer().controls().play()
+                }else{
+                    pause = true
+                    videoPlayerComponent.mediaPlayer().controls().pause()
+                }
+
+            }
+        }
+    }
+    videoPlayerComponent.addKeyListener(keyListener)
 
     videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+            videoPlayerComponent.requestFocus()
             mediaPlayer.audio().setVolume((volume * 100).toInt())
         }
 
@@ -49,6 +68,7 @@ fun play(
             EventQueue.invokeLater {
                 window.remove(videoPlayerComponent)
             }
+            videoPlayerComponent.removeKeyListener(keyListener)
             videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
         }
     })
@@ -92,12 +112,29 @@ fun play(
     window.size = bounds.size
     window.location = bounds.location
 
+    var pause = false
     val start = parseTime(caption.start)
     val end = parseTime(caption.end)
+    val keyListener = object: KeyAdapter() {
+        override fun keyPressed(keyeEvent: KeyEvent) {
+            if(keyeEvent.keyCode == 32){
+                if(pause){
+                    pause = false
+                    videoPlayerComponent.mediaPlayer().controls().play()
+                }else{
+                    pause = true
+                    videoPlayerComponent.mediaPlayer().controls().pause()
+                }
+
+            }
+        }
+    }
+    videoPlayerComponent.addKeyListener(keyListener)
 
     videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
         override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
+            videoPlayerComponent.requestFocus()
             mediaPlayer.audio().setVolume((volume * 100).toInt())
         }
 
@@ -107,6 +144,7 @@ fun play(
             EventQueue.invokeLater {
                 window.remove(videoPlayerComponent)
             }
+            videoPlayerComponent.removeKeyListener(keyListener)
             videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
         }
     })
@@ -142,8 +180,24 @@ fun play(
     window.size = bounds.size
     window.location = bounds.location
 
+    var pause = false
     val start = parseTime(caption.start)
     val end = parseTime(caption.end)
+    val keyListener = object: KeyAdapter() {
+        override fun keyPressed(keyeEvent: KeyEvent) {
+            if(keyeEvent.keyCode == 32){
+                if(pause){
+                    pause = false
+                    videoPlayerComponent.mediaPlayer().controls().play()
+                }else{
+                    pause = true
+                    videoPlayerComponent.mediaPlayer().controls().pause()
+                }
+
+            }
+        }
+    }
+    videoPlayerComponent.addKeyListener(keyListener)
     videoPlayerComponent.bounds = Rectangle(0, 0, bounds.size.width, bounds.size.height)
 
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
@@ -151,6 +205,7 @@ fun play(
             if(showSubtitles){
                 mediaPlayer.subpictures().setSubTitleUri(subtitlePath)
             }
+            videoPlayerComponent.requestFocus()
             mediaPlayer.audio().setVolume((volume * 100).toInt())
         }
 
@@ -160,6 +215,7 @@ fun play(
             EventQueue.invokeLater {
                 window.remove(videoPlayerComponent)
             }
+            videoPlayerComponent.removeKeyListener(keyListener)
             videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(this)
         }
     })
