@@ -259,7 +259,7 @@ fun ChapterFinishedDialog(
                         OutlinedButton(
                             onClick = { enterDictation() }
                         ) {
-                            val text = if (isDictation) "(V)再听写一次" else "(V)听写本章"
+                            val text = if (isDictation) "(V)再听写一次" else "(V)听写测试"
                             Text(text = text, color = textColor)
                         }
                     }
