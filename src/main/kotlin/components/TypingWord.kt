@@ -184,7 +184,8 @@ fun TypingWord(
                                             state.global.videoVolume,
                                             playTriple,
                                             state.videoPlayerComponent,
-                                            videoBounds
+                                            videoBounds,
+                                            typingWord.externalSubtitlesVisible
                                         )
                                     }
                                 }
@@ -1037,7 +1038,8 @@ fun TypingWord(
                                 playKeySound = { playKeySound() },
                                 modifier = captionsModifier,
                                 focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3),
-                                jumpToWord = {jumpToWord()}
+                                jumpToWord = {jumpToWord()},
+                                externalVisible = typingWord.externalSubtitlesVisible
                             )
                             if (isPlaying) Spacer(
                                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
@@ -1445,6 +1447,7 @@ fun Captions(
     modifier: Modifier,
     focusRequesterList:List<FocusRequester>,
     jumpToWord: () -> Unit,
+    externalVisible:Boolean,
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1453,7 +1456,9 @@ fun Captions(
             modifier = modifier
         ) {
             Column {
-//                var plyingIndex by remember { mutableStateOf(0) }
+                val scope = rememberCoroutineScope()
+                val focusManager = LocalFocusManager.current
+
                 playTripleMap.forEach { (index, playTriple) ->
                     var captionContent = playTriple.first.content
                     if (captionContent.contains("\r\n")) {
@@ -1467,29 +1472,92 @@ fun Captions(
                         typingResult = mutableListOf()
                         putTypingResultMap(index, typingResult)
                     }
+                    var isPathWrong by remember { mutableStateOf(false) }
+                    val playCurrentCaption:()-> Unit = {
+                        if (!isPlaying) {
+                            val file = File(playTriple.second)
+                            if (file.exists()) {
+                                setIsPlaying(true)
+                                scope.launch {
+                                    setPlayingIndex(index)
+                                    play(
+                                        videoPlayerWindow,
+                                        setIsPlaying = { setIsPlaying(it) },
+                                        volume,
+                                        playTriple,
+                                        videoPlayerComponent,
+                                        bounds,
+                                        externalVisible
+                                    )
+                                }
+
+                            } else {
+                                isPathWrong = true
+                                Timer("恢复状态", false).schedule(2000) {
+                                    isPathWrong = false
+                                }
+                            }
+                        }
+                    }
+                    var selectable by remember { mutableStateOf(false) }
+                    val captionKeyEvent:(KeyEvent) -> Boolean = {
+                        when {
+                            (it.type == KeyEventType.KeyDown
+                                    && it.key != Key.ShiftRight
+                                    && it.key != Key.ShiftLeft
+                                    && it.key != Key.CtrlRight
+                                    && it.key != Key.CtrlLeft
+                                    ) -> {
+                                scope.launch { playKeySound() }
+                                true
+                            }
+                            (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
+                                scope.launch { selectable = !selectable }
+                                true
+                            }
+                            (it.key == Key.Tab && it.type == KeyEventType.KeyUp) -> {
+                                scope.launch {  playCurrentCaption() }
+                                true
+                            }
+
+                            (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
+                                if(index<2 && index + 1 < word.captions.size){
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusManager.moveFocus(FocusDirection.Next)
+                                }
+                                true
+                            }
+
+                            (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
+                                if(index == 0){
+                                    jumpToWord()
+                                }else{
+                                    focusManager.moveFocus(FocusDirection.Previous)
+                                    focusManager.moveFocus(FocusDirection.Previous)
+                                }
+
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+
                     Caption(
-                        videoPlayerWindow = videoPlayerWindow,
-                        videoPlayerComponent = videoPlayerComponent,
                         isPlaying = isPlaying,
-                        setIsPlaying = {
-                            setIsPlaying(it)
-                        },
-                        volume = volume,
                         captionContent = captionContent,
                         textFieldValue = textFieldValue,
                         typingResult = typingResult,
                         checkTyping = { editIndex, input, editContent ->
                             checkTyping(editIndex, input, editContent)
                         },
-                        playKeySound = { playKeySound() },
                         index = index,
                         playingIndex = plyingIndex,
-                        setPlayingIndex = {setPlayingIndex(it)},
-                        size = word.captions.size,
-                        playTriple = playTriple,
-                        bounds = bounds,
                         focusRequester = focusRequesterList[index],
-                        jumpToWord = {jumpToWord()}
+                        playCurrentCaption = {playCurrentCaption()},
+                        captionKeyEvent = {captionKeyEvent(it)},
+                        selectable = selectable,
+                        setSelectable = {selectable = it},
+                        isPathWrong = isPathWrong,
                     )
                 }
 
@@ -1544,20 +1612,19 @@ fun secondsToString(seconds: Double): String {
 
 /**
  * 字幕组件
- * @param videoPlayerWindow 视频播放窗口
- * @param setIsPlaying 设置是否正在播放视频的回调
- * @param volume 音量
+ * @param isPlaying 是否正在播放
  * @param captionContent 字幕的内容
  * @param textFieldValue 输入的字幕
  * @param typingResult 输入字幕的结果
  * @param checkTyping 输入字幕后被调用的回调
- * @param playKeySound 当用户输入字幕时播放敲击键盘音效的回调
  * @param index 当前字幕的索引
- * @param playTriple 用于播放当前字幕的相关信息：
- * - Caption  -> caption.content 用于输入和阅读，caption.start 和 caption.end 用于播放视频
- * - String   -> 字幕对应的视频地址
- * - Int      -> 字幕的轨道
- * @param bounds 视频播放器的位置和大小
+ * @param playingIndex 正在播放的字幕索引
+ * @param focusRequester 焦点请求器
+ * @param playCurrentCaption 播放当前字幕的函数
+ * @param captionKeyEvent 处理当前字幕的快捷键函数
+ * @param selectable 是否可选择复制
+ * @param setSelectable 设置是否可选择
+ * @param isPathWrong 是否路径错误
  */
 @OptIn(
     ExperimentalFoundationApi::class,
@@ -1565,62 +1632,28 @@ fun secondsToString(seconds: Double): String {
 )
 @Composable
 fun Caption(
-    videoPlayerWindow: JFrame,
-    videoPlayerComponent: Component,
     isPlaying: Boolean,
-    setIsPlaying: (Boolean) -> Unit,
-    volume: Float,
     captionContent: String,
     textFieldValue: String,
     typingResult: List<Pair<Char, Boolean>>,
     checkTyping: (Int, String, String) -> Unit,
-    playKeySound: () -> Unit,
     index: Int,
     playingIndex: Int,
-    setPlayingIndex: (Int) -> Unit,
-    size: Int,
-    playTriple: Triple<Caption, String, Int>,
-    bounds: Rectangle,
     focusRequester:FocusRequester,
-    jumpToWord: () -> Unit,
+    playCurrentCaption:()-> Unit,
+    captionKeyEvent:(KeyEvent) -> Boolean,
+    selectable:Boolean,
+    setSelectable:(Boolean) -> Unit,
+    isPathWrong:Boolean,
 ) {
     val scope = rememberCoroutineScope()
-    val relativeVideoPath = playTriple.second
     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.height(36.dp).width(IntrinsicSize.Max)
         ) {
-            var selectable by remember { mutableStateOf(false) }
             val dropMenuFocusRequester = remember { FocusRequester() }
-            val focusManager = LocalFocusManager.current
-            var isPathWrong by remember { mutableStateOf(false) }
-            val playCurrentCaption:()-> Unit = {
-                if (!isPlaying) {
-                    val file = File(relativeVideoPath)
-                    if (file.exists()) {
-                        setIsPlaying(true)
-                        scope.launch {
-                            setPlayingIndex(index)
-                            play(
-                                videoPlayerWindow,
-                                setIsPlaying = { setIsPlaying(it) },
-                                volume,
-                                playTriple,
-                                videoPlayerComponent,
-                                bounds
-                            )
-                        }
-
-                    } else {
-                        isPathWrong = true
-                        Timer("恢复状态", false).schedule(2000) {
-                            isPathWrong = false
-                        }
-                    }
-                }
-            }
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
                 BasicTextField(
                     value = textFieldValue,
@@ -1637,47 +1670,7 @@ fun Caption(
                         .height(32.dp)
                         .align(Alignment.CenterStart)
                         .focusRequester(focusRequester)
-                        .onKeyEvent {
-                            when {
-                                (it.type == KeyEventType.KeyDown
-                                        && it.key != Key.ShiftRight
-                                        && it.key != Key.ShiftLeft
-                                        && it.key != Key.CtrlRight
-                                        && it.key != Key.CtrlLeft
-                                        ) -> {
-                                    scope.launch { playKeySound() }
-                                    true
-                                }
-                                (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) -> {
-                                    scope.launch { selectable = !selectable }
-                                    true
-                                }
-                                (it.key == Key.Tab && it.type == KeyEventType.KeyUp) -> {
-                                    scope.launch {  playCurrentCaption() }
-                                    true
-                                }
-
-                                (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
-                                    if(index<2 && index + 1 < size){
-                                        focusManager.moveFocus(FocusDirection.Next)
-                                        focusManager.moveFocus(FocusDirection.Next)
-                                    }
-                                    true
-                                }
-
-                                (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
-                                    if(index == 0){
-                                        jumpToWord()
-                                    }else{
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                        focusManager.moveFocus(FocusDirection.Previous)
-                                    }
-
-                                    true
-                                }
-                                else -> false
-                            }
-                        }
+                        .onKeyEvent { captionKeyEvent(it) }
                 )
                 Text(
                     textAlign = TextAlign.Start,
@@ -1732,9 +1725,7 @@ fun Caption(
                 DropdownMenu(
                     expanded = selectable,
                     focusable = true,
-                    onDismissRequest = {
-                        selectable = false
-                    },
+                    onDismissRequest = { setSelectable(false) },
                     offset = DpOffset(0.dp, (-30).dp)
                 ) {
                     BasicTextField(
@@ -1749,7 +1740,7 @@ fun Caption(
                             .focusRequester(dropMenuFocusRequester)
                             .onKeyEvent {
                                 if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
-                                    scope.launch { selectable = !selectable }
+                                    scope.launch { setSelectable(!selectable) }
                                     true
                                 } else false
                             }

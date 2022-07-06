@@ -243,6 +243,7 @@ class AppState {
                     typingWord.hardVocabularyIndex,
                     typingWord.vocabularyName,
                     typingWord.vocabularyPath,
+                    typingWord.externalSubtitlesVisible,
                 )
 
                 val json = encodeBuilder.encodeToString(dataWordState)

@@ -25,6 +25,7 @@ data class DataWordState(
     val hardVocabularyIndex: Int = 0,
     var vocabularyName: String = "四级",
     var vocabularyPath: String = "vocabulary/大学英语/四级.json",
+    var externalSubtitlesVisible: Boolean = true,
 )
 
 /** 记忆单词的可观察状态 */
@@ -110,4 +111,7 @@ class WordState(dataWordState: DataWordState) {
      * 当前正在学习的词库的路径
      */
     var vocabularyPath by mutableStateOf(dataWordState.vocabularyPath)
+
+    /** 外部字幕的可见性 */
+    var externalSubtitlesVisible by mutableStateOf(dataWordState.externalSubtitlesVisible)
 }
