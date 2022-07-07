@@ -29,7 +29,8 @@ data class GlobalData(
     val y:Float = 100F,
     val width:Float = 1030F,
     val height:Float = 862F,
-    val placement:WindowPlacement = WindowPlacement.Floating
+    val placement:WindowPlacement = WindowPlacement.Floating,
+    val autoUpdate:Boolean = true,
 )
 
 /** 全局的可观察状态 */
@@ -94,20 +95,15 @@ class GlobalState(globalData: GlobalData) {
      */
     var size by mutableStateOf(DpSize(globalData.width.dp,globalData.height.dp))
 
-//    /**
-//     *  主窗口的宽度
-//     */
-//    var width by mutableStateOf(globalData.width.dp)
-//
-//    /**
-//     * 主窗口的高度
-//     */
-//    var height by mutableStateOf(globalData.height.dp)
-
     /**
      * 描述如何放置窗口在屏幕
      */
     var placement by mutableStateOf(globalData.placement)
+
+    /**
+     * 自动检查更新
+     */
+    var autoUpdate by mutableStateOf(globalData.autoUpdate)
 }
 @Composable
  fun computeFontSize(textStyle: String): TextUnit {

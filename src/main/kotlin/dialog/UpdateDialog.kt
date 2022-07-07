@@ -1,10 +1,7 @@
 package dialog
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +19,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.maven.artifact.versioning.ComparableVersion
 import java.io.IOException
 import java.util.*
 import kotlin.concurrent.schedule
@@ -30,16 +28,19 @@ import kotlin.concurrent.schedule
 @Composable
 fun UpdateDialog(
     version: String,
-    close: () -> Unit
+    close: () -> Unit,
+    autoUpdate:Boolean,
+    setAutoUpdate:(Boolean) -> Unit,
+    latestVersion:String,
 ) {
     Dialog(
         title = "检查更新",
         icon = painterResource("logo/logo.png"),
         onCloseRequest = { close() },
-        resizable = false,
+        resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(645.dp, 650.dp)
+            size = DpSize(380.dp, 300.dp)
         ),
     ) {
         Surface(
@@ -47,7 +48,7 @@ fun UpdateDialog(
             shape = RectangleShape,
         ) {
             var detecting by remember { mutableStateOf(true) }
-            var downloadable by remember { mutableStateOf(false) }
+            var downloadable by remember { mutableStateOf(latestVersion.isNotEmpty()) }
             var body by remember { mutableStateOf("") }
 
             fun detectingUpdates(version: String) {
@@ -67,7 +68,9 @@ fun UpdateDialog(
                                 val string = response.body!!.string()
                                 val format = Json { ignoreUnknownKeys = true }
                                 val releases = format.decodeFromString<GitHubRelease>(string)
-                                body = if (version != releases.tag_name) {
+                                val releaseVersion = ComparableVersion(releases.tag_name)
+                                val currentVersion = ComparableVersion(version)
+                                body = if (releaseVersion >currentVersion) {
                                     downloadable = true
                                     "有可用更新，版本为：${releases.tag_name}"
                                 } else {
@@ -90,8 +93,10 @@ fun UpdateDialog(
             }
 
             LaunchedEffect(Unit) {
-                Timer("update",false).schedule(500){
-                    detectingUpdates(version)
+                if(latestVersion.isEmpty()){
+                    Timer("update",false).schedule(500){
+                        detectingUpdates(version)
+                    }
                 }
             }
 
@@ -103,9 +108,20 @@ fun UpdateDialog(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("当前版本为：$version")
+                    Text("当前版本为：  $version")
                 }
-                if (detecting) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("自动检查更新")
+                    Checkbox(
+                        checked = autoUpdate,
+                        onCheckedChange = { setAutoUpdate(it) }
+                    )
+                }
+                if (latestVersion.isEmpty() && detecting) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
@@ -126,7 +142,11 @@ fun UpdateDialog(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                 ) {
-                    Text("$body")
+                    if(latestVersion.isNotEmpty()){
+                        Text("有可用更新，版本为：$latestVersion")
+                    }else{
+                        Text(body)
+                    }
                 }
 
                 Row(
@@ -134,11 +154,11 @@ fun UpdateDialog(
                     modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                 ) {
                     OutlinedButton(onClick = { close() }) {
-                        Text("取消")
+                        Text("关闭")
                     }
                     Spacer(Modifier.width(20.dp))
                     val uriHandler = LocalUriHandler.current
-                    val latest = "https://github.com/tangshimin/typing-learner/releases/latest"
+                    val latest = "https://github.com/tangshimin/typing-learner/releases"
                     OutlinedButton(
                         onClick = { uriHandler.openUri(latest)},
                         enabled = downloadable
@@ -146,9 +166,38 @@ fun UpdateDialog(
                         Text("下载最新版")
                     }
                 }
-
             }
         }
     }
 }
 
+
+@OptIn(ExperimentalSerializationApi::class)
+fun autoDetectingUpdates(version: String):Pair<Boolean,String>{
+    val client = OkHttpClient()
+    val url = "https://api.github.com/repos/tangshimin/typing-learner/releases/latest"
+    val headerName = "Accept"
+    val headerValue = "application/vnd.github.v3+json"
+    val request = Request.Builder()
+        .url(url)
+        .addHeader(headerName, headerValue)
+        .build()
+
+    try{
+        client.newCall(request).execute().use { response ->
+            if (response.code == 200 && response.body != null) {
+                val string = response.body!!.string()
+                val format = Json { ignoreUnknownKeys = true }
+                val releases = format.decodeFromString<GitHubRelease>(string)
+                val releaseVersion = ComparableVersion(releases.tag_name)
+                val currentVersion = ComparableVersion(version)
+                if (releaseVersion >currentVersion) {
+                    return Pair(true, releases.tag_name)
+                }
+            }
+        }
+    }catch (exception: IOException){
+        exception.printStackTrace()
+    }
+    return Pair(false, "")
+}

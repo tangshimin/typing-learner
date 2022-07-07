@@ -41,9 +41,13 @@ import state.getResourcesFile
 import state.rememberAppState
 import theme.createColors
 import java.io.File
+import java.util.*
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
+import kotlin.concurrent.schedule
 
+
+const val version = "v1.1.1"
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -53,6 +57,8 @@ import javax.swing.filechooser.FileSystemView
 )
 fun main() = application {
     var isOpen by remember { mutableStateOf(true) }
+    /** 自动检查更新，只在启动时执行一次 */
+    var uptdated by remember { mutableStateOf(false) }
     val state = rememberAppState()
     UpdateFlatLaf(state.global.isDarkTheme, state)
     CompositionLocalProvider(
@@ -175,7 +181,6 @@ fun main() = application {
                             )
                         }
                     }
-
                 }
                 LaunchedEffect(windowState) {
                     snapshotFlow { windowState.size }
@@ -189,6 +194,20 @@ fun main() = application {
                     snapshotFlow { windowState.position }
                         .onEach { onWindowRelocate(windowState.position,state) }
                         .launchIn(this)
+                }
+
+
+                LaunchedEffect(Unit){
+                    if(!uptdated && state.global.autoUpdate){
+                        Timer("update",false).schedule(5000){
+                            val result = autoDetectingUpdates(version)
+                            state.showUpdateDialog = result.first
+                           if(result.first){
+                               state.latestVersion = result.second
+                           }
+                        }
+                    }
+                    uptdated = true
                 }
             }
 
@@ -435,7 +454,7 @@ private fun FrameWindowScope.WindowMenuBar(
     var donateDialogVisible by remember { mutableStateOf(false) }
     var helpDialogVisible by remember { mutableStateOf(false) }
     Menu("帮助(H)", mnemonic = 'H') {
-        val version = "v1.1.0"
+
 
         Item("帮助文档(H)", mnemonic = 'H', onClick = { helpDialogVisible = true})
         if(helpDialogVisible){
@@ -443,14 +462,10 @@ private fun FrameWindowScope.WindowMenuBar(
                 close = {helpDialogVisible = false}
             )
         }
-        var showUpdateDialog by remember { mutableStateOf(false) }
-        Item("检查更新(U)", mnemonic = 'U', onClick = { showUpdateDialog = true })
-        if(showUpdateDialog){
-            UpdateDialog(
-                close = {showUpdateDialog = false},
-                version = version
-            )
-        }
+        Item("检查更新(U)", mnemonic = 'U', onClick = {
+            state.showUpdateDialog = true
+            state.latestVersion = ""
+        })
         Item("捐赠", onClick = { donateDialogVisible = true })
         if(donateDialogVisible){
             DonateDialog (
@@ -601,6 +616,19 @@ fun MenuDialogs(state: AppState) {
             state = state,
             title = "从 MKV 视频生成词库",
             type = VocabularyType.MKV
+        )
+    }
+
+    if(state.showUpdateDialog){
+        UpdateDialog(
+            close = {state.showUpdateDialog = false},
+            version = version,
+            autoUpdate = state.global.autoUpdate,
+            setAutoUpdate = {
+                state.global.autoUpdate = it
+                state.saveGlobalState()
+            },
+            latestVersion = state.latestVersion
         )
     }
 }

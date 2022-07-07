@@ -101,6 +101,12 @@ class AppState {
     /** 是否显示【从 MKV 生成词库】 窗口 */
     var generateVocabularyFromMKV by mutableStateOf(false)
 
+    /** 显示软件更新对话框 */
+    var showUpdateDialog by mutableStateOf(false)
+
+    /** 软件的最新版本 */
+    var latestVersion by mutableStateOf("")
+
     /** 本地缓存的单词发音列表 */
     var audioSet = loadAudioSet()
 
@@ -214,7 +220,8 @@ class AppState {
                     global.position.y.value,
                     global.size.width.value,
                     global.size.height.value,
-                    global.placement
+                    global.placement,
+                    global.autoUpdate
                 )
                 val json = encodeBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()

@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.typinglearner"
-version = "1.1.0"
+version = "1.1.1"
 repositories {
     google()
     mavenCentral()
@@ -32,6 +32,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation(files("lib/ebml-reader-0.1.0.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
+    implementation("org.apache.maven:maven-artifact:3.8.6")
     testImplementation(compose("org.jetbrains.compose.ui:ui-test-junit4"))
 }
 
