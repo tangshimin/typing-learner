@@ -305,6 +305,12 @@ fun AboutDialog(
                                 license = Apache2,
                             )
                             Dependency(
+                                name = "maven-artifact",
+                                url = "https://maven.apache.org/",
+                                version = "3.8.6",
+                                license = Apache2,
+                            )
+                            Dependency(
                                 name = "subtitleConvert",
                                 url = "https://github.com/JDaren/subtitleConverter",
                                 version = "1.0.2",
