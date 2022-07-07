@@ -153,7 +153,7 @@ fun AboutDialog(
 
                         Column (Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp)){
                             Row{
-                                Text("本项目的核心功能，记忆单词来源于  ")
+                                Text("本项目的记忆单词功能来源于  ")
                                 LinkText(
                                     text = "qwerty-learner",
                                     url = "https://github.com/Kaiyiwing/qwerty-learner"
