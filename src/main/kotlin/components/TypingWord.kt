@@ -155,6 +155,11 @@ fun TypingWord(
                         /** 显示删除对话框 */
                         var showDeleteDialog by remember { mutableStateOf(false) }
 
+                        /** 单词输入框的焦点请求器*/
+                        val wordFocusRequester = remember { FocusRequester() }
+
+                        /** 字幕输入框焦点请求器*/
+                        val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
 
                         /** 单词发音的本地路径 */
                         val audioPath = getAudioPath(
@@ -244,12 +249,10 @@ fun TypingWord(
                                     }
                                     true
                                 }
-                                (it.isCtrlPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
+
+                                (it.isCtrlPressed && it.isShiftPressed && it.key == Key.A && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        state.typingWord.isAuto = !state.typingWord.isAuto
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        wordFocusRequester.requestFocus()
                                     }
                                     true
                                 }
@@ -320,6 +323,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
+                                    focusRequester1.requestFocus()
                                     if (state.vocabulary.type == VocabularyType.DOCUMENT) {
                                         val playTriple = getPayTriple(currentWord, 0)
                                         plyingIndex = 0
@@ -334,6 +338,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
+                                    focusRequester2.requestFocus()
                                     if (state.getCurrentWord().externalCaptions.size >= 2) {
                                         val playTriple = getPayTriple(currentWord, 1)
                                         plyingIndex = 1
@@ -349,6 +354,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
+                                    focusRequester3.requestFocus()
                                     if (state.getCurrentWord().externalCaptions.size >= 3) {
                                         val playTriple = getPayTriple(currentWord, 2)
                                         plyingIndex = 2
@@ -451,9 +457,6 @@ fun TypingWord(
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
-                            /** 单词输入框的焦点请求器*/
-                            val wordFocusRequester = remember { FocusRequester() }
-
                             /** 第一条字幕的输入字符串*/
                             var captionsTextFieldValue1 by remember { mutableStateOf("") }
 
@@ -462,9 +465,6 @@ fun TypingWord(
 
                             /** 第三条字幕的输入字符串*/
                             var captionsTextFieldValue3 by remember { mutableStateOf("") }
-
-                            /** 字幕输入框焦点请求器*/
-                            val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
 
                             /** 单词输入框输入的结果*/
                             val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
@@ -640,6 +640,7 @@ fun TypingWord(
                                         }
                                         state.saveTypingWordState()
                                     }
+                                    wordFocusRequester.requestFocus()
                                 }
                             }
 
