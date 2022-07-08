@@ -305,58 +305,7 @@ fun TypingWordSidebar(state: AppState) {
                         },
                     )
                 }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
-                ) {
-                    Text("外部字幕", color = MaterialTheme.colors.onBackground)
-                    Spacer(Modifier.width(15.dp))
-                    Switch(
-                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.externalSubtitlesVisible,
-                        onCheckedChange = {
-                            scope.launch {
-                                state.typingWord.externalSubtitlesVisible = it
-                                if (!state.isDictation) {
-                                    state.saveTypingWordState()
-                                }
-                            }
-                        },
-                    )
-                }
                 Divider()
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
-                ) {
-                    Row {
-                        Text(text = "自动切换", color = MaterialTheme.colors.onBackground)
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = "$ctrl+A",
-                            color = MaterialTheme.colors.onBackground
-                        )
-                    }
-
-                    Spacer(Modifier.width(15.dp))
-                    Switch(
-                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.isAuto,
-                        onCheckedChange = {
-                            scope.launch {
-                                state.typingWord.isAuto = it
-                                if (!state.isDictation) {
-                                    state.saveTypingWordState()
-                                }
-                            }
-
-                        },
-
-                        )
-                }
-
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -445,6 +394,48 @@ fun TypingWordSidebar(state: AppState) {
                         )
                 }
                 Divider()
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
+                ) {
+                    Text(text = "自动切换", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(15.dp))
+                    Switch(
+                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
+                        checked = state.typingWord.isAuto,
+                        onCheckedChange = {
+                            scope.launch {
+                                state.typingWord.isAuto = it
+                                if (!state.isDictation) {
+                                    state.saveTypingWordState()
+                                }
+                            }
+
+                        },
+
+                        )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
+                ) {
+                    Text("外部字幕", color = MaterialTheme.colors.onBackground)
+                    Spacer(Modifier.width(15.dp))
+                    Switch(
+                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
+                        checked = state.typingWord.externalSubtitlesVisible,
+                        onCheckedChange = {
+                            scope.launch {
+                                state.typingWord.externalSubtitlesVisible = it
+                                if (!state.isDictation) {
+                                    state.saveTypingWordState()
+                                }
+                            }
+                        },
+                    )
+                }
                 var expanded by remember { mutableStateOf(false) }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
