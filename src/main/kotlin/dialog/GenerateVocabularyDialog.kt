@@ -290,35 +290,31 @@ fun GenerateVocabularyDialog(
                             }
 
 
-                        }else if(files.size == 2){
-                            if(type == SUBTITLES){
-                                val first = files.first()
-                                val last = files.last()
-                                if(first.extension == "srt" && (last.extension == "mp4" || last.extension == "mkv")){
-                                    selectedFilePath = first.absolutePath
-                                    selectedSubtitlesName = "    "
-                                    relateVideoPath = last.absolutePath
-                                    selectedTrackId = -1
-                                }else if(last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")){
-                                    selectedFilePath = last.absolutePath
-                                    selectedSubtitlesName = "    "
-                                    relateVideoPath = first.absolutePath
-                                    selectedTrackId = -1
-                                }else if(first.extension == "srt" && last.extension == "srt"){
-                                    JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                                }else if(first.extension == "mp4" && last.extension == "mp4"){
-                                    JOptionPane.showMessageDialog(window, "不能接收两个 mp4 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                                }else if(first.extension == "mkv" && last.extension == "mkv"){
-                                    JOptionPane.showMessageDialog(window, "不能接收两个 mkv 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                                }else if(first.extension == "mkv" && last.extension == "mp4"){
-                                    JOptionPane.showMessageDialog(window, "不能接收两个视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                                }else{
-                                    JOptionPane.showMessageDialog(window, "格式错误，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                                }
-
+                        }else if(files.size == 2 && type == SUBTITLES){
+                            val first = files.first()
+                            val last = files.last()
+                            if(first.extension == "srt" && (last.extension == "mp4" || last.extension == "mkv")){
+                                selectedFilePath = first.absolutePath
+                                selectedSubtitlesName = "    "
+                                relateVideoPath = last.absolutePath
+                                selectedTrackId = -1
+                            }else if(last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")){
+                                selectedFilePath = last.absolutePath
+                                selectedSubtitlesName = "    "
+                                relateVideoPath = first.absolutePath
+                                selectedTrackId = -1
+                            }else if(first.extension == "srt" && last.extension == "srt"){
+                                JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                            }else if(first.extension == "mp4" && last.extension == "mp4"){
+                                JOptionPane.showMessageDialog(window, "不能接收两个 mp4 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                            }else if(first.extension == "mkv" && last.extension == "mkv"){
+                                JOptionPane.showMessageDialog(window, "不能接收两个 mkv 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                            }else if(first.extension == "mkv" && last.extension == "mp4"){
+                                JOptionPane.showMessageDialog(window, "不能接收两个视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
                             }else{
-                                JOptionPane.showMessageDialog(window, "只要从字幕生成词库才能接收两个文件")
+                                JOptionPane.showMessageDialog(window, "格式错误，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
                             }
+
                         }else{
                             JOptionPane.showMessageDialog(window, "文件不能超过两个")
                         }
