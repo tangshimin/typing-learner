@@ -65,6 +65,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.lang.NullPointerException
 import java.util.*
 import java.util.concurrent.FutureTask
 import java.util.regex.Pattern
@@ -1569,7 +1570,13 @@ fun checkSubtitles(
             return false
         }
     } catch (exception: IOException) {
+        JOptionPane.showMessageDialog(parentComponent, "IO 异常")
         exception.printStackTrace()
+        return false
+    }catch (exception: NullPointerException){
+        JOptionPane.showMessageDialog(parentComponent, "空指针异常")
+        exception.printStackTrace()
+        return false
     } finally {
         try {
             reader?.close()

@@ -2,8 +2,11 @@ package dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -122,9 +125,9 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
         if (mod != 0 && size > 20) count += 1
         if (size < 20) count = 1
         val chapters = (1 until count + 1).map { "Chapter $it" }.toList()
-        val listState = rememberLazyListState()
+        val listState = rememberLazyGridState()
         LazyVerticalGrid(
-            cells = GridCells.Adaptive(144.dp),
+            columns = GridCells.Adaptive(144.dp),
             contentPadding = PaddingValues(10.dp),
             modifier = Modifier.fillMaxWidth(),
             state = listState
@@ -166,14 +169,14 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
             }
 
         }
-
-        VerticalScrollbar(
-            style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
-            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-            adapter = rememberScrollbarAdapter(
-                scrollState = listState
-            )
-        )
+// 相关 Issue: https://github.com/JetBrains/compose-jb/issues/2029
+//        VerticalScrollbar(
+//            style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+//            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+//            adapter = rememberScrollbarAdapter(
+//                scrollState = listState
+//            )
+//        )
 
     }
 }

@@ -1,20 +1,29 @@
 package dialog
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -46,12 +55,19 @@ import dialog.FilterState.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import opennlp.tools.langdetect.LanguageDetector
+import opennlp.tools.langdetect.LanguageDetectorME
+import opennlp.tools.langdetect.LanguageDetectorModel
 import opennlp.tools.tokenize.Tokenizer
 import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.text.PDFTextStripper
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 import player.isWindows
 import state.AppState
 import state.composeAppResource
@@ -59,7 +75,6 @@ import state.getResourcesFile
 import subtitleFile.FormatSRT
 import subtitleFile.TimedTextObject
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.Desktop
 import java.io.File
 import java.io.FileInputStream
@@ -78,7 +93,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
 import javax.swing.filechooser.FileSystemView
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
-import kotlin.collections.HashMap
+
 
 /**
  * 生成词库
@@ -96,6 +111,7 @@ fun GenerateVocabularyDialog(
     title: String,
     type: VocabularyType
 ) {
+    val windowWidth = if(type == MKV) 1320.dp else 1210.dp
     Dialog(
         title = title,
         onCloseRequest = {
@@ -103,7 +119,7 @@ fun GenerateVocabularyDialog(
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(1210.dp, 785.dp)
+            size = DpSize(windowWidth, 800.dp)
         ),
     ) {
         val scope = rememberCoroutineScope()
@@ -129,6 +145,47 @@ fun GenerateVocabularyDialog(
             )
             else -> null
         }
+
+        /**
+         * 选择的文件列表,用于批量处理
+         */
+        val selectedFileList  = remember { mutableStateListOf<File>() }
+
+        /**
+         * 显示任务列表,用于拖拽多个文件进入窗口时，自动为真，
+         * 分析完字幕，自动为假，单击【任务列表】显示-隐藏。
+         */
+        var showTaskList by remember { mutableStateOf(false) }
+
+        /**
+         * 任务列表的状态
+         */
+        val tasksState  = remember{ mutableStateMapOf<File,Boolean>() }
+
+        /**
+         * 正在处理的文件
+         */
+        var currentTask by remember{mutableStateOf<File?>(null)}
+
+        /**
+         * 批处理时的错误信息
+         */
+        val errorMessages = remember{ mutableStateMapOf<File,String>() }
+
+        /**
+         * 批量处理时，选择文件，用于删除
+         */
+        var selectable by remember{ mutableStateOf(false) }
+
+        /**
+         * 勾选的文件，用于批量删除
+         */
+        val checkedFileMap = remember{ mutableStateMapOf<File,Boolean>() }
+
+        /**
+         * 是否全选
+         */
+        var isSelectedAll by remember{ mutableStateOf(false) }
 
         /**
          * 选择的文件的绝对路径
@@ -183,7 +240,7 @@ fun GenerateVocabularyDialog(
         /**
          * 用于过滤的词库列表
          */
-        val selectedFileList = remember { mutableStateListOf<File>() }
+        val vocabularyFilterList = remember { mutableStateListOf<File>() }
 
         /**
          * 是否过滤 BNC 词频为0的单词
@@ -205,53 +262,63 @@ fun GenerateVocabularyDialog(
          */
         var replaceToLemma by remember { mutableStateOf(false) }
 
+        var progressText by remember { mutableStateOf("") }
+
+        /** 暂时不读取 MKV 里的 ASS 字幕 */
+        var isSelectedASS by remember { mutableStateOf(false) }
+
         var loading by remember { mutableStateOf(false) }
 
-        /**  处理拖放文件的函数 */
-        val transferHandler = createTransferHandler(
-            singleFile = false,
-            showWrongMessage = { message ->
-                JOptionPane.showMessageDialog(window, message)
-            },
-            parseImportFile = { files ->
+        /** 文件选择器的标题 */
+        val chooseText = when (title) {
+            "过滤词库" -> "选择词库"
+            "从文档生成词库" -> "选择文档"
+            "从字幕生成词库" -> "选择字幕"
+            "从 MKV 视频生成词库" -> "选择 MKV 文件"
+            else -> ""
+        }
 
-                scope.launch {
-                    Thread(Runnable {
-                        if(files.size == 1){
-                            val file = files.first()
-                            when (file.extension) {
-                                "pdf", "txt" -> {
-                                    if (type == DOCUMENT) {
-                                        selectedFilePath = file.absolutePath
-                                        selectedSubtitlesName = "    "
-                                    } else {
-                                        JOptionPane.showMessageDialog(
-                                            window,
-                                            "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
-                                        )
-                                    }
+        /** 拖放的文件和文件选择器选择的文件都使用这个函数处理 */
+        val parseImportFile: (List<File>) -> Unit = { files ->
+            scope.launch {
+                Thread(Runnable {
+                    if (files.size == 1) {
+                        val file = files.first()
+                        when (file.extension) {
+                            "pdf", "txt" -> {
+                                if (type == DOCUMENT) {
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        window,
+                                        "如果你想从 ${file.nameWithoutExtension} 文档生成词库，\n请重新选择：词库 -> 从文档生成词库，再拖放文件到这里。"
+                                    )
                                 }
-                                "srt" -> {
-                                    if (type == SUBTITLES) {
-                                        selectedFilePath = file.absolutePath
-                                        selectedSubtitlesName = "    "
-                                    } else {
-                                        JOptionPane.showMessageDialog(
-                                            window,
-                                            "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
-                                        )
-                                    }
+                            }
+                            "srt" -> {
+                                if (type == SUBTITLES) {
+                                    selectedFilePath = file.absolutePath
+                                    selectedSubtitlesName = "    "
+                                } else {
+                                    JOptionPane.showMessageDialog(
+                                        window,
+                                        "如果你想从 ${file.nameWithoutExtension} 字幕生成词库，\n请重新选择：词库 -> 从字幕生成词库，再拖放文件到这里。"
+                                    )
                                 }
-                                "mp4" -> {
-                                    if(type == SUBTITLES){
-                                        relateVideoPath = file.absolutePath
-                                    }else{
-                                        JOptionPane.showMessageDialog(window, "格式错误")
-                                    }
+                            }
+                            "mp4" -> {
+                                if (type == SUBTITLES) {
+                                    relateVideoPath = file.absolutePath
+                                } else {
+                                    JOptionPane.showMessageDialog(window, "格式错误")
                                 }
-                                "mkv" -> {
-                                    when (type) {
-                                        MKV -> {
+                            }
+                            "mkv" -> {
+                                when (type) {
+                                    MKV -> {
+                                        // 第一次拖放
+                                        if (selectedFilePath.isEmpty() && selectedFileList.isEmpty()) {
                                             loading = true
                                             selectedFilePath = file.absolutePath
                                             relateVideoPath = file.absolutePath
@@ -267,64 +334,267 @@ fun GenerateVocabularyDialog(
                                                 }
                                             )
                                             loading = false
+                                        } else { // 窗口已经有文件了
+                                            // 如果之前有一个 MKV 视频,把之前的视频加入到 selectedFileList
+                                            if (selectedFilePath.isNotEmpty() && selectedFileList.isEmpty()) {
+                                                val f = File(selectedFilePath)
+                                                selectedFileList.add(f)
+                                                trackList.clear()
+                                                selectedSubtitlesName = "    "
+                                                selectedFilePath = ""
+                                                relateVideoPath = ""
+                                            }
+                                            selectedFileList.add(file)
+                                            selectedFileList.sortBy { it.nameWithoutExtension }
+                                            if (selectedFileList.isNotEmpty()) showTaskList = true
                                         }
-                                        SUBTITLES -> {
-                                            relateVideoPath = file.absolutePath
-                                        }
-                                        else -> {
-                                            JOptionPane.showMessageDialog(
-                                                window,
-                                                "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
-                                            )
-                                        }
+
+                                    }
+                                    SUBTITLES -> {
+                                        relateVideoPath = file.absolutePath
+                                    }
+                                    else -> {
+                                        JOptionPane.showMessageDialog(
+                                            window,
+                                            "如果你想从 ${file.nameWithoutExtension} 视频生成词库，\n请重新选择：词库 -> 从 MKV 视频生成词库，再拖放文件到这里。"
+                                        )
                                     }
                                 }
-                                "json" -> {
-                                    if (title == "过滤词库") {
-                                        selectedFilePath = file.absolutePath
-                                    }
-                                }
-                                else -> {
-                                    JOptionPane.showMessageDialog(window, "格式不支持")
+                            }
+                            "json" -> {
+                                if (title == "过滤词库") {
+                                    selectedFilePath = file.absolutePath
                                 }
                             }
-
-
-                        }else if(files.size == 2 && type == SUBTITLES){
-                            val first = files.first()
-                            val last = files.last()
-                            if(first.extension == "srt" && (last.extension == "mp4" || last.extension == "mkv")){
-                                selectedFilePath = first.absolutePath
-                                selectedSubtitlesName = "    "
-                                relateVideoPath = last.absolutePath
-                                selectedTrackId = -1
-                            }else if(last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")){
-                                selectedFilePath = last.absolutePath
-                                selectedSubtitlesName = "    "
-                                relateVideoPath = first.absolutePath
-                                selectedTrackId = -1
-                            }else if(first.extension == "srt" && last.extension == "srt"){
-                                JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                            }else if(first.extension == "mp4" && last.extension == "mp4"){
-                                JOptionPane.showMessageDialog(window, "不能接收两个 mp4 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                            }else if(first.extension == "mkv" && last.extension == "mkv"){
-                                JOptionPane.showMessageDialog(window, "不能接收两个 mkv 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                            }else if(first.extension == "mkv" && last.extension == "mp4"){
-                                JOptionPane.showMessageDialog(window, "不能接收两个视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
-                            }else{
-                                JOptionPane.showMessageDialog(window, "格式错误，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                            else -> {
+                                JOptionPane.showMessageDialog(window, "格式不支持")
                             }
-
-                        }else{
-                            JOptionPane.showMessageDialog(window, "文件不能超过两个")
                         }
-                    }).start()
-                }
 
 
+                    } else if (files.size == 2 && type == SUBTITLES) {
+                        val first = files.first()
+                        val last = files.last()
+                        if (first.extension == "srt" && (last.extension == "mp4" || last.extension == "mkv")) {
+                            selectedFilePath = first.absolutePath
+                            selectedSubtitlesName = "    "
+                            relateVideoPath = last.absolutePath
+                            selectedTrackId = -1
+                        } else if (last.extension == "srt" && (first.extension == "mp4" || first.extension == "mkv")) {
+                            selectedFilePath = last.absolutePath
+                            selectedSubtitlesName = "    "
+                            relateVideoPath = first.absolutePath
+                            selectedTrackId = -1
+                        } else if (first.extension == "srt" && last.extension == "srt") {
+                            JOptionPane.showMessageDialog(window, "不能接收两个 srt 字幕文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                        } else if (first.extension == "mp4" && last.extension == "mp4") {
+                            JOptionPane.showMessageDialog(window, "不能接收两个 mp4 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                        } else if (first.extension == "mkv" && last.extension == "mkv") {
+                            JOptionPane.showMessageDialog(window, "不能接收两个 mkv 视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                        } else if (first.extension == "mkv" && last.extension == "mp4") {
+                            JOptionPane.showMessageDialog(window, "不能接收两个视频文件，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                        } else {
+                            JOptionPane.showMessageDialog(window, "格式错误，\n需要一个字幕(srt)文件和一个视频（mp4、mkv）文件")
+                        }
+
+                    } else if (files.size in 2..100 && type == MKV) {
+                        var extensionWrong = ""
+                        files.forEach { file ->
+                            if (file.extension == "mkv") {
+                                selectedFileList.add(file)
+                            } else {
+                                extensionWrong = extensionWrong + file.name + "\n"
+                            }
+                        }
+                        selectedFileList.sortBy { it.nameWithoutExtension }
+                        if (selectedFileList.isNotEmpty()) showTaskList = true
+                        if (extensionWrong.isNotEmpty()) {
+                            JOptionPane.showMessageDialog(window, "以下文件不是 mkv 格式\n$extensionWrong")
+                        }
+
+                    } else if (files.size > 100 && type == MKV) {
+                        JOptionPane.showMessageDialog(window, "批量处理最多不能超过 100 个文件")
+                    } else {
+                        JOptionPane.showMessageDialog(window, "文件不能超过两个")
+                    }
+                }).start()
             }
+        }
+
+        /** 打开文件时调用的函数 */
+        val openFile:() -> Unit = {
+            Thread(Runnable {
+                val fileChooser = state.futureFileChooser.get()
+                fileChooser.dialogTitle = chooseText
+                fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
+                fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+                fileChooser.isAcceptAllFileFilterUsed = false
+                fileChooser.isMultiSelectionEnabled = true
+                fileChooser.addChoosableFileFilter(fileFilter)
+                if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    val files = fileChooser.selectedFiles.toList()
+                    parseImportFile(files)
+                }
+                fileChooser.selectedFiles = null
+                fileChooser.isMultiSelectionEnabled = true
+                fileChooser.removeChoosableFileFilter(fileFilter)
+            }).start()
+
+        }
+
+        /**  处理拖放文件的函数 */
+        val transferHandler = createTransferHandler(
+            singleFile = false,
+            showWrongMessage = { message ->
+                JOptionPane.showMessageDialog(window, message)
+            },
+            parseImportFile = { parseImportFile(it) }
         )
         window.transferHandler = transferHandler
+
+        /** 全选 */
+        val selectAll:() -> Unit = {
+            if(!isSelectedAll){
+                selectedFileList.forEach { file ->
+                    checkedFileMap[file] = true
+                }
+                isSelectedAll = true
+            }else{
+                selectedFileList.forEach { file ->
+                    checkedFileMap[file] = false
+                }
+                isSelectedAll = false
+            }
+        }
+
+        /** 删除 */
+        val delete:() -> Unit = {
+            val list = mutableListOf<File>()
+            checkedFileMap.forEach { (file, checked) ->
+                if(checked){
+                    list.add(file)
+                }
+            }
+            list.forEach { file ->
+                checkedFileMap.remove(file)
+                selectedFileList.remove(file)
+                tasksState.remove(file)
+                errorMessages.remove(file)
+                checkedFileMap[file] = false
+                if (currentTask == file) {
+                    currentTask = null
+                }
+            }
+        }
+
+        /** 打开关联的视频 */
+        val openRelateVideo:() -> Unit = {
+            val fileChooser = state.futureFileChooser.get()
+            fileChooser.dialogTitle = "选择视频"
+            fileChooser.isAcceptAllFileFilterUsed = true
+            fileChooser.selectedFile = null
+            if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                val file = fileChooser.selectedFile
+                relateVideoPath = file.absolutePath
+                fileChooser.selectedFile = File("")
+            }
+            fileChooser.selectedFile = null
+            fileChooser.removeChoosableFileFilter(fileFilter)
+        }
+
+        /** 分析文件里的单词 */
+        val analysis : (String,Int) -> Unit = { pathName,trackId ->
+            filterState = Parse
+            vocabularyFilterList.clear()
+            documentWords.clear()
+            Thread(Runnable() {
+                val words = when (type) {
+                    DOCUMENT -> {
+                        if (title == "过滤词库") {
+                            val vocabulary = loadVocabulary(pathName)
+                            filteringType = vocabulary.type
+                            relateVideoPath = vocabulary.relateVideoPath
+                            selectedTrackId = vocabulary.subtitlesTrackId
+                            vocabulary.wordList
+                        } else {
+                            readDocument(
+                                pathName = pathName,
+                                setProgressText = { progressText = it })
+                        }
+
+                    }
+                    SUBTITLES -> {
+                        readSRT(pathName = pathName, setProgressText = { progressText = it })
+                    }
+                    MKV -> {
+                        readMKV(
+                            pathName = pathName,
+                            trackId = trackId,
+                            setProgressText = { progressText = it },
+                            setIsSelectedASS = { isSelectedASS = it })
+                    }
+                }
+                words.forEach { word -> documentWords.add(word) }
+                filterState =
+                    if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || vocabularyFilterList.isNotEmpty()) {
+                        Filtering
+                    } else {
+                        End
+                    }
+                if (filterState == End) {
+                    previewList.clear()
+                    previewList.addAll(documentWords)
+                }
+            }).start()
+        }
+
+        /** 批量分析文件 MKV 视频里的单词 */
+        val batchAnalysis:(String) -> Unit = {language ->
+
+            vocabularyFilterList.clear()
+            documentWords.clear()
+            Thread(Runnable() {
+                val words = batchReadMKV(
+                    language = language,
+                    selectedFileList = selectedFileList,
+                    setCurrentTask = {currentTask = it},
+                    setErrorMessages = {
+                        errorMessages.clear()
+                        errorMessages.putAll(it)
+                    },
+                    updateTaskState = {
+                        tasksState[it.first] = it.second
+                    }
+                )
+                if(words.isNotEmpty()){
+                    showTaskList = false
+                    selectable = false
+                }
+                words.forEach { word -> documentWords.add(word) }
+                filterState =
+                    if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || vocabularyFilterList.isNotEmpty()) {
+                        Filtering
+                    } else {
+                        End
+                    }
+                if (filterState == End) {
+                    previewList.clear()
+                    previewList.addAll(documentWords)
+                }
+
+                if(errorMessages.isNotEmpty()){
+                    var string = ""
+                    errorMessages.forEach { file, message ->
+                        string += file.nameWithoutExtension + ":  "+message + "\n"
+                    }
+                    JOptionPane.showMessageDialog(window,string)
+                }
+
+            }).start()
+
+        }
+
 
         val contentPanel = ComposePanel()
         contentPanel.setContent {
@@ -332,7 +602,9 @@ fun GenerateVocabularyDialog(
                 Column(Modifier.fillMaxSize().background(MaterialTheme.colors.background)) {
                     Divider()
                     Row(Modifier.fillMaxWidth()) {
-                        Column(Modifier.width(540.dp).fillMaxHeight()) {
+                        // 左边的过滤区
+                        var width = if(vocabularyFilterList.isEmpty()) 380.dp else 450.dp
+                        Column(Modifier.width(width).fillMaxHeight()) {
                             BasicFilter(
                                 numberFilter = numberFilter,
                                 setNumberFilter = {
@@ -357,15 +629,15 @@ fun GenerateVocabularyDialog(
                             )
                             VocabularyFilter(
                                 futureFileChooser = state.futureFileChooser,
-                                selectedFileList = selectedFileList,
-                                selectedFileListAdd = {
-                                    if (!selectedFileList.contains(it)) {
-                                        selectedFileList.add(it)
+                                vocabularyFilterList = vocabularyFilterList,
+                                vocabularyFilterListAdd = {
+                                    if (!vocabularyFilterList.contains(it)) {
+                                        vocabularyFilterList.add(it)
                                         filterState = Filtering
                                     }
                                 },
-                                selectedFileListRemove = {
-                                    selectedFileList.remove(it)
+                                vocabularyFilterListRemove = {
+                                    vocabularyFilterList.remove(it)
                                     filterState = Filtering
                                 },
                                 recentList = state.recentList,
@@ -375,86 +647,45 @@ fun GenerateVocabularyDialog(
                             )
                         }
                         Divider(Modifier.width(1.dp).fillMaxHeight())
+                        // 生成词库区
                         Column(
                             Modifier.fillMaxWidth().fillMaxHeight().background(MaterialTheme.colors.background)
                         ) {
 
-                            var progressText by remember { mutableStateOf("") }
-
-                            /** 暂时不读取 MKV 里的 ASS 字幕 */
-                            var isSelectedASS by remember { mutableStateOf(false) }
-
                             SelectFile(
-                                state = state,
-                                parentWindow = window,
                                 type = type,
-                                title = title,
+                                selectedFileList = selectedFileList,
                                 selectedFilePath = selectedFilePath,
                                 setSelectedFilePath = { selectedFilePath = it },
                                 selectedSubtitle = selectedSubtitlesName,
                                 setSelectedSubtitle = { selectedSubtitlesName = it },
                                 isSelectedASS = isSelectedASS,
                                 setIsSelectedASS = { isSelectedASS = it },
-                                fileFilter = fileFilter,
                                 relateVideoPath = relateVideoPath,
-                                setRelateVideoPath = { relateVideoPath = it },
                                 trackList = trackList,
-                                setTrackList = {
-                                    trackList.clear()
-                                    trackList.addAll(it)
-                                },
                                 selectedTrackId = selectedTrackId,
                                 setSelectedTrackId = { selectedTrackId = it },
-                                setIsLoading = {loading = it},
+                                showTaskList = showTaskList,
+                                showTaskListEvent = {
+                                    showTaskList = !showTaskList
+                                    if(!showTaskList){
+                                        selectable = false
+                                    }
+                               },
                                 analysis = { pathName, trackId ->
-                                    filterState = Parse
-                                    selectedFileList.clear()
-                                    documentWords.clear()
-                                    Thread(Runnable() {
+                                    analysis(pathName, trackId)
+                                },
+                                batchAnalysis = { batchAnalysis(it) },
+                                selectable = selectable,
+                                changeSelectable = { selectable = !selectable },
+                                selectAll = { selectAll() },
+                                delete = { delete() },
+                                chooseText = chooseText,
+                                openFile = { openFile() },
+                                openRelateVideo = { openRelateVideo() }
+                            )
 
-                                        val words = when (type) {
-                                            DOCUMENT -> {
-                                                if (title == "过滤词库") {
-                                                    val vocabulary = loadVocabulary(pathName)
-                                                    filteringType = vocabulary.type
-                                                    relateVideoPath = vocabulary.relateVideoPath
-                                                    selectedTrackId = vocabulary.subtitlesTrackId
-                                                    vocabulary.wordList
-                                                } else {
-                                                    readDocument(
-                                                        pathName = pathName,
-                                                        setProgressText = { progressText = it })
-                                                }
-
-                                            }
-                                            SUBTITLES -> {
-                                                readSRT(pathName = pathName, setProgressText = { progressText = it })
-                                            }
-                                            MKV -> {
-                                                readMKV(
-                                                    pathName = pathName,
-                                                    trackId = trackId,
-                                                    setProgressText = { progressText = it },
-                                                    setIsSelectedASS = { isSelectedASS = it })
-                                            }
-                                        }
-
-
-                                        words.forEach { word -> documentWords.add(word) }
-                                        filterState =
-                                            if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || selectedFileList.isNotEmpty()) {
-                                                Filtering
-                                            } else {
-                                                End
-                                            }
-                                        if (filterState == End) {
-                                            previewList.clear()
-                                            previewList.addAll(documentWords)
-                                        }
-                                    }).start()
-
-                                })
-
+                            // 单词预览和任务列表
                             Box(Modifier.fillMaxSize()) {
                                 when (filterState) {
                                     Parse -> {
@@ -483,7 +714,7 @@ fun GenerateVocabularyDialog(
                                             )
                                             previewList.clear()
                                             val filteredList = filterSelectVocabulary(
-                                                selectedFileList = selectedFileList,
+                                                selectedFileList = vocabularyFilterList,
                                                 filteredDocumentList = filteredDocumentList
                                             )
                                             previewList.addAll(filteredList)
@@ -501,18 +732,44 @@ fun GenerateVocabularyDialog(
                                                 previewList.remove(it)
                                             })
                                     }
+                                    else -> {}
                                 }
-                                if(loading){
-                                    Column(
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.align(Alignment.Center).fillMaxSize()
-                                    ) {
-                                        CircularProgressIndicator(
-                                            Modifier.width(60.dp).padding(bottom = 60.dp)
-                                        )
-                                        Text(text = "正在读取字幕轨道列表", color = MaterialTheme.colors.onBackground)
+
+                                    if (loading) {
+                                        Column(
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.align(Alignment.Center).fillMaxSize()
+                                        ) {
+                                            CircularProgressIndicator(
+                                                Modifier.width(60.dp).padding(bottom = 60.dp)
+                                            )
+                                            val text = if (selectedFileList.isNotEmpty()) {
+                                                "正在读取第一个视频的字幕轨道列表"
+                                            } else {
+                                                "正在读取字幕轨道列表"
+                                            }
+                                            Text(text = text, color = MaterialTheme.colors.onBackground)
+                                        }
                                     }
+                                if (showTaskList) {
+                                    TaskList(
+                                        selectedFileList = selectedFileList,
+                                        updateOrder = {
+                                            scope.launch {
+                                                selectedFileList.clear()
+                                                selectedFileList.addAll(it)
+                                            }
+                                        },
+                                        tasksState = tasksState,
+                                        currentTask = currentTask,
+                                        errorMessages = errorMessages,
+                                        selectable = selectable,
+                                        checkedFileMap = checkedFileMap,
+                                        checkedChange = {
+                                            checkedFileMap[it.first] = it.second
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -568,6 +825,11 @@ fun GenerateVocabularyDialog(
                                             saveVocabulary(vocabulary, selectedFile.absolutePath)
 
                                             // 清理状态
+                                            selectedFileList.clear()
+                                            showTaskList = false
+                                            tasksState.clear()
+                                            currentTask = null
+                                            errorMessages.clear()
                                             selectedFilePath = ""
                                             selectedSubtitlesName = ""
                                             previewList.clear()
@@ -577,7 +839,7 @@ fun GenerateVocabularyDialog(
                                             trackList.clear()
                                             filterState = Idle
                                             documentWords.clear()
-                                            selectedFileList.clear()
+                                            vocabularyFilterList.clear()
                                             numberFilter = false
                                             notBncFilter = false
                                             notFrqFilter = false
@@ -914,9 +1176,9 @@ fun BasicFilter(
 @Composable
 fun VocabularyFilter(
     futureFileChooser: FutureTask<JFileChooser>,
-    selectedFileList: List<File>,
-    selectedFileListAdd: (File) -> Unit,
-    selectedFileListRemove: (File) -> Unit,
+    vocabularyFilterList: List<File>,
+    vocabularyFilterListAdd: (File) -> Unit,
+    vocabularyFilterListRemove: (File) -> Unit,
     recentList: List<RecentItem>,
     removeInvalidRecentItem: (RecentItem) -> Unit,
 ) {
@@ -936,8 +1198,8 @@ fun VocabularyFilter(
                         val filePath = pathNameMap[name]
                         if (filePath != null) {
                             val file = File(filePath)
-                            if (!selectedFileList.contains(file)) {
-                                selectedFileListAdd(file)
+                            if (!vocabularyFilterList.contains(file)) {
+                                vocabularyFilterListAdd(file)
                             }
                         }
 
@@ -962,11 +1224,11 @@ fun VocabularyFilter(
         }
         scrollPane.border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
-        Column(Modifier.width(270.dp).fillMaxHeight().background(MaterialTheme.colors.background)) {
+        Column(Modifier.width(180.dp).fillMaxHeight().background(MaterialTheme.colors.background)) {
 
             if (recentList.isNotEmpty()) {
                 var expanded by remember { mutableStateOf(false) }
-                Box(Modifier.width(270.dp).height(IntrinsicSize.Max).padding(top = 10.dp)) {
+                Box(Modifier.width(180.dp).height(IntrinsicSize.Max).padding(top = 10.dp)) {
                     OutlinedButton(
                         onClick = { expanded = true },
                         modifier = Modifier
@@ -995,7 +1257,7 @@ fun VocabularyFilter(
                                                 modifier = Modifier.fillMaxWidth().height(40.dp)
                                                     .clickable {
                                                         expanded = false
-                                                        selectedFileListAdd(recentFile)
+                                                        vocabularyFilterListAdd(recentFile)
                                                     }
                                             ) {
                                                 Text(
@@ -1032,7 +1294,7 @@ fun VocabularyFilter(
                     }
                 }
             }
-            Box(Modifier.width(270.dp).height(IntrinsicSize.Max).background(MaterialTheme.colors.background)) {
+            Box(Modifier.width(180.dp).height(IntrinsicSize.Max).background(MaterialTheme.colors.background)) {
                 var expanded by remember { mutableStateOf(false) }
                 OutlinedButton(
                     onClick = { expanded = true },
@@ -1072,7 +1334,7 @@ fun VocabularyFilter(
                             fileChooser.selectedFile = null
                             if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                                 val file = fileChooser.selectedFile
-                                selectedFileListAdd(File(file.absolutePath))
+                                vocabularyFilterListAdd(File(file.absolutePath))
                             }
                             fileChooser.selectedFile = null
                             fileChooser.removeChoosableFileFilter(fileFilter)
@@ -1093,13 +1355,13 @@ fun VocabularyFilter(
                 .background(MaterialTheme.colors.background)
         ) {
             SelectedList(
-                selectedFileList,
+                vocabularyFilterList,
                 removeFile = {
                     if (selectedPath != null) {
                         tree.removeSelectionPath(selectedPath)
                         selectedPath = null
                     }
-                    selectedFileListRemove(it)
+                    vocabularyFilterListRemove(it)
                 })
         }
     }
@@ -1181,13 +1443,10 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
     return curDir
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun SelectFile(
-    parentWindow: Component,
-    state: AppState,
     type: VocabularyType,
-    title: String,
+    selectedFileList: List<File>,
     selectedFilePath: String,
     setSelectedFilePath: (String) -> Unit,
     selectedSubtitle: String,
@@ -1195,14 +1454,20 @@ fun SelectFile(
     isSelectedASS: Boolean,
     setIsSelectedASS: (Boolean) -> Unit,
     relateVideoPath: String,
-    setRelateVideoPath: (String) -> Unit,
     trackList: List<Pair<Int, String>>,
-    setTrackList: (List<Pair<Int, String>>) -> Unit,
     selectedTrackId: Int,
     setSelectedTrackId: (Int) -> Unit,
-    fileFilter: FileNameExtensionFilter?,
-    setIsLoading:(Boolean) -> Unit,
-    analysis: (String, Int) -> Unit
+    showTaskList:Boolean,
+    showTaskListEvent:() -> Unit,
+    analysis: (String, Int) -> Unit,
+    batchAnalysis: (String) -> Unit,
+    selectable:Boolean,
+    changeSelectable:() -> Unit,
+    selectAll:() -> Unit,
+    delete:() -> Unit,
+    chooseText:String,
+    openFile:() -> Unit,
+    openRelateVideo:() -> Unit
 ) {
 
     Column(Modifier.height(IntrinsicSize.Max)) {
@@ -1214,20 +1479,11 @@ fun SelectFile(
                 .height(IntrinsicSize.Max)
                 .padding(start = 10.dp)
         ) {
-            val chooseText = when (title) {
-                "过滤词库" -> "选择词库"
-                "从文档生成词库" -> "选择文档"
-                "从字幕生成词库" -> "选择字幕"
-                "从 MKV 视频生成词库" -> "选择 MKV 文件"
-                else -> ""
-            }
-
-
             Text(chooseText, color = MaterialTheme.colors.onBackground)
             if (type == SUBTITLES || type == DOCUMENT) {
-                Spacer(Modifier.width(95.dp))
+                Spacer(Modifier.width(75.dp))
             } else if (type == MKV) {
-                Spacer(Modifier.width(44.dp))
+                Spacer(Modifier.width(24.dp))
             }
             BasicTextField(
                 value = selectedFilePath,
@@ -1247,43 +1503,7 @@ fun SelectFile(
                     .height(35.dp)
                     .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
             )
-            val scope = rememberCoroutineScope()
-            OutlinedButton(onClick = {
-                Thread(Runnable {
-                    val fileChooser = state.futureFileChooser.get()
-                    fileChooser.dialogTitle = chooseText
-                    fileChooser.fileSystemView = FileSystemView.getFileSystemView()
-                    fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
-                    fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
-                    fileChooser.isAcceptAllFileFilterUsed = false
-                    fileChooser.addChoosableFileFilter(fileFilter)
-                    if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        scope.launch {
-                            Thread(Runnable {
-                                val file = fileChooser.selectedFile
-                                setSelectedFilePath(file.absolutePath)
-                                setSelectedSubtitle("    ")
-                                if (type == MKV) {
-                                    setIsLoading(true)
-                                    setRelateVideoPath(file.absolutePath)
-                                    parseTrackList(
-                                        state.videoPlayerComponent,
-                                        parentWindow,
-                                        state.videoPlayerWindow,
-                                        file.absolutePath,
-                                        setTrackList = { setTrackList(it) },
-                                    )
-                                    setIsLoading(false)
-                                }
-                                fileChooser.selectedFile = File("")
-                            }).start()
-                        }
-
-                    }
-                    fileChooser.removeChoosableFileFilter(fileFilter)
-                }).start()
-
-            }) {
+            OutlinedButton(onClick = { openFile() }) {
                 Text("打开", fontSize = 12.sp)
             }
 
@@ -1293,12 +1513,12 @@ fun SelectFile(
                     onClick = {
                         analysis(selectedFilePath, selectedTrackId)
                     }) {
-                    Text("分析", fontSize = 12.sp)
+                    Text("开始", fontSize = 12.sp)
                 }
             }
         }
 
-        if (selectedFilePath.isNotEmpty() && type == MKV) {
+        if ((selectedFilePath.isNotEmpty() || selectedFileList.isNotEmpty()) && type == MKV) {
             Row(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
@@ -1315,7 +1535,7 @@ fun SelectFile(
                         Text(
                             "选择字幕 ",
                             color = MaterialTheme.colors.onBackground,
-                            modifier = Modifier.padding(end = 95.dp)
+                            modifier = Modifier.padding(end = 75.dp)
                         )
                         var expanded by remember { mutableStateOf(false) }
                         Box(Modifier.width(IntrinsicSize.Max)) {
@@ -1365,15 +1585,65 @@ fun SelectFile(
                         }
 
                     }
+                }else{
+                    // 批量处理，现在只能批量处理英语字幕，所以就写死了。
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.width(IntrinsicSize.Max).padding(end = 10.dp)
+                    ) {
+                        Text(
+                            "选择字幕 ",
+                            color = MaterialTheme.colors.onBackground,
+                            modifier = Modifier.padding(end = 75.dp)
+                        )
+                        OutlinedButton(
+                            onClick = { },
+                            modifier = Modifier
+                                .width(282.dp)
+                                .background(Color.Transparent)
+                                .border(1.dp, Color.Transparent)
+                        ) {
+                            Text(
+                                text = "英语", fontSize = 12.sp,
+                            )
+                        }
+                    }
                 }
-                if (selectedSubtitle != "    " && trackList.isNotEmpty()) {
+
+                if (selectedFileList.isEmpty() && selectedSubtitle != "    " && trackList.isNotEmpty()) {
                     if (isSelectedASS) {
                         Text("暂时不支持 ASS 字幕,请重新选择", color = Color.Red)
                     } else {
                         OutlinedButton(onClick = {
                             analysis(selectedFilePath, selectedTrackId)
                         }) {
-                            Text("分析", fontSize = 12.sp)
+                            Text("开始", fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                if(selectedFileList.isNotEmpty()){
+                    OutlinedButton(onClick = { batchAnalysis("English") }) {
+                        Text("开始", fontSize = 12.sp)
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    OutlinedButton(onClick = { showTaskListEvent() }) {
+                        Text("任务列表", fontSize = 12.sp)
+                    }
+                    if(showTaskList){
+                        Spacer(Modifier.width(10.dp))
+                        OutlinedButton(onClick = { changeSelectable() }) {
+                            Text("选择", fontSize = 12.sp)
+                        }
+                    }
+                    if(selectable){
+                        Spacer(Modifier.width(10.dp))
+                        OutlinedButton(onClick = { selectAll() }) {
+                            Text("全选", fontSize = 12.sp)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        OutlinedButton(onClick = { delete() }) {
+                            Text("删除", fontSize = 12.sp)
                         }
                     }
                 }
@@ -1407,18 +1677,7 @@ fun SelectFile(
                         .height(35.dp)
                         .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
                 )
-                OutlinedButton(onClick = {
-                    val fileChooser = state.futureFileChooser.get()
-                    fileChooser.dialogTitle = "选择视频"
-                    fileChooser.isAcceptAllFileFilterUsed = true
-                    fileChooser.selectedFile = null
-                    if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        val file = fileChooser.selectedFile
-                        setRelateVideoPath(file.absolutePath)
-                        fileChooser.selectedFile = File("")
-                    }
-                    fileChooser.removeChoosableFileFilter(fileFilter)
-                }) {
+                OutlinedButton(onClick = { openRelateVideo() }) {
                     Text("打开")
                 }
             }
@@ -1535,17 +1794,17 @@ fun PreviewWords(
 ) {
     Column(Modifier.fillMaxSize()) {
         Summary(type, previewList, summaryVocabulary)
-        val listState = rememberLazyListState()
+        val listState = rememberLazyGridState()
         Box(Modifier.fillMaxWidth()) {
             LazyVerticalGrid(
-                cells = GridCells.Adaptive(130.dp),
+                columns = GridCells.Adaptive(130.dp),
                 contentPadding = PaddingValues(10.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 50.dp, end = 60.dp),
                 state = listState
             ) {
-                items(previewList) { word ->
+                itemsIndexed(previewList) { _: Int, word ->
 
                     TooltipArea(
                         tooltip = {
@@ -1634,20 +1893,166 @@ fun PreviewWords(
                 }
             }
 
-            VerticalScrollbar(
-                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
-                modifier = Modifier.align(Alignment.CenterEnd)
-                    .fillMaxHeight(),
-                adapter = rememberScrollbarAdapter(
-                    scrollState = listState
-                )
-            )
+// 相关 Issue: https://github.com/JetBrains/compose-jb/issues/2029
+//            VerticalScrollbar(
+//                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+//                modifier = Modifier.align(Alignment.CenterEnd)
+//                    .fillMaxHeight(),
+//                adapter = rememberScrollbarAdapter(
+//                    scrollState = listState
+//                )
+//            )
+
+
         }
     }
 
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TaskList(
+    selectedFileList: List<File>,
+    updateOrder: (List<File>) -> Unit,
+    tasksState: Map<File,Boolean>,
+    currentTask:File?,
+    errorMessages:Map<File,String>,
+    selectable:Boolean,
+    checkedFileMap:Map<File,Boolean>,
+    checkedChange:(Pair<File,Boolean>) -> Unit,
+) {
+
+    val items = remember { mutableStateOf(selectedFileList) }
+    val state = rememberReorderableLazyListState(onMove = { from, to ->
+        items.value = items.value.toMutableList().apply {
+            add(to.index, removeAt(from.index))
+            updateOrder(items.value)
+        }
+    })
+
+
+    Box (modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)){
+        LazyColumn(
+            state = state.listState,
+            modifier = Modifier.fillMaxSize().reorderable(state)
+        ) {
+            items(items.value, { it }) { item ->
+                ReorderableItem(state, orientationLocked = true, key = item) { isDragging ->
+                    val elevation = animateDpAsState(if (isDragging) 8.dp else 0.dp)
+                    Column(
+                        modifier = Modifier
+                            .shadow(elevation.value)
+                            .background(MaterialTheme.colors.surface)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clickable { }
+                                .fillMaxWidth()
+                                .padding(start = 16.dp)
+                                .detectReorder(state)
+                        ) {
+                            Text(
+                                text = item.nameWithoutExtension,
+                                modifier = Modifier.align(Alignment.CenterStart).padding(top = 16.dp, bottom = 16.dp),
+                                color = MaterialTheme.colors.onBackground
+                            )
+
+                            Row(verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.align(Alignment.CenterEnd)){
+                                if(selectable){
+                                    val checked = checkedFileMap[item]
+
+                                    Checkbox(
+                                        checked = checked == true,
+                                        onCheckedChange = { checkedChange(Pair(item,it)) }
+                                    )
+                                }
+
+
+                                if(tasksState[item] == true){
+                                    TooltipArea(
+                                        tooltip = {
+                                            Surface(
+                                                elevation = 4.dp,
+                                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                                                shape = RectangleShape
+                                            ) {
+                                                Text(text = "完成", modifier = Modifier.padding(10.dp))
+                                            }
+                                        },
+                                        delayMillis = 300,
+                                        tooltipPlacement = TooltipPlacement.ComponentRect(
+                                            anchor = Alignment.TopCenter,
+                                            alignment = Alignment.TopCenter,
+                                            offset = DpOffset.Zero
+                                        ),
+//                                        modifier = Modifier.align(Alignment.CenterEnd)
+                                    ) {
+                                        IconButton(onClick = {}) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.TaskAlt,
+                                                contentDescription = "",
+                                                tint = MaterialTheme.colors.primary
+                                            )
+                                        }
+                                    }
+
+
+                                }else if(item == currentTask){
+                                    CircularProgressIndicator(Modifier
+//                                        .align(Alignment.CenterEnd)
+                                        .padding(start = 8.dp,end = 16.dp).width(24.dp).height(24.dp))
+                                }else if(tasksState[item] == false){
+
+                                    val text = errorMessages[item].orEmpty()
+                                    TooltipArea(
+                                        tooltip = {
+                                            Surface(
+                                                elevation = 4.dp,
+                                                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                                                shape = RectangleShape
+                                            ) {
+                                                Text(text = text, modifier = Modifier.padding(10.dp))
+                                            }
+                                        },
+                                        delayMillis = 300,
+                                        tooltipPlacement = TooltipPlacement.ComponentRect(
+                                            anchor = Alignment.CenterStart,
+                                            alignment = Alignment.CenterStart,
+                                            offset = DpOffset.Zero
+                                        ),
+//                                        modifier = Modifier.align(Alignment.CenterEnd)
+                                    ) {
+                                        IconButton(onClick = {}) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Error,
+                                                contentDescription = "",
+                                                tint = Color.Red
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+
+
+                        }
+                        Divider()
+                    }
+                }
+            }
+        }
+
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd)
+                .fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(state.listState)
+        )
+    }
+
+
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Throws(IOException::class)
@@ -1915,6 +2320,167 @@ private fun readMKV(
     }
     setProgressText("")
     return validList
+}
+
+/**
+ * 批量读取 MKV
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+private fun batchReadMKV(
+    language:String,
+    selectedFileList:(List<File>),
+    setCurrentTask:(File?) -> Unit,
+    setErrorMessages:(Map<File,String>) -> Unit,
+    updateTaskState:(Pair<File,Boolean>) -> Unit
+):List<Word>{
+    val errorMessage = mutableMapOf<File,String>()
+    val map: MutableMap<String, ArrayList<Caption>> = HashMap()
+    val orderList = mutableListOf<String>()
+
+
+    ResourceLoader.Default.load("opennlp/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin").use { tokensInputStream ->
+        ResourceLoader.Default.load("opennlp/langdetect-183.bin").use { langdetectInputStream ->
+            // 训练分词器
+            val tokensModel = TokenizerModel(tokensInputStream)
+            val tokenizer: Tokenizer = TokenizerME(tokensModel)
+
+            // 训练语言检测器
+            val langModel = LanguageDetectorModel(langdetectInputStream)
+            val languageDetector: LanguageDetector = LanguageDetectorME(langModel)
+
+            val englishIetfList = listOf("en","en-US","en-GB")
+            val english = listOf("en","eng")
+//            selectedFileList.forEach { file ->
+//            }
+            for(i in 0 until selectedFileList.size){
+                val file = selectedFileList[i]
+                setCurrentTask(file)
+                var reader: EBMLReader? = null
+                try {
+                    reader = EBMLReader(file.absolutePath)
+                    if (!reader.readHeader()) {
+                        println("This is not an mkv file!")
+                        errorMessage.put(file, "不是 MKV 文件")
+                        updateTaskState(Pair(file, false))
+                        setCurrentTask(null)
+                       continue
+                    }
+
+                    // TODO 如果字幕格式不是 SRT 可能会抛出异常，
+                    reader.readTracks()
+                    val numSubtitles: Int = reader.subtitles.size
+                    if (numSubtitles == 0) {
+                        errorMessage.put(file, "没有字幕")
+                        updateTaskState(Pair(file, false))
+                        setCurrentTask(null)
+                        continue
+                    }
+                    reader.readCues()
+                    for (i in 0 until reader.cuesCount) {
+                        reader.readSubtitlesInCueFrame(i)
+                    }
+
+                    var trackID = -1
+
+                    for(i in 0 until reader.subtitles.size){
+                        val subtitles = reader.subtitles[i]
+                        if (englishIetfList.contains(subtitles.languageIetf) || english.contains(subtitles.language)) {
+                            trackID = i
+                            break
+                        } else {
+                            // 使用 OpenNLP 的语言检测工具检测字幕的语言
+                            var content = ""
+                            val subList = subtitles.readUnreadSubtitles().subList(0,10)
+                            subList.forEach { caption ->
+                                content += caption.stringData
+                            }
+                            val lang  = languageDetector.predictLanguage(content)
+                            if(lang.lang == "eng"){
+                                trackID = i
+                                break
+                            }
+                        }
+                    }
+
+                    if (trackID != -1) {
+                        val subtitle = reader.subtitles[trackID]
+                        if (subtitle is SSASubtitles) {
+                            errorMessage.put(file, "暂时不支持 ASS 字幕")
+                            updateTaskState(Pair(file, false))
+                            setCurrentTask(null)
+                            continue
+                        } else {
+                            val captionList = subtitle.allReadCaptions
+                            if(captionList.isEmpty()){
+                                captionList.addAll(subtitle.readUnreadSubtitles())
+                            }
+                            for (caption in captionList) {
+                                var content = replaceSpecialCharacter(caption.stringData)
+                                content = removeLocationInfo(content)
+                                val dataCaption = Caption(
+                                    start = caption.startTime.format().toString(),
+                                    end = caption.endTime.format(),
+                                    content = content
+                                )
+
+                                content = content.lowercase(Locale.getDefault())
+                                val tokenize = tokenizer.tokenize(content)
+                                for (word in tokenize) {
+                                    if (!map.containsKey(word)) {
+                                        val list = ArrayList<Caption>()
+                                        list.add(dataCaption)
+                                        map[word] = list
+                                        orderList.add(word)
+                                    } else {
+                                        if (map[word]!!.size < 3) {
+                                            map[word]!!.add(dataCaption)
+                                        }
+                                    }
+                                }
+                            }
+                            updateTaskState(Pair(file, true))
+                        }
+                    } else {
+                        errorMessage[file] = "没有找到英语字幕"
+                        updateTaskState(Pair(file, false))
+                        setCurrentTask(null)
+                        continue
+                    }
+
+                } catch (e: IOException) {
+                    updateTaskState(Pair(file, false))
+                    setCurrentTask(null)
+                    errorMessage[file] = e.message.orEmpty()
+                    e.printStackTrace()
+                    continue
+                }catch (exception:NullPointerException){
+                    updateTaskState(Pair(file, false))
+                    errorMessage[file] = "空指针异常"
+                    exception.printStackTrace()
+                    setCurrentTask(null)
+                    continue
+                } finally {
+                    try {
+                        reader?.close()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    val validList = Dictionary.queryList(orderList)
+    validList.forEach { word ->
+        if (map[word.value] != null) {
+            word.captions = map[word.value]!!
+        }
+    }
+
+    setErrorMessages(errorMessage)
+return validList
 }
 
 /**
