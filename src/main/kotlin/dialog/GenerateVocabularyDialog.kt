@@ -265,9 +265,6 @@ fun GenerateVocabularyDialog(
 
         var progressText by remember { mutableStateOf("") }
 
-        /** 暂时不读取 MKV 里的 ASS 字幕 */
-        var isSelectedASS by remember { mutableStateOf(false) }
-
         var loading by remember { mutableStateOf(false) }
 
         /** 文件选择器的标题 */
@@ -330,13 +327,13 @@ fun GenerateVocabularyDialog(
                                                 setTrackList = {
                                                     trackList.clear()
                                                     trackList.addAll(it)
+                                                    if(it.isNotEmpty()){
+                                                        selectedFilePath = file.absolutePath
+                                                        relateVideoPath = file.absolutePath
+                                                        selectedSubtitlesName = "    "
+                                                    }
                                                 }
                                             )
-                                            if(trackList.isNotEmpty()){
-                                                selectedFilePath = file.absolutePath
-                                                relateVideoPath = file.absolutePath
-                                                selectedSubtitlesName = "    "
-                                            }
                                             loading = false
                                         } else { // 窗口已经有文件了
                                             // 如果之前有一个 MKV 视频,把之前的视频加入到 selectedFileList
@@ -536,7 +533,7 @@ fun GenerateVocabularyDialog(
                             pathName = pathName,
                             trackId = trackId,
                             setProgressText = { progressText = it },
-                            setIsSelectedASS = { isSelectedASS = it })
+                        )
                     }
                 }
                 words.forEach { word -> documentWords.add(word) }
@@ -660,8 +657,6 @@ fun GenerateVocabularyDialog(
                                 setSelectedFilePath = { selectedFilePath = it },
                                 selectedSubtitle = selectedSubtitlesName,
                                 setSelectedSubtitle = { selectedSubtitlesName = it },
-                                isSelectedASS = isSelectedASS,
-                                setIsSelectedASS = { isSelectedASS = it },
                                 relateVideoPath = relateVideoPath,
                                 trackList = trackList,
                                 selectedTrackId = selectedTrackId,
@@ -1452,8 +1447,6 @@ fun SelectFile(
     setSelectedFilePath: (String) -> Unit,
     selectedSubtitle: String,
     setSelectedSubtitle: (String) -> Unit,
-    isSelectedASS: Boolean,
-    setIsSelectedASS: (Boolean) -> Unit,
     relateVideoPath: String,
     trackList: List<Pair<Int, String>>,
     selectedTrackId: Int,
@@ -1566,8 +1559,6 @@ fun SelectFile(
                                     DropdownMenuItem(
                                         onClick = {
                                             expanded = false
-                                            setIsSelectedASS(false)
-//                                            selectedSubtitle = description
                                             setSelectedSubtitle(description)
                                             setSelectedTrackId(index)
                                         },
@@ -1612,14 +1603,10 @@ fun SelectFile(
                 }
 
                 if (selectedFileList.isEmpty() && selectedSubtitle != "    " && trackList.isNotEmpty()) {
-                    if (isSelectedASS) {
-                        Text("暂时不支持 ASS 字幕,请重新选择", color = Color.Red)
-                    } else {
-                        OutlinedButton(onClick = {
-                            analysis(selectedFilePath, selectedTrackId)
-                        }) {
-                            Text("开始", fontSize = 12.sp)
-                        }
+                    OutlinedButton(onClick = {
+                        analysis(selectedFilePath, selectedTrackId)
+                    }) {
+                        Text("开始", fontSize = 12.sp)
                     }
                 }
 
@@ -2203,7 +2190,6 @@ private fun readMKV(
     pathName: String,
     trackId: Int,
     setProgressText: (String) -> Unit,
-    setIsSelectedASS: (Boolean) -> Unit
 ): List<Word> {
     val map: MutableMap<String, ArrayList<Caption>> = HashMap()
     val orderList = mutableListOf<String>()
@@ -2267,33 +2253,39 @@ private fun readMKV(
             val model = TokenizerModel(inputStream)
             val tokenizer: Tokenizer = TokenizerME(model)
             val subtitle = reader.subtitles[trackId]
+            var isASS = false
             if (subtitle is SSASubtitles) {
-                setIsSelectedASS(true)
-            } else {
-                setIsSelectedASS(false)
-                val captionList = subtitle.readUnreadSubtitles()
-                for (caption in captionList) {
-                    var content = replaceSpecialCharacter(caption.stringData)
-                    content = removeLocationInfo(content)
-                    val dataCaption = Caption(
-                        start = caption.startTime.format().toString(),
-                        end = caption.endTime.format(),
-                        content = content
-                    )
+                isASS = true
+            }
 
-                    content = content.lowercase(Locale.getDefault())
-                    val tokenize = tokenizer.tokenize(content)
-                    for (word in tokenize) {
-                        if (!map.containsKey(word)) {
-                            val list = ArrayList<Caption>()
-                            list.add(dataCaption)
-                            map[word] = list
-                            orderList.add(word)
-                        } else {
+            val captionList = subtitle.readUnreadSubtitles()
+            for (caption in captionList) {
+                val captionContent =  if(isASS){
+                   caption.formattedVTT.replace("\\N","\n")
+                }else{
+                    caption.stringData
+                }
 
-                            if (map[word]!!.size < 3) {
-                                map[word]!!.add(dataCaption)
-                            }
+                var content = replaceSpecialCharacter(captionContent)
+                content = removeLocationInfo(content)
+                val dataCaption = Caption(
+                    start = caption.startTime.format().toString(),
+                    end = caption.endTime.format(),
+                    content = content
+                )
+
+                content = content.lowercase(Locale.getDefault())
+                val tokenize = tokenizer.tokenize(content)
+                for (word in tokenize) {
+                    if (!map.containsKey(word)) {
+                        val list = ArrayList<Caption>()
+                        list.add(dataCaption)
+                        map[word] = list
+                        orderList.add(word)
+                    } else {
+
+                        if (map[word]!!.size < 3) {
+                            map[word]!!.add(dataCaption)
                         }
                     }
                 }
@@ -2351,8 +2343,6 @@ private fun batchReadMKV(
 
             val englishIetfList = listOf("en","en-US","en-GB")
             val english = listOf("en","eng")
-//            selectedFileList.forEach { file ->
-//            }
             for(i in 0 until selectedFileList.size){
                 val file = selectedFileList[i]
                 setCurrentTask(file)
@@ -2405,42 +2395,44 @@ private fun batchReadMKV(
 
                     if (trackID != -1) {
                         val subtitle = reader.subtitles[trackID]
+                        var isASS = false
                         if (subtitle is SSASubtitles) {
-                            errorMessage.put(file, "暂时不支持 ASS 字幕")
-                            updateTaskState(Pair(file, false))
-                            setCurrentTask(null)
-                            continue
-                        } else {
-                            val captionList = subtitle.allReadCaptions
-                            if(captionList.isEmpty()){
-                                captionList.addAll(subtitle.readUnreadSubtitles())
+                            isASS = true
+                        }
+                        val captionList = subtitle.allReadCaptions
+                        if(captionList.isEmpty()){
+                            captionList.addAll(subtitle.readUnreadSubtitles())
+                        }
+                        for (caption in captionList) {
+                            val captionContent =  if(isASS){
+                                caption.formattedVTT.replace("\\N","\n")
+                            }else{
+                                caption.stringData
                             }
-                            for (caption in captionList) {
-                                var content = replaceSpecialCharacter(caption.stringData)
-                                content = removeLocationInfo(content)
-                                val dataCaption = Caption(
-                                    start = caption.startTime.format().toString(),
-                                    end = caption.endTime.format(),
-                                    content = content
-                                )
+                            var content = replaceSpecialCharacter(captionContent)
+                            content = removeLocationInfo(content)
+                            val dataCaption = Caption(
+                                start = caption.startTime.format().toString(),
+                                end = caption.endTime.format(),
+                                content = content
+                            )
 
-                                content = content.lowercase(Locale.getDefault())
-                                val tokenize = tokenizer.tokenize(content)
-                                for (word in tokenize) {
-                                    if (!map.containsKey(word)) {
-                                        val list = ArrayList<Caption>()
-                                        list.add(dataCaption)
-                                        map[word] = list
-                                        orderList.add(word)
-                                    } else {
-                                        if (map[word]!!.size < 3) {
-                                            map[word]!!.add(dataCaption)
-                                        }
+                            content = content.lowercase(Locale.getDefault())
+                            val tokenize = tokenizer.tokenize(content)
+                            for (word in tokenize) {
+                                if (!map.containsKey(word)) {
+                                    val list = ArrayList<Caption>()
+                                    list.add(dataCaption)
+                                    map[word] = list
+                                    orderList.add(word)
+                                } else {
+                                    if (map[word]!!.size < 3) {
+                                        map[word]!!.add(dataCaption)
                                     }
                                 }
                             }
-                            updateTaskState(Pair(file, true))
                         }
+                        updateTaskState(Pair(file, true))
                     } else {
                         errorMessage[file] = "没有找到英语字幕"
                         updateTaskState(Pair(file, false))
