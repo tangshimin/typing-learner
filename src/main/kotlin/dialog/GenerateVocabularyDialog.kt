@@ -1422,7 +1422,7 @@ fun addNodes(curTop: DefaultMutableTreeNode?, dir: File): DefaultMutableTreeNode
     val ol = Vector<File>()
     dir.listFiles().forEach { ol.addElement(it) }
     ol.sort()
-    var files = Vector<String>()
+    val files = Vector<String>()
 
     ol.forEach { file ->
         if (file.isDirectory)
@@ -2343,25 +2343,23 @@ private fun batchReadMKV(
 
             val englishIetfList = listOf("en","en-US","en-GB")
             val english = listOf("en","eng")
-            for(i in 0 until selectedFileList.size){
-                val file = selectedFileList[i]
+            for(file in selectedFileList){
                 setCurrentTask(file)
                 var reader: EBMLReader? = null
                 try {
                     reader = EBMLReader(file.absolutePath)
                     if (!reader.readHeader()) {
                         println("This is not an mkv file!")
-                        errorMessage.put(file, "不是 MKV 文件")
+                        errorMessage[file] = "不是 MKV 文件"
                         updateTaskState(Pair(file, false))
                         setCurrentTask(null)
                        continue
                     }
 
-                    // TODO 如果字幕格式不是 SRT 可能会抛出异常，
                     reader.readTracks()
                     val numSubtitles: Int = reader.subtitles.size
                     if (numSubtitles == 0) {
-                        errorMessage.put(file, "没有字幕")
+                        errorMessage[file] = "没有字幕"
                         updateTaskState(Pair(file, false))
                         setCurrentTask(null)
                         continue
