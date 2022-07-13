@@ -30,7 +30,7 @@ dependencies {
     implementation("org.apache.pdfbox:pdfbox:2.0.24")
     implementation("com.h2database:h2:2.1.212")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation(files("lib/ebml-reader-0.1.0.jar"))
+    implementation(files("lib/ebml-reader-0.1.1.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
     implementation("org.apache.maven:maven-artifact:3.8.6")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.2")

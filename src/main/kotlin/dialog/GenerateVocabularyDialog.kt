@@ -45,6 +45,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import com.matthewn4444.ebml.EBMLReader
+import com.matthewn4444.ebml.UnSupportSubtitlesException
 import com.matthewn4444.ebml.subtitles.SSASubtitles
 import components.createTransferHandler
 import components.parseTrackList
@@ -320,9 +321,7 @@ fun GenerateVocabularyDialog(
                                         // 第一次拖放
                                         if (selectedFilePath.isEmpty() && selectedFileList.isEmpty()) {
                                             loading = true
-                                            selectedFilePath = file.absolutePath
-                                            relateVideoPath = file.absolutePath
-                                            selectedSubtitlesName = "    "
+
                                             parseTrackList(
                                                 state.videoPlayerComponent,
                                                 window,
@@ -333,6 +332,11 @@ fun GenerateVocabularyDialog(
                                                     trackList.addAll(it)
                                                 }
                                             )
+                                            if(trackList.isNotEmpty()){
+                                                selectedFilePath = file.absolutePath
+                                                relateVideoPath = file.absolutePath
+                                                selectedSubtitlesName = "    "
+                                            }
                                             loading = false
                                         } else { // 窗口已经有文件了
                                             // 如果之前有一个 MKV 视频,把之前的视频加入到 selectedFileList
@@ -584,10 +588,7 @@ fun GenerateVocabularyDialog(
                 }
 
                 if(errorMessages.isNotEmpty()){
-                    var string = ""
-                    errorMessages.forEach { file, message ->
-                        string += file.nameWithoutExtension + ":  "+message + "\n"
-                    }
+                    val string = "有 ${errorMessages.size} 个文件解析失败，请点击 [任务列表] 查看详细信息"
                     JOptionPane.showMessageDialog(window,string)
                 }
 
@@ -603,7 +604,7 @@ fun GenerateVocabularyDialog(
                     Divider()
                     Row(Modifier.fillMaxWidth()) {
                         // 左边的过滤区
-                        var width = if(vocabularyFilterList.isEmpty()) 380.dp else 450.dp
+                        val width = if(vocabularyFilterList.isEmpty()) 380.dp else 450.dp
                         Column(Modifier.width(width).fillMaxHeight()) {
                             BasicFilter(
                                 numberFilter = numberFilter,
@@ -2447,19 +2448,33 @@ private fun batchReadMKV(
                         continue
                     }
 
-                } catch (e: IOException) {
+                } catch (exception: IOException) {
                     updateTaskState(Pair(file, false))
                     setCurrentTask(null)
-                    errorMessage[file] = e.message.orEmpty()
-                    e.printStackTrace()
+                    if(exception.message != null){
+                        errorMessage[file] = exception.message.orEmpty()
+                   } else{
+                        errorMessage[file] =  "IO 异常"
+                    }
+                    exception.printStackTrace()
                     continue
-                }catch (exception:NullPointerException){
+                }catch (exception: UnSupportSubtitlesException){
+                    updateTaskState(Pair(file, false))
+                   if(exception.message != null){
+                       errorMessage[file] = exception.message.orEmpty()
+                   } else {
+                       errorMessage[file] = "字幕格式不支持"
+                   }
+                    exception.printStackTrace()
+                    setCurrentTask(null)
+                    continue
+                } catch (exception:NullPointerException){
                     updateTaskState(Pair(file, false))
                     errorMessage[file] = "空指针异常"
                     exception.printStackTrace()
                     setCurrentTask(null)
                     continue
-                } finally {
+                }finally {
                     try {
                         reader?.close()
                     } catch (e: Exception) {

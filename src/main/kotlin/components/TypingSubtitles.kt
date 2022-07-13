@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.matthewn4444.ebml.EBMLReader
+import com.matthewn4444.ebml.UnSupportSubtitlesException
 import com.matthewn4444.ebml.subtitles.SRTSubtitles
 import com.matthewn4444.ebml.subtitles.SSASubtitles
 import data.Caption
@@ -1571,6 +1572,11 @@ fun checkSubtitles(
         }
     } catch (exception: IOException) {
         JOptionPane.showMessageDialog(parentComponent, "IO 异常")
+        exception.printStackTrace()
+        return false
+    } catch (exception: UnSupportSubtitlesException) {
+        val message = if(exception.message != null) exception.message else "字幕格式不支持"
+        JOptionPane.showMessageDialog(parentComponent, message)
         exception.printStackTrace()
         return false
     }catch (exception: NullPointerException){
