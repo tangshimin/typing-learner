@@ -43,6 +43,7 @@ import theme.createColors
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.schedule
 
@@ -330,18 +331,20 @@ private fun FrameWindowScope.WindowMenuBar(
             for (i in 0 until state.recentList.size){
                 val recentItem = state.recentList.getOrNull(i)
                 if(recentItem!= null){
-                    val recentFile = File(recentItem.path)
-                    if (recentFile.exists()) {
-                        Item(text = recentItem.name, onClick = {
-                            val file = File(recentItem.path)
-                            state.changeVocabulary(file,recentItem.index)
+                    Item(text = recentItem.name, onClick = {
+                        val recentFile = File(recentItem.path)
+                        if (recentFile.exists()) {
+                            state.changeVocabulary(recentFile,recentItem.index)
                             state.global.type = WORD
                             state.saveGlobalState()
                             state.loadingFileChooserVisible = false
-                        })
-                    } else {
-                        state.removeInvalidRecentItem(recentItem)
-                    }
+                        } else {
+                            state.removeInvalidRecentItem(recentItem)
+                            JOptionPane.showMessageDialog(null, "文件地址错误：\n${recentItem.path}")
+                        }
+
+                    })
+
                 }
             }
         }
