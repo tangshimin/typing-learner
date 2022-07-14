@@ -808,9 +808,14 @@ fun GenerateVocabularyDialog(
                                         if(savePath.startsWith(vocabularyDirPath)){
                                             JOptionPane.showMessageDialog(null,"不能把词库保存到应用程序安装目录，因为软件更新或卸载时，生成的词库会被删除")
                                         }else{
+                                            val vType = if (title == "过滤词库"){
+                                                filteringType
+                                            } else if(selectedFileList.isNotEmpty()){
+                                                DOCUMENT
+                                            }else type
                                             val vocabulary = Vocabulary(
                                                 name = selectedFile.nameWithoutExtension,
-                                                type = if (title == "过滤词库") filteringType else type,
+                                                type = vType,
                                                 language = "english",
                                                 size = previewList.size,
                                                 relateVideoPath = relateVideoPath,
@@ -2327,7 +2332,7 @@ private fun batchReadMKV(
     updateTaskState:(Pair<File,Boolean>) -> Unit
 ):List<Word>{
     val errorMessage = mutableMapOf<File,String>()
-    val map: MutableMap<String, ArrayList<Caption>> = HashMap()
+    val map: MutableMap<String, ArrayList<ExternalCaption>> = HashMap()
     val orderList = mutableListOf<String>()
 
 
@@ -2409,7 +2414,10 @@ private fun batchReadMKV(
                             }
                             var content = replaceSpecialCharacter(captionContent)
                             content = removeLocationInfo(content)
-                            val dataCaption = Caption(
+                            val externalCaption = ExternalCaption(
+                                relateVideoPath = file.absolutePath,
+                                subtitlesTrackId = trackID,
+                                subtitlesName = file.nameWithoutExtension,
                                 start = caption.startTime.format().toString(),
                                 end = caption.endTime.format(),
                                 content = content
@@ -2419,13 +2427,13 @@ private fun batchReadMKV(
                             val tokenize = tokenizer.tokenize(content)
                             for (word in tokenize) {
                                 if (!map.containsKey(word)) {
-                                    val list = ArrayList<Caption>()
-                                    list.add(dataCaption)
+                                    val list = ArrayList<ExternalCaption>()
+                                    list.add(externalCaption)
                                     map[word] = list
                                     orderList.add(word)
                                 } else {
                                     if (map[word]!!.size < 3) {
-                                        map[word]!!.add(dataCaption)
+                                        map[word]!!.add(externalCaption)
                                     }
                                 }
                             }
@@ -2480,7 +2488,7 @@ private fun batchReadMKV(
     val validList = Dictionary.queryList(orderList)
     validList.forEach { word ->
         if (map[word.value] != null) {
-            word.captions = map[word.value]!!
+            word.externalCaptions = map[word.value]!!
         }
     }
 
