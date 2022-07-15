@@ -2166,7 +2166,7 @@ private fun readSRT(
                         map[lowercase] = list
                         orderList.add(lowercase)
                     } else {
-                        if (map[lowercase]!!.size < 3) {
+                        if (map[lowercase]!!.size < 3 && !map[word]!!.contains(dataCaption)) {
                             map[lowercase]?.add(dataCaption)
                         }
                     }
@@ -2288,8 +2288,7 @@ private fun readMKV(
                         map[word] = list
                         orderList.add(word)
                     } else {
-
-                        if (map[word]!!.size < 3) {
+                        if (map[word]!!.size < 3 && !map[word]!!.contains(dataCaption)) {
                             map[word]!!.add(dataCaption)
                         }
                     }
@@ -2432,7 +2431,7 @@ private fun batchReadMKV(
                                     map[word] = list
                                     orderList.add(word)
                                 } else {
-                                    if (map[word]!!.size < 3) {
+                                    if (map[word]!!.size < 3 && !map[word]!!.contains(externalCaption)) {
                                         map[word]!!.add(externalCaption)
                                     }
                                 }
