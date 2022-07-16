@@ -110,6 +110,18 @@ fun HelpDialog(close: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp)
+                                .clickable { currentPage = "linkVocabulary" }) {
+                            Text("链接字幕词库", modifier = Modifier.padding(start = 16.dp))
+                            if(currentPage == "linkVocabulary"){
+                                Spacer(Modifier.fillMaxHeight().width(2.dp).background(MaterialTheme.colors.primary))
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
                                 .clickable { currentPage = "shortcutKey" }) {
                             Text("快捷键", modifier = Modifier.padding(start = 16.dp))
                             if(currentPage == "shortcutKey"){
@@ -124,6 +136,7 @@ fun HelpDialog(close: () -> Unit) {
                         "subtitles" -> {SubtitlesPage()}
                         "matroska" -> {MatroskaPage()}
                         "youtube" -> {YouTubeDownloadPage()}
+                        "linkVocabulary" -> {LinkVocabularyPage()}
                         "shortcutKey" -> {ShortcutKeyPage()}
                     }
                 }
@@ -183,7 +196,7 @@ fun DocumentPage(){
                 contentDescription = "document-7",
                 modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
             )
-
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             val uriHandler = LocalUriHandler.current
             val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
             Row (verticalAlignment = Alignment.CenterVertically,
@@ -289,7 +302,7 @@ fun SubtitlesPage(){
                 contentDescription = "document-7",
                 modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
             )
-
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             Row{
                 val uriHandler = LocalUriHandler.current
                 val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
@@ -372,7 +385,7 @@ fun MatroskaPage(){
                 contentDescription = "document-7",
                 modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
             )
-
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             Row{
                 val uriHandler = LocalUriHandler.current
                 val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
@@ -521,6 +534,48 @@ fun YouTubeDownloadPage(){
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun LinkVocabularyPage(){
+    Box(Modifier.fillMaxSize()){
+        val stateVertical = rememberScrollState(0)
+        Column (Modifier.padding(start = 16.dp, top = 16.dp,end = 16.dp).verticalScroll(stateVertical)){
+            val theme = if(MaterialTheme.colors.isLight) "light" else "dark"
+            Text("提示：不要把链接后的词库保存到应用程序的安装目录\n")
+            Text("1. 打开链接字幕对话框")
+            Image(
+                painter = painterResource("screenshot/link-vocabulary-$theme/Link-Vocabulary-1.png"),
+                contentDescription = "mkv-1",
+                modifier = Modifier.width(590.dp).height(436.dp).padding(start = 20.dp)
+            )
+            Text("\n2. 选择一个要链接的词库，如果是四级词库就从选择内置词库打开，也可以直接拖拽一个词库到窗口。")
+            Image(
+                painter = painterResource("screenshot/link-vocabulary-$theme/Link-Vocabulary-2.png"),
+                contentDescription = "mkv-2",
+                modifier = Modifier.width(590.dp).height(435.dp).padding(start = 20.dp)
+            )
+            Text("\n3. 再选择一个有字幕的词库。选择后可以预览视频片段，然后点击链接，有字幕的词库就链接到了没有字幕的词库。")
+            Image(
+                painter = painterResource("screenshot/link-vocabulary-$theme/Link-Vocabulary-3.png"),
+                contentDescription = "mkv-3",
+                modifier = Modifier.width(590.dp).height(650.dp).padding(start = 20.dp)
+            )
+            Text("\n4. 点击链接后返回到链接字幕的主界面，还可以链接多个有字幕的词库。也可以删除已经链接的字幕。不想链接了就点击保存，最后注意不要把词库保存到应用程序的安装目录")
+            Image(
+                painter = painterResource("screenshot/link-vocabulary-$theme/Link-Vocabulary-4.png"),
+                contentDescription = "mkv-4",
+                modifier = Modifier.width(590.dp).height(440.dp).padding(start = 20.dp)
+            )
+
+        }
+
+        VerticalScrollbar(
+            style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(stateVertical)
+        )
+    }
+}
 @Composable
 fun ShortcutKeyPage() {
     Column(Modifier.fillMaxSize()) {
@@ -546,10 +601,10 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  $shift + ←  ")
+                        append("  $shift + ← ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                        append("选择要复制的单词\n或者使用快捷键")
+                        append("  选择要复制的单词\n或者使用快捷键")
                     }
                     withStyle(
                         style = SpanStyle(
@@ -557,10 +612,10 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  $ctrl + B  ")
+                        append("  $ctrl + B ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                        append("激活复制功能。")
+                        append("  激活复制功能。")
                     }
 
                 }
@@ -588,10 +643,10 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  Enter 或 PgDn  ")
+                        append("  Enter 或 PgDn ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                        append("切换到上一个单词用")
+                        append("  切换到上一个单词用")
                     }
                     withStyle(
                         style = SpanStyle(
@@ -599,10 +654,37 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  PgUp  ")
+                        append("  PgUp ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                        append("在听写模式下，不能切换到上一个单词。")
+                        append("  在听写模式下，不能切换到上一个单词。")
+                    }
+
+                }
+                Text(annotatedString)
+            }
+        }
+        SelectionContainer {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.padding(start = 16.dp,bottom = 10.dp)
+            ) {
+                Text("切换光标", modifier = Modifier.padding(end = 20.dp))
+                val annotatedString = buildAnnotatedString {
+
+                    val background = if (MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("把光标从字幕切换到单词")
+                    }
+
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
+                        append("  Ctrl + Shift + A ")
                     }
 
                 }
