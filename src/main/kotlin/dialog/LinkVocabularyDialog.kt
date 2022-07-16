@@ -31,11 +31,8 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import components.ConfirmationDelete
 import components.createTransferHandler
+import data.*
 import player.play
-import data.Caption
-import data.ExternalCaption
-import data.VocabularyType
-import data.loadVocabulary
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.isWindows
@@ -64,9 +61,14 @@ fun LinkVocabularyDialog(
     val scope = rememberCoroutineScope()
 
     /**
-     * 预览的单词列表
+     * 要链接的词库,通常是内置词库
      */
-    val previewWords = remember { mutableStateListOf<Pair<String, List<Caption>>>() }
+    var vocabulary by remember{ mutableStateOf<MutableVocabulary?>(null) }
+
+    /**
+     * 要链接的词库所在的文件夹的绝对路径
+     */
+    var directoryPath by remember { mutableStateOf("") }
 
     /**
      * 当前词库链接到字幕词库的字幕的数量
@@ -78,46 +80,38 @@ fun LinkVocabularyDialog(
      */
     val prepareLinks = remember { mutableStateMapOf<String, List<ExternalCaption>>() }
 
-    /**
-     * 视频地址
-     */
-    var relateVideoPath by remember { mutableStateOf("") }
 
     /**
      * 字幕名称
      */
     var subtitlesName by remember { mutableStateOf("") }
 
-    /**
-     * 字幕轨道 ID
-     */
-    var subtitlesTrackId by remember { mutableStateOf(0) }
+
     var vocabularyType by remember { mutableStateOf(VocabularyType.DOCUMENT) }
     var vocabularyWrong by remember { mutableStateOf(false) }
     var extractCaptionResultInfo by remember { mutableStateOf("") }
+    var saveEnable by remember { mutableStateOf(false) }
 
     /**
      * 点击【链接】后执行的回调函数
      */
     val import: () -> Unit = {
         if (prepareLinks.isNotEmpty()) {
-            state.vocabulary.wordList.forEach { word ->
+            vocabulary?.wordList?.forEach { word ->
                 val links = prepareLinks[word.value]
                 if (!links.isNullOrEmpty()) {
                     word.externalCaptions.addAll(links)
                 }
             }
-            state.saveCurrentVocabulary()
+            saveEnable = true
         }
     }
+
     val clear: () -> Unit = {
-        previewWords.clear()
         linkCounter = 0
         prepareLinks.clear()
-        relateVideoPath = ""
         subtitlesName = ""
         extractCaptionResultInfo = ""
-        subtitlesTrackId = 0
         vocabularyWrong = false
         vocabularyType = VocabularyType.DOCUMENT
 
@@ -129,22 +123,21 @@ fun LinkVocabularyDialog(
     val extractCaption: (File) -> Unit = {
         Thread(Runnable {
             val selectedVocabulary = loadVocabulary(it.absolutePath)
+            subtitlesName = if (selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
+            vocabularyType = selectedVocabulary.type
+            var linkedCounter = 0
+
+            // 字幕词库或 MKV 词库，字幕保存在单词的 captions 属性中
             if (selectedVocabulary.type != VocabularyType.DOCUMENT) {
-                relateVideoPath = selectedVocabulary.relateVideoPath
-                subtitlesName = if (selectedVocabulary.type == VocabularyType.SUBTITLES) selectedVocabulary.name else ""
-                subtitlesTrackId = selectedVocabulary.subtitlesTrackId
-                vocabularyType = selectedVocabulary.type
-                var linkedCounter = 0
                 val wordCaptionsMap = HashMap<String, List<Caption>>()
                 selectedVocabulary.wordList.forEach { word ->
                     wordCaptionsMap.put(word.value, word.captions)
                 }
-                state.vocabulary.wordList.forEach { word ->
+                vocabulary?.wordList?.forEach { word ->
                     if (wordCaptionsMap.containsKey(word.value.lowercase(Locale.getDefault()))) {
                         val captions = wordCaptionsMap[word.value]
                         val links = mutableListOf<ExternalCaption>()
                         // 用于预览
-                        val previewCaptionsList = mutableListOf<Caption>()
                         // 字幕最多3条，这个 counter 是剩余的数量
                         var counter = 3 - word.externalCaptions.size
                         if (counter in 1..3) {
@@ -160,9 +153,8 @@ fun LinkVocabularyDialog(
                                 )
 
                                 if (counter != 0) {
-                                    if (!word.externalCaptions.contains(externalCaption)) {
+                                    if (!word.externalCaptions.contains(externalCaption)&& !links.contains(externalCaption)) {
                                         links.add(externalCaption)
-                                        previewCaptionsList.add(caption)
                                         counter--
                                     } else {
                                         linkedCounter++
@@ -189,29 +181,80 @@ fun LinkVocabularyDialog(
                         }
                         if (links.isNotEmpty()) {
                             prepareLinks.put(word.value, links)
-                            previewWords.add(Pair(word.value, previewCaptionsList))
-                            linkCounter += previewCaptionsList.size
+                            linkCounter += links.size
                         }
 
                     }
                 }
-                // previewWords isEmpty 有两种情况：
-                // 1. 已经链接了一次。
-                // 2. 没有匹配的字幕
-                if (previewWords.isEmpty()) {
-                    extractCaptionResultInfo = if (linkedCounter == 0) {
-                        "没有匹配的字幕，请重新选择"
-                    } else {
-                        "${selectedVocabulary.name} 有${linkedCounter}条相同的字幕已经链接，请重新选择"
-                    }
-                    vocabularyWrong = true
-                }
 
-            } else {
+            }else {
+            // 文档词库，字幕保存在单词的 externalCaptions 属性中
+                val wordCaptionsMap = HashMap<String, List<ExternalCaption>>()
+                selectedVocabulary.wordList.forEach { word ->
+                    wordCaptionsMap.put(word.value, word.externalCaptions)
+                }
+                vocabulary?.wordList?.forEach { word ->
+                    if (wordCaptionsMap.containsKey(word.value.lowercase(Locale.getDefault()))) {
+                        val externalCaptions = wordCaptionsMap[word.value]
+                        val links = mutableListOf<ExternalCaption>()
+//                        // 用于预览
+                        // 字幕最多3条，这个 counter 是剩余的数量
+                        var counter = 3 - word.externalCaptions.size
+                        if (counter in 1..3) {
+                            externalCaptions?.forEachIndexed { _, externalCaption ->
+                                if (counter != 0) {
+                                    if (!word.externalCaptions.contains(externalCaption)&& !links.contains(externalCaption)) {
+                                        links.add(externalCaption)
+                                        counter--
+                                    } else {
+                                        linkedCounter++
+                                    }
+                                }
+                            }
+                        } else {
+                            // 字幕已经有3条了，查询是否有一样的
+                            externalCaptions?.forEachIndexed { _, externalCaption ->
+                                if (word.externalCaptions.contains(externalCaption)) {
+                                    linkedCounter++
+                                }
+                            }
+                        }
+                        if (links.isNotEmpty()) {
+                            prepareLinks.put(word.value, links)
+                            linkCounter += links.size
+                        }
+
+                    }
+                }
+            }
+
+            // previewWords isEmpty 有两种情况：
+            // 1. 已经链接了一次。
+            // 2. 没有匹配的字幕
+            if (prepareLinks.isEmpty()) {
+                extractCaptionResultInfo = if (linkedCounter == 0) {
+                    "没有匹配的字幕，请重新选择"
+                } else {
+                    "${selectedVocabulary.name} 有${linkedCounter}条相同的字幕已经链接，请重新选择"
+                }
                 vocabularyWrong = true
             }
         }).start()
     }
+
+    /**
+     * 处理输入的文件
+     */
+    val handleInputFile:(File) -> Unit = {file ->
+        if(vocabulary == null){
+            vocabulary =  MutableVocabulary(loadVocabulary(file.absolutePath))
+            directoryPath = file.parentFile.absolutePath
+        }else{
+            extractCaption(file)
+        }
+    }
+
+
 
     Dialog(
         title = "链接字幕",
@@ -237,7 +280,7 @@ fun LinkVocabularyDialog(
                 val file = files.first()
                 scope.launch {
                     if (file.extension == "json") {
-                        extractCaption(file)
+                        handleInputFile(file)
                     } else {
                         JOptionPane.showMessageDialog(window, "词库的格式不正确")
                     }
@@ -248,6 +291,59 @@ fun LinkVocabularyDialog(
         )
         window.transferHandler = transferHandler
 
+        /** 保存词库 */
+        val save:() -> Unit = {
+            Thread(Runnable {
+
+                val fileChooser = state.futureFileChooser.get()
+                fileChooser.dialogType = JFileChooser.SAVE_DIALOG
+                fileChooser.dialogTitle = "保存词库"
+                val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
+                val appVocabulary = getResourcesFile("vocabulary")
+                val parent = if(directoryPath.startsWith(appVocabulary.absolutePath)){
+                    myDocuments
+                }else directoryPath
+                fileChooser.selectedFile = File("$parent${File.separator}${vocabulary?.name}.json")
+                val userSelection = fileChooser.showSaveDialog(window)
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    val fileToSave = fileChooser.selectedFile
+                    if (vocabulary != null) {
+                        vocabulary!!.name = fileToSave.nameWithoutExtension
+                        saveVocabulary(vocabulary!!.serializeVocabulary, fileToSave.absolutePath)
+                    }
+                    vocabulary = null
+                    fileChooser.selectedFile = null
+                    close()
+                }
+                clear()
+            }).start()
+        }
+
+        /** 选择内置词库*/
+        val openVocabulary:(String) -> Unit = {title ->
+            vocabularyWrong = false
+            state.loadingFileChooserVisible = true
+            Thread(Runnable {
+                val fileChooser = state.futureFileChooser.get()
+                fileChooser.dialogTitle = title
+                fileChooser.fileSystemView = FileSystemView.getFileSystemView()
+                if(title =="选择内置词库"){
+                    fileChooser.currentDirectory = getResourcesFile("vocabulary")
+                }else{
+                    fileChooser.currentDirectory = FileSystemView.getFileSystemView().defaultDirectory
+                }
+                fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+                fileChooser.selectedFile = null
+                if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    val file = fileChooser.selectedFile
+                    handleInputFile(file)
+                    state.loadingFileChooserVisible = false
+                } else {
+                    state.loadingFileChooserVisible = false
+                }
+            }).start()
+        }
+
         WindowDraggableArea {
             Surface(
                 elevation = 5.dp,
@@ -255,7 +351,7 @@ fun LinkVocabularyDialog(
             ) {
                 Box(Modifier.fillMaxSize()) {
                     Divider(Modifier.align(Alignment.TopCenter))
-                    if (previewWords.isEmpty()) {
+                    if (prepareLinks.isEmpty()) {
                         Column(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -263,7 +359,7 @@ fun LinkVocabularyDialog(
                         ) {
                             // 当前词库已经链接的外部字幕
                             val externalNameMap = mutableMapOf<String, Int>()
-                            state.vocabulary.wordList.forEach { word ->
+                            vocabulary?.wordList?.forEach { word ->
                                 word.externalCaptions.forEach { externalCaption ->
                                     // 视频词库
                                     if (externalCaption.relateVideoPath.isNotEmpty()) {
@@ -287,14 +383,17 @@ fun LinkVocabularyDialog(
 
                                 }
                             }
-                            if (externalNameMap.isNotEmpty()) {
-                                Column(Modifier.width(IntrinsicSize.Max)) {
 
+                            Column(Modifier.width(IntrinsicSize.Max)) {
+                                if(vocabulary != null){
                                     Row(
                                         horizontalArrangement = Arrangement.Center,
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                                    ) { Text("已链接列表") }
-                                    Divider()
+                                    ) { Text(vocabulary!!.name) }
+                                    val bottom = if(externalNameMap.isEmpty()) 50.dp else 0.dp
+                                    Divider(Modifier.padding(bottom = bottom))
+                                }
+                                if (externalNameMap.isNotEmpty()) {
                                     Column {
                                         var showConfirmationDialog by remember { mutableStateOf(false) }
                                         externalNameMap.forEach { (path, count) ->
@@ -318,7 +417,7 @@ fun LinkVocabularyDialog(
                                                     ConfirmationDelete(
                                                         message = "确定要删除 $name 的所有字幕吗?",
                                                         confirm = {
-                                                            state.vocabulary.wordList.forEach { word ->
+                                                            vocabulary?.wordList?.forEach { word ->
                                                                 val tempList = mutableListOf<ExternalCaption>()
                                                                 word.externalCaptions.forEach { externalCaption ->
                                                                     if (externalCaption.relateVideoPath == path || externalCaption.subtitlesName == path) {
@@ -327,11 +426,13 @@ fun LinkVocabularyDialog(
                                                                 }
                                                                 word.externalCaptions.removeAll(tempList)
                                                             }
-                                                            if (relateVideoPath == path || subtitlesName == path) {
+                                                            if (
+//                                                                relateVideoPath == path ||
+                                                                subtitlesName == path) {
                                                                 vocabularyWrong = false
                                                             }
                                                             showConfirmationDialog = false
-                                                            state.saveCurrentVocabulary()
+                                                            saveEnable = true
                                                         },
                                                         close = { showConfirmationDialog = false }
                                                     )
@@ -340,9 +441,9 @@ fun LinkVocabularyDialog(
                                             }
                                         }
                                     }
-
                                     Divider()
                                 }
+
                             }
                             if (vocabularyWrong) {
                                 if (extractCaptionResultInfo.isNotEmpty()) {
@@ -367,32 +468,19 @@ fun LinkVocabularyDialog(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 OutlinedButton(onClick = {
-                                    vocabularyWrong = false
-                                    state.loadingFileChooserVisible = true
-                                    Thread(Runnable {
-                                        val fileChooser = state.futureFileChooser.get()
-                                        fileChooser.dialogTitle = "选择有字幕的词库"
-                                        fileChooser.fileSystemView = FileSystemView.getFileSystemView()
-                                        fileChooser.currentDirectory = getResourcesFile("vocabulary")
-                                        fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
-                                        fileChooser.selectedFile = null
-                                        if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                                            val file = fileChooser.selectedFile
-                                            extractCaption(file)
-                                            state.loadingFileChooserVisible = false
-                                        } else {
-                                            state.loadingFileChooserVisible = false
-                                        }
-                                    }).start()
+                                    openVocabulary("选择词库")
                                 }) {
-                                    Text("选择文件")
+                                    Text("选择词库")
                                 }
                                 Spacer(Modifier.width(20.dp))
                                 OutlinedButton(onClick = {
-                                    clear()
-                                    close()
+                                    openVocabulary("选择内置词库")
                                 }) {
-                                    Text("确定")
+                                    Text("选择内置词库")
+                                }
+                                Spacer(Modifier.width(20.dp))
+                                OutlinedButton(onClick = { save() }, enabled = saveEnable) {
+                                    Text("保存")
                                 }
                                 Spacer(Modifier.width(20.dp))
                                 OutlinedButton(onClick = {
@@ -403,20 +491,22 @@ fun LinkVocabularyDialog(
                                 }
                             }
                         }
+
+                        Text("提示：不要把词库保存到应用程序的安装目录", modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp))
                     } else {
                         Column(Modifier.fillMaxSize().align(Alignment.Center)) {
                             Row(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 10.dp)
                             ) {
-                                Text("总共${previewWords.size}个单词,${linkCounter}条字幕")
+                                Text("总共${prepareLinks.size}个单词,${linkCounter}条字幕")
                             }
                             Divider()
                             Box(modifier = Modifier.fillMaxWidth().height(500.dp)) {
                                 val scrollState = rememberLazyListState()
                                 LazyColumn(Modifier.fillMaxSize(), scrollState) {
 
-                                    items(previewWords) { (word, captions) ->
+                                    items(prepareLinks.toList()) { (word, captions) ->
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Start,
@@ -427,17 +517,18 @@ fun LinkVocabularyDialog(
                                             Text(text = word, modifier = Modifier.width(150.dp))
                                             Divider(Modifier.width(1.dp).fillMaxHeight())
                                             Column(verticalArrangement = Arrangement.Center) {
-                                                captions.forEachIndexed { index, caption ->
+                                                captions.forEachIndexed { index, externalCaption ->
                                                     Row(
                                                         verticalAlignment = Alignment.CenterVertically,
                                                         modifier = Modifier.fillMaxWidth()
                                                     ) {
                                                         Text(
-                                                            text = "${index + 1}. ${caption.content}",
+                                                            text = "${index + 1}. ${externalCaption.content}",
                                                             modifier = Modifier.padding(5.dp)
                                                         )
+                                                        val caption = Caption(externalCaption.start,externalCaption.end,externalCaption.content)
                                                         val playTriple =
-                                                            Triple(caption, relateVideoPath, subtitlesTrackId)
+                                                            Triple(caption, externalCaption.relateVideoPath, externalCaption.subtitlesTrackId)
                                                         val playerBounds by remember {
                                                             mutableStateOf(
                                                                 Rectangle(
@@ -448,44 +539,42 @@ fun LinkVocabularyDialog(
                                                                 )
                                                             )
                                                         }
-                                                        if (vocabularyType != VocabularyType.DOCUMENT) {
-                                                            var isPlaying by remember { mutableStateOf(false) }
-                                                            IconButton(
-                                                                onClick = {},
-                                                                modifier = Modifier
-                                                                    .onPointerEvent(PointerEventType.Press) { pointerEvent ->
-                                                                        val location =
-                                                                            pointerEvent.awtEventOrNull?.locationOnScreen
-                                                                        if (location != null) {
-                                                                            if (!isPlaying) {
-                                                                                isPlaying = true
-                                                                                playerBounds.x = location.x - 270 + 24
-                                                                                playerBounds.y = location.y - 320
-                                                                                val file = File(relateVideoPath)
-                                                                                if (file.exists()) {
-                                                                                    scope.launch {
-                                                                                        play(
-                                                                                            window = state.videoPlayerWindow,
-                                                                                            setIsPlaying = {
-                                                                                                isPlaying = it
-                                                                                            },
-                                                                                            volume = state.global.videoVolume,
-                                                                                            playTriple = playTriple,
-                                                                                            videoPlayerComponent = state.videoPlayerComponent,
-                                                                                            bounds = playerBounds
-                                                                                        )
-                                                                                    }
+                                                        var isPlaying by remember { mutableStateOf(false) }
+                                                        IconButton(
+                                                            onClick = {},
+                                                            modifier = Modifier
+                                                                .onPointerEvent(PointerEventType.Press) { pointerEvent ->
+                                                                    val location =
+                                                                        pointerEvent.awtEventOrNull?.locationOnScreen
+                                                                    if (location != null) {
+                                                                        if (!isPlaying) {
+                                                                            isPlaying = true
+                                                                            playerBounds.x = location.x - 270 + 24
+                                                                            playerBounds.y = location.y - 320
+                                                                            val file = File( externalCaption.relateVideoPath)
+                                                                            if (file.exists()) {
+                                                                                scope.launch {
+                                                                                    play(
+                                                                                        window = state.videoPlayerWindow,
+                                                                                        setIsPlaying = {
+                                                                                            isPlaying = it
+                                                                                        },
+                                                                                        volume = state.global.videoVolume,
+                                                                                        playTriple = playTriple,
+                                                                                        videoPlayerComponent = state.videoPlayerComponent,
+                                                                                        bounds = playerBounds
+                                                                                    )
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
-                                                            ) {
-                                                                Icon(
-                                                                    Icons.Filled.PlayArrow,
-                                                                    contentDescription = "Localized description",
-                                                                    tint = MaterialTheme.colors.primary
-                                                                )
-                                                            }
+                                                                }
+                                                        ) {
+                                                            Icon(
+                                                                Icons.Filled.PlayArrow,
+                                                                contentDescription = "Localized description",
+                                                                tint = MaterialTheme.colors.primary
+                                                            )
                                                         }
                                                     }
                                                 }
