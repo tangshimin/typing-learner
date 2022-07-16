@@ -1251,29 +1251,30 @@ fun VocabularyFilter(
                             Box(Modifier.fillMaxSize().verticalScroll(stateVertical)) {
                                 Column {
                                     recentList.forEach { recentItem ->
-                                        val recentFile = File(recentItem.path)
-                                        if (recentFile.exists()) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier.fillMaxWidth().height(40.dp)
-                                                    .clickable {
-                                                        expanded = false
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth().height(40.dp)
+                                                .clickable {
+                                                    val recentFile = File(recentItem.path)
+                                                    if(recentFile.exists()){
                                                         vocabularyFilterListAdd(recentFile)
+                                                        expanded = false
+                                                    }else{
+                                                        // 文件可能被删除了
+                                                        removeInvalidRecentItem(recentItem)
+                                                        JOptionPane.showMessageDialog(null,"文件地址错误：\n${recentItem.path}")
                                                     }
-                                            ) {
-                                                Text(
-                                                    text = recentItem.name,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    maxLines = 1,
-                                                    color = MaterialTheme.colors.onBackground,
-                                                    modifier = Modifier.padding(start = 10.dp, end = 10.dp)
-                                                )
 
-                                            }
-
-                                        } else {
-                                            // 文件可能被删除了
-                                            removeInvalidRecentItem(recentItem)
+                                                }
+                                        ) {
+                                            Text(
+                                                text = recentItem.name,
+                                                overflow = TextOverflow.Ellipsis,
+                                                maxLines = 1,
+                                                color = MaterialTheme.colors.onBackground,
+                                                modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+                                            )
 
                                         }
 
