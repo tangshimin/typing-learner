@@ -615,7 +615,7 @@ fun ShortcutKeyPage() {
                         append("  $ctrl + B ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
-                        append("  激活复制功能。")
+                        append("  激活复制功能，激活后，不要先抄写就可以自由的复制。")
                     }
 
                 }
