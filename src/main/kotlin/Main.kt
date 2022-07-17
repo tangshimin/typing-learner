@@ -47,8 +47,8 @@ import javax.swing.JOptionPane
 import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.schedule
 
-
-const val version = "v1.1.0"
+// build.gradle.kts 的版本也需要更改
+const val version = "v1.3.0"
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
