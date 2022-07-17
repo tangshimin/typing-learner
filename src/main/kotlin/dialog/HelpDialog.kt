@@ -691,6 +691,33 @@ fun ShortcutKeyPage() {
                 Text(annotatedString)
             }
         }
+        SelectionContainer {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.padding(start = 16.dp,bottom = 10.dp)
+            ) {
+                Text("搜索      ", modifier = Modifier.padding(end = 20.dp))
+                val annotatedString = buildAnnotatedString {
+
+                    val background = if (MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("打开搜索")
+                    }
+
+                    withStyle(
+                        style = SpanStyle(
+                            color = MaterialTheme.colors.primary,
+                            background = background
+                        )
+                    ) {
+                        append("  Ctrl + F ")
+                    }
+
+                }
+                Text(annotatedString)
+            }
+        }
 
     }
 }
