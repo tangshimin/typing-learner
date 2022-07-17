@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -23,7 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -36,8 +41,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.WindowState
 import data.*
+import data.Dictionary
+import dialog.ChapterFinishedDialog
+import dialog.EditWordDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
@@ -48,22 +57,14 @@ import theme.createColors
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import java.awt.*
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Duration
 import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
-import kotlin.concurrent.schedule
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
-import dialog.ChapterFinishedDialog
-import dialog.EditWordDialog
-import java.math.BigDecimal
-import java.math.RoundingMode
 import kotlin.concurrent.fixedRateTimer
+import kotlin.concurrent.schedule
 
 /**
  * 应用程序的核心组件
@@ -160,6 +161,12 @@ fun TypingWord(
 
                         /** 字幕输入框焦点请求器*/
                         val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
+
+                        /** 搜索 */
+                        var searching by remember { mutableStateOf(false) }
+
+                        /** 等宽字体*/
+                        val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
                         /** 单词发音的本地路径 */
                         val audioPath = getAudioPath(
@@ -261,6 +268,12 @@ fun TypingWord(
                                         state.global.isDarkTheme = !state.global.isDarkTheme
                                         state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
                                         state.saveGlobalState()
+                                    }
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
+                                    scope.launch {
+                                        searching = !searching
                                     }
                                     true
                                 }
@@ -482,7 +495,7 @@ fun TypingWord(
                             /** 显示编辑单词对话框 */
                             var showEditWordDialog by remember { mutableStateOf(false) }
 
-                            val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+
 
                             /** 重置章节计数器,清空听写模式存储的错误单词 */
                             val resetChapterTime: () -> Unit = {
@@ -962,7 +975,7 @@ fun TypingWord(
                                             contains = contains,
                                             fontFamily = monospace
                                         )
-                                        CopyButon(wordValue = currentWord.value)
+                                        CopyButton(wordValue = currentWord.value)
                                     }
                                 }else if(showBookmark){
                                     val contains = state.hardVocabulary.wordList.contains(currentWord)
@@ -983,6 +996,7 @@ fun TypingWord(
                             Morphology(
                                 word = currentWord,
                                 isPlaying = isPlaying,
+                                searching = false,
                                 morphologyVisible = state.typingWord.morphologyVisible
                             )
                             Definition(
@@ -1104,7 +1118,14 @@ fun TypingWord(
                                 )
                             }
                         }
-
+                        if(searching){
+                            Search(
+                                state = state,
+                                vocabulary = state.vocabulary,
+                                onDismissRequest = {searching = false},
+                                fontFamily = monospace
+                            )
+                        }
                     }
                 } else {
                     Surface(Modifier.fillMaxSize()) {
@@ -1160,6 +1181,7 @@ fun MacOSTitle(
 fun Morphology(
     word: Word,
     isPlaying: Boolean,
+    searching: Boolean,
     morphologyVisible: Boolean,
 ) {
     if (morphologyVisible && !isPlaying) {
@@ -1209,8 +1231,8 @@ fun Morphology(
                 Row(
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier.height(IntrinsicSize.Max)
-                        .width(554.dp)
-                        .padding(start = 50.dp)
+                        .width(if(searching) 600.dp else 554.dp)
+                        .padding(start = if(searching) 0.dp else 50.dp)
 
                 ) {
                     val textColor = MaterialTheme.colors.onBackground
@@ -1317,7 +1339,9 @@ fun Morphology(
 
                 }
             }
-            Divider(Modifier.padding(start = 50.dp))
+            if(!searching){
+                Divider(Modifier.padding(start = 50.dp))
+            }
         }
 
 
@@ -1938,7 +1962,7 @@ fun BookmarkButton(
 /** 复制按钮 */
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
-fun CopyButon(wordValue:String){
+fun CopyButton(wordValue:String){
     TooltipArea(
         tooltip = {
             Surface(
@@ -1968,6 +1992,326 @@ fun CopyButon(wordValue:String){
         }
     }
 }
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun Search(
+    state: AppState,
+    vocabulary: MutableVocabulary,
+    onDismissRequest:() -> Unit,
+    fontFamily: FontFamily,
+){
+    var searchResult by remember{ mutableStateOf<Word?>(null) }
+    var isPlayingAudio by remember { mutableStateOf(false) }
+    val audioPlayer = LocalAudioPlayerComponent.current
+    val keyEvent: (KeyEvent) -> Boolean = {
+        if (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) {
+            onDismissRequest()
+            true
+        }
+        if (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) {
+            if (!isPlayingAudio && searchResult != null) {
+                if(searchResult!!.value.isNotEmpty()){
+                    val audioPath = getAudioPath(
+                        word = searchResult!!.value,
+                        audioSet = state.audioSet,
+                        addToAudioSet = {state.audioSet.add(it)},
+                        pronunciation = state.typingWord.pronunciation
+                    )
+                    playAudio(
+                        audioPath = audioPath,
+                        volume = state.global.audioVolume,
+                        audioPlayerComponent = audioPlayer,
+                        changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
+                        setIsAutoPlay = {}
+                    )
+                }
+            }
+            true
+        } else if (it.key == Key.Escape && it.type == KeyEventType.KeyUp) {
+            onDismissRequest()
+            true
+        } else false
+    }
+
+    Popup(
+        alignment = Alignment.Center,
+        focusable = true,
+        onDismissRequest = {onDismissRequest()},
+        onKeyEvent = {keyEvent(it)}
+    ) {
+        val scope = rememberCoroutineScope()
+
+        val focusRequester = remember { FocusRequester() }
+        var input by remember { mutableStateOf("") }
+
+        val search:(String) -> Unit = {
+            scope.launch {
+                input = it
+                if(searchResult != null) {
+                    searchResult!!.value = ""
+                }
+
+                // 先搜索词库
+                for (word in vocabulary.wordList) {
+                    if(word.value == input){
+                        searchResult = word.deepCopy()
+                        break
+                    }
+                }
+                // 如果词库里面没有，就搜索内置词典
+                if((searchResult == null) || searchResult!!.value.isEmpty()){
+                    val dictWord = Dictionary.query(input)
+                    if(dictWord != null){
+                        searchResult = dictWord.deepCopy()
+                    }
+                }
+
+            }
+        }
+        Surface(
+            elevation = 5.dp,
+            shape = RectangleShape,
+            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+            modifier = Modifier
+                .width(600.dp)
+                .height(500.dp)
+                .background(MaterialTheme.colors.background),
+        ) {
+            Box(Modifier.fillMaxSize()) {
+                val stateVertical = rememberScrollState(0)
+                Column(Modifier.verticalScroll(stateVertical)) {
+                    Row(Modifier.fillMaxWidth()) {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = "Localized description",
+                            tint = if (MaterialTheme.colors.isLight) Color.DarkGray else Color.LightGray,
+                            modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
+                        )
+
+                        BasicTextField(
+                            value = input,
+                            onValueChange = { search(it) },
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                            textStyle = MaterialTheme.typography.h5.copy(
+                                color = MaterialTheme.colors.onBackground,
+                                fontFamily = fontFamily
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(top = 5.dp, bottom = 5.dp)
+                                .focusRequester(focusRequester)
+                        )
+
+                        LaunchedEffect(Unit) {
+                            focusRequester.requestFocus()
+                        }
+
+                    }
+                    Divider()
+                    if (searchResult != null && searchResult!!.value.isNotEmpty()) {
+
+                        SearchResultInfo(
+                            word = searchResult!!,
+                            state = state,
+                        )
+
+                        if (searchResult!!.captions.isNotEmpty()) {
+                            searchResult!!.captions.forEachIndexed { index, caption ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "${index + 1}. ${caption.content}",
+                                        modifier = Modifier.padding(5.dp)
+                                    )
+
+                                    val playTriple =
+                                        Triple(caption, vocabulary.relateVideoPath, vocabulary.subtitlesTrackId)
+                                    val playerBounds by remember {
+                                        mutableStateOf(
+                                            Rectangle(
+                                                0,
+                                                0,
+                                                540,
+                                                303
+                                            )
+                                        )
+                                    }
+                                    var isPlaying by remember { mutableStateOf(false) }
+                                    IconButton(
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .onPointerEvent(PointerEventType.Press) { pointerEvent ->
+                                                val location =
+                                                    pointerEvent.awtEventOrNull?.locationOnScreen
+                                                if (location != null) {
+                                                    if (!isPlaying) {
+                                                        isPlaying = true
+                                                        playerBounds.x = location.x - 270 + 24
+                                                        playerBounds.y = location.y - 320
+                                                        val file = File(vocabulary.relateVideoPath)
+                                                        if (file.exists()) {
+                                                            scope.launch {
+                                                                play(
+                                                                    window = state.videoPlayerWindow,
+                                                                    setIsPlaying = {
+                                                                        isPlaying = it
+                                                                    },
+                                                                    volume = state.global.videoVolume,
+                                                                    playTriple = playTriple,
+                                                                    videoPlayerComponent = state.videoPlayerComponent,
+                                                                    bounds = playerBounds
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.PlayArrow,
+                                            contentDescription = "Localized description",
+                                            tint = MaterialTheme.colors.primary
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
+                        if (searchResult!!.externalCaptions.isNotEmpty()) {
+                            searchResult!!.externalCaptions.forEachIndexed { index, externalCaption ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "${index + 1}. ${externalCaption.content}",
+                                        modifier = Modifier.padding(5.dp)
+                                    )
+                                    val caption =
+                                        Caption(externalCaption.start, externalCaption.end, externalCaption.content)
+                                    val playTriple =
+                                        Triple(
+                                            caption,
+                                            externalCaption.relateVideoPath,
+                                            externalCaption.subtitlesTrackId
+                                        )
+                                    val playerBounds by remember {
+                                        mutableStateOf(
+                                            Rectangle(
+                                                0,
+                                                0,
+                                                540,
+                                                303
+                                            )
+                                        )
+                                    }
+                                    var isPlaying by remember { mutableStateOf(false) }
+                                    IconButton(
+                                        onClick = {},
+                                        modifier = Modifier
+                                            .onPointerEvent(PointerEventType.Press) { pointerEvent ->
+                                                val location =
+                                                    pointerEvent.awtEventOrNull?.locationOnScreen
+                                                if (location != null) {
+                                                    if (!isPlaying) {
+                                                        isPlaying = true
+                                                        playerBounds.x = location.x - 270 + 24
+                                                        playerBounds.y = location.y - 320
+                                                        val file = File(externalCaption.relateVideoPath)
+                                                        if (file.exists()) {
+                                                            scope.launch {
+                                                                play(
+                                                                    window = state.videoPlayerWindow,
+                                                                    setIsPlaying = {
+                                                                        isPlaying = it
+                                                                    },
+                                                                    volume = state.global.videoVolume,
+                                                                    playTriple = playTriple,
+                                                                    videoPlayerComponent = state.videoPlayerComponent,
+                                                                    bounds = playerBounds
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.PlayArrow,
+                                            contentDescription = "Localized description",
+                                            tint = MaterialTheme.colors.primary
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }else if(input.isNotEmpty()){
+                        Text("没有找到相关单词")
+                    }
+                }
+                VerticalScrollbar(
+                    style = LocalScrollbarStyle.current.copy(
+                        shape = if (isWindows()) RectangleShape else RoundedCornerShape(
+                            4.dp
+                        )
+                    ),
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .fillMaxHeight(),
+                    adapter = rememberScrollbarAdapter(stateVertical)
+                )
+            }
+
+
+            }
+
+        }
+
+    }
+
+
+
+@Composable
+fun SearchResultInfo(
+    word: Word,
+    state: AppState,
+){
+    Row(verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()){
+        AudioButton(
+            word = word,
+            state = state,
+            volume = state.global.audioVolume,
+            pronunciation = state.typingWord.pronunciation,
+        )
+    }
+    Divider()
+    Morphology(
+        word = word,
+        isPlaying = false,
+        searching = true,
+        morphologyVisible = true
+    )
+    Spacer(Modifier.height(8.dp))
+    Divider()
+    SelectionContainer {
+        Text(text = word.definition,
+            color = MaterialTheme.colors.onBackground,
+            modifier = Modifier.padding(top = 8.dp,bottom = 8.dp))
+    }
+    Divider()
+    SelectionContainer {
+        Text(word.translation,
+            color = MaterialTheme.colors.onBackground,
+            modifier = Modifier.padding(top = 8.dp,bottom = 8.dp))
+    }
+    Divider()
+}
+
 /**
  * 计算视频播放窗口的位置和大小
  */

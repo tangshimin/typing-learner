@@ -234,15 +234,15 @@ fun Word(
                     fontSize =  numberFontSize
                 )
             }
-            var volumeTop = textHeight.div(2) - 20.dp
-            if(volumeTop<0.dp) volumeTop =  0.dp
-            if(global.textStyle == "H1") volumeTop = 23.dp
+            var paddingTop = textHeight.div(2) - 20.dp
+            if(paddingTop<0.dp) paddingTop =  0.dp
+            if(global.textStyle == "H1") paddingTop = 23.dp
 
             AudioButton(
                 audioPath = audioPath,
                 volume = global.audioVolume,
                 pronunciation = pronunciation,
-                volumeTop = volumeTop
+                paddingTop = paddingTop,
             )
         }
 }

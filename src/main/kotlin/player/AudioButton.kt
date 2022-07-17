@@ -19,7 +19,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import data.Word
 import kotlinx.coroutines.launch
+import state.AppState
 import state.getAudioDirectory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -36,14 +38,19 @@ fun rememberAudioPlayerComponent(): AudioPlayerComponent = remember {
     AudioPlayerComponent()
 }
 
-
+/** 记忆单词界面的播放按钮
+ * @param audioPath 发音的绝对路径
+ * @param volume 音量
+ * @param pronunciation 音音 或 美音
+ * @param paddingTop 顶部填充
+ */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun AudioButton(
     audioPath: String,
     volume: Float,
     pronunciation: String,
-    volumeTop: Dp,
+    paddingTop: Dp,
 ) {
     if (pronunciation != "false") {
         val scope = rememberCoroutineScope()
@@ -87,7 +94,7 @@ fun AudioButton(
                 val tint by animateColorAsState(if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground)
                 IconToggleButton(
                     checked = isPlaying,
-                     modifier = Modifier.padding(top = volumeTop),
+                     modifier = Modifier.padding(top = paddingTop),
                     onCheckedChange = {
                         if (!isPlaying) {
                             scope.launch {
@@ -125,6 +132,91 @@ fun AudioButton(
 
 }
 
+/**
+ * 搜索界面的播放按钮
+ */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun AudioButton(
+    word: Word,
+    state:AppState,
+    volume: Float,
+    pronunciation: String,
+) {
+    if (pronunciation != "false") {
+        val scope = rememberCoroutineScope()
+        val audioPlayerComponent = LocalAudioPlayerComponent.current
+        var isPlaying by remember { mutableStateOf(false) }
+
+        val playAudio = {
+            val audioPath = getAudioPath(
+                word = word.value,
+                audioSet = state.audioSet,
+                addToAudioSet = {state.audioSet.add(it)},
+                pronunciation = state.typingWord.pronunciation
+            )
+            playAudio(audioPath, volume,  audioPlayerComponent,
+                changePlayerState = { isPlaying = it },
+                setIsAutoPlay = { })
+        }
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .height(48.dp)
+                .width(IntrinsicSize.Max)
+        ) {
+            TooltipArea(
+                tooltip = {
+                    Surface(
+                        elevation = 4.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                        shape = RectangleShape
+                    ) {
+                        val ctrl = LocalCtrl.current
+                        Text(text = "朗读发音 $ctrl+J", modifier = Modifier.padding(10.dp))
+                    }
+                },
+                delayMillis = 300,
+                tooltipPlacement = TooltipPlacement.ComponentRect(
+                    anchor = Alignment.CenterEnd,
+                    alignment = Alignment.CenterEnd,
+                    offset = DpOffset.Zero
+                ),
+            ) {
+                val tint by animateColorAsState(if (isPlaying) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground)
+                IconToggleButton(
+                    checked = isPlaying,
+                    onCheckedChange = {
+                        if (!isPlaying) {
+                            scope.launch {
+                                playAudio()
+                            }
+                        }
+                    }) {
+                    Crossfade(isPlaying) { isPlaying ->
+                        if (isPlaying) {
+                            Icon(
+                                Icons.Filled.VolumeUp,
+                                contentDescription = "Localized description",
+                                tint = tint
+                            )
+                        } else {
+                            Icon(
+                                Icons.Filled.VolumeDown,
+                                contentDescription = "Localized description",
+                                tint = tint
+                            )
+                        }
+                    }
+
+                }
+            }
+        }
+
+    }
+
+}
 fun playAudio(
     audioPath: String,
     volume: Float,
