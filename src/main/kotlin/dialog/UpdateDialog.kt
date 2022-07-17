@@ -1,6 +1,8 @@
 package dialog
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.maven.artifact.versioning.ComparableVersion
+import player.isWindows
 import java.io.IOException
 import java.util.*
 import kotlin.concurrent.schedule
@@ -32,6 +35,8 @@ fun UpdateDialog(
     autoUpdate:Boolean,
     setAutoUpdate:(Boolean) -> Unit,
     latestVersion:String,
+    releaseNote:String,
+    ignore:(String) -> Unit,
 ) {
     Dialog(
         title = "检查更新",
@@ -40,7 +45,7 @@ fun UpdateDialog(
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(380.dp, 300.dp)
+            size = DpSize(600.dp, 550.dp)
         ),
     ) {
         Surface(
@@ -50,6 +55,7 @@ fun UpdateDialog(
             var detecting by remember { mutableStateOf(true) }
             var downloadable by remember { mutableStateOf(latestVersion.isNotEmpty()) }
             var body by remember { mutableStateOf("") }
+            var releaseTagName by remember { mutableStateOf("") }
 
             fun detectingUpdates(version: String) {
                 val client = OkHttpClient()
@@ -72,7 +78,16 @@ fun UpdateDialog(
                                 val currentVersion = ComparableVersion(version)
                                 body = if (releaseVersion >currentVersion) {
                                     downloadable = true
-                                    "有可用更新，版本为：${releases.tag_name}"
+                                    releaseTagName = releases.tag_name
+                                    var string = "版本：${releases.tag_name}\n"
+                                    val body = releases.body
+                                    if(body != null){
+                                        val end = body.indexOf("---")
+                                        if(end != -1){
+                                            string += body.substring(0,end)
+                                        }
+                                    }
+                                    string
                                 } else {
                                     downloadable = false
                                     "没有可用更新"
@@ -100,58 +115,62 @@ fun UpdateDialog(
                 }
             }
 
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
+            Box{
+                val stateVertical = rememberScrollState(0)
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize().verticalScroll(stateVertical)
                 ) {
-                    Text("当前版本为：  $version")
-                }
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("自动检查更新")
-                    Checkbox(
-                        checked = autoUpdate,
-                        onCheckedChange = { setAutoUpdate(it) }
-                    )
-                }
-                if (latestVersion.isEmpty() && detecting) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Box(Modifier.width(50.dp).height(50.dp)) {
-                            CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        Text("当前版本：  $version")
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("自动检查更新")
+                        Checkbox(
+                            checked = autoUpdate,
+                            onCheckedChange = { setAutoUpdate(it) }
+                        )
+                    }
+                    if (latestVersion.isEmpty() && detecting) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                        ) {
+                            Box(Modifier.width(50.dp).height(50.dp)) {
+                                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                            }
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                        ) {
+                            Text("正在检查")
                         }
                     }
+
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
                     ) {
-                        Text("正在检查")
+                        if(latestVersion.isNotEmpty()){
+                            val note = "版本：$latestVersion\n$releaseNote"
+                            Text(text = note)
+                        }else{
+                            Text(body)
+                        }
                     }
-                }
 
+                }
                 Row(
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
-                ) {
-                    if(latestVersion.isNotEmpty()){
-                        Text("有可用更新，版本为：$latestVersion")
-                    }else{
-                        Text(body)
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = 10.dp)
                 ) {
                     OutlinedButton(onClick = { close() }) {
                         Text("关闭")
@@ -160,20 +179,46 @@ fun UpdateDialog(
                     val uriHandler = LocalUriHandler.current
                     val latest = "https://github.com/tangshimin/typing-learner/releases"
                     OutlinedButton(
-                        onClick = { uriHandler.openUri(latest)},
+                        onClick = {
+                            uriHandler.openUri(latest)
+                            close()
+                        },
                         enabled = downloadable
                     ) {
                         Text("下载最新版")
                     }
+                    Spacer(Modifier.width(20.dp))
+                    val ignoreEnable = latestVersion.isNotEmpty() || releaseTagName.isNotEmpty()
+                    OutlinedButton(
+                        enabled = ignoreEnable,
+                        onClick = {
+                        if(latestVersion.isNotEmpty()){
+                            ignore(latestVersion)
+                        }else{
+                            ignore(releaseTagName)
+                        }
+                            close()
+                        }) {
+                        Text("忽略")
+                    }
                 }
+                VerticalScrollbar(
+                    style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .fillMaxHeight(),
+                    adapter = rememberScrollbarAdapter(stateVertical)
+                )
             }
+
         }
     }
 }
 
-
+/**
+ * 自动检查更新
+ */
 @OptIn(ExperimentalSerializationApi::class)
-fun autoDetectingUpdates(version: String):Pair<Boolean,String>{
+fun autoDetectingUpdates(version: String):Triple<Boolean,String,String>{
     val client = OkHttpClient()
     val url = "https://api.github.com/repos/tangshimin/typing-learner/releases/latest"
     val headerName = "Accept"
@@ -192,12 +237,21 @@ fun autoDetectingUpdates(version: String):Pair<Boolean,String>{
                 val releaseVersion = ComparableVersion(releases.tag_name)
                 val currentVersion = ComparableVersion(version)
                 if (releaseVersion >currentVersion) {
-                    return Pair(true, releases.tag_name)
+                    var note = ""
+                    val body = releases.body
+                    if(body != null){
+                        val end = body.indexOf("---")
+                        if(end != -1){
+                            note += body.substring(0,end)
+                        }
+                    }
+                    return Triple(true, releases.tag_name,note)
                 }
             }
         }
     }catch (exception: IOException){
         exception.printStackTrace()
+        return Triple(false, "","")
     }
-    return Pair(false, "")
+    return Triple(false, "","")
 }

@@ -107,6 +107,9 @@ class AppState {
     /** 软件的最新版本 */
     var latestVersion by mutableStateOf("")
 
+    /** 版本说明 **/
+    var releaseNote by mutableStateOf("")
+
     /** 本地缓存的单词发音列表 */
     var audioSet = loadAudioSet()
 
@@ -221,7 +224,8 @@ class AppState {
                     global.size.width.value,
                     global.size.height.value,
                     global.placement,
-                    global.autoUpdate
+                    global.autoUpdate,
+                    global.ignoreVersion
                 )
                 val json = encodeBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()

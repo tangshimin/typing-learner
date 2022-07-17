@@ -31,6 +31,7 @@ data class GlobalData(
     val height:Float = 862F,
     val placement:WindowPlacement = WindowPlacement.Floating,
     val autoUpdate:Boolean = true,
+    val ignoreVersion:String = "",
 )
 
 /** 全局的可观察状态 */
@@ -104,6 +105,11 @@ class GlobalState(globalData: GlobalData) {
      * 自动检查更新
      */
     var autoUpdate by mutableStateOf(globalData.autoUpdate)
+
+    /**
+     * 忽略的版本
+     */
+    var ignoreVersion by mutableStateOf(globalData.ignoreVersion)
 }
 @Composable
  fun computeFontSize(textStyle: String): TextUnit {

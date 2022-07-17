@@ -48,7 +48,7 @@ import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.schedule
 
 
-const val version = "v1.1.1"
+const val version = "v1.1.0"
 
 @ExperimentalFoundationApi
 @ExperimentalAnimationApi
@@ -202,10 +202,11 @@ fun main() = application {
                     if(!uptdated && state.global.autoUpdate){
                         Timer("update",false).schedule(5000){
                             val result = autoDetectingUpdates(version)
-                            state.showUpdateDialog = result.first
-                           if(result.first){
-                               state.latestVersion = result.second
-                           }
+                            if(result.first && result.second != state.global.ignoreVersion){
+                                state.showUpdateDialog = true
+                                state.latestVersion = result.second
+                                state.releaseNote = result.third
+                            }
                         }
                     }
                     uptdated = true
@@ -631,7 +632,12 @@ fun MenuDialogs(state: AppState) {
                 state.global.autoUpdate = it
                 state.saveGlobalState()
             },
-            latestVersion = state.latestVersion
+            latestVersion = state.latestVersion,
+            releaseNote = state.releaseNote,
+            ignore = {
+                state.global.ignoreVersion = it
+                state.saveGlobalState()
+            }
         )
     }
 }
