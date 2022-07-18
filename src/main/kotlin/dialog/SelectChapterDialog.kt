@@ -151,8 +151,12 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
                             textAlign = TextAlign.Center,
                             modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp)
                         )
+
+                        val words = if (index == count - 1){
+                            if(mod==0) 20 else mod
+                        } else 20
                         Text(
-                            text = "${if (index == count - 1) mod else 20} 词",
+                            text = "$words 词",
                             color = MaterialTheme.colors.onBackground,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
