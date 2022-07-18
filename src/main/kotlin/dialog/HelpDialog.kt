@@ -713,7 +713,9 @@ fun ShortcutKeyPage() {
                     ) {
                         append("  Ctrl + F ")
                     }
-
+                    withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
+                        append("  如果当前词库没有查到，会搜索内置词典。")
+                    }
                 }
                 Text(annotatedString)
             }
