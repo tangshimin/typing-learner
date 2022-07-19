@@ -43,7 +43,7 @@ fun HelpDialog(close: () -> Unit) {
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(1200.dp, 700.dp)
+            size = DpSize(1000.dp, 700.dp)
         ),
     ) {
         Surface {
@@ -154,49 +154,50 @@ fun DocumentPage(){
         val stateVertical = rememberScrollState(0)
         Column (Modifier.padding(start = 16.dp, top = 16.dp,end = 16.dp).verticalScroll(stateVertical)){
             val theme = if(MaterialTheme.colors.isLight) "light" else "dark"
-            Text("1. 打开从文档生成词库窗口")
+
+            Text("\n1. 打开从文档生成词库窗口，然后选择文档，可以拖放文档到窗口快速打开，\n我这里选择的是一个 android 开发英文文档，有 1300 页。点击开始按钮。")
             Image(
                 painter = painterResource("screenshot/document-$theme/document-1.png"),
-                contentDescription = "document-1",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
-            )
-            Text("\n2. 选择文档，可以拖放文档到窗口快速打开，我这里选择的是一个 android 开发英文文档，有 1300 页。点击分析按钮。")
-            Image(
-                painter = painterResource("screenshot/document-$theme/document-2.png"),
                 contentDescription = "document-2",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(640.dp).height(150.dp).padding(start = 20.dp)
             )
-            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
+            Text("\n2. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，\n词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
-                painter = painterResource("screenshot/document-$theme/document-3.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-2.png"),
                 contentDescription = "document-3",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(405.dp).height(379.dp).padding(start = 20.dp)
             )
-            Text("\n4. 还可以把所有的派生词替换为原型词。")
+            Text("\n3. 还可以把所有的派生词替换为原型词。")
             Image(
-                painter = painterResource("screenshot/document-$theme/document-4.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-3.png"),
                 contentDescription = "document-4",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(407.dp).height(366.dp).padding(start = 20.dp)
             )
-            Text("\n5.经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
+            Text("\n4. 如果有数字还可用过滤数字。")
             Image(
-                painter = painterResource("screenshot/document-$theme/document-5.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-4.png"),
+                contentDescription = "document-4",
+                modifier = Modifier.width(409.dp).height(354.dp).padding(start = 20.dp)
+            )
+            Text("\n5.经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，\n点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
+            Image(
+                painter = painterResource("screenshot/mkv-$theme/MKV-5.png"),
                 contentDescription = "document-5",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(479.dp).height(675.dp).padding(start = 20.dp)
             )
             Text("\n6. 如果还有你熟悉的词，可以用鼠标单击单词的右上角的删除按钮删除了。")
             Image(
-                painter = painterResource("screenshot/document-$theme/document-6.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-6.png"),
                 contentDescription = "document-6",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(720.dp).height(383.dp).padding(start = 20.dp)
             )
             Text("\n7. 也可以在记忆单词的时候删除熟悉的词，把鼠标移动到正在记忆的单词，会弹出一个菜单，可以从这里删除单词。")
             Image(
                 painter = painterResource("screenshot/document-$theme/document-7.png"),
                 contentDescription = "document-7",
-                modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
+                modifier = Modifier.width(546.dp).height(316.dp).padding(start = 20.dp)
             )
-            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。\n如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             val uriHandler = LocalUriHandler.current
             val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
             Row (verticalAlignment = Alignment.CenterVertically,
@@ -260,49 +261,49 @@ fun SubtitlesPage(){
         Column (Modifier.padding(start = 16.dp, top = 16.dp,end = 16.dp).verticalScroll(stateVertical)){
             val theme = if(MaterialTheme.colors.isLight) "light" else "dark"
             Text("从字幕生成的词库，每个单词最多匹配三条字幕。\n")
-            Text("1. 打开从字幕生成词库窗口")
+            Text("\n1. 打开从字幕生成词库窗口,然后选择 SRT 字幕，也可以拖放文件到窗口快速打开，\n如果有对应的视频，就选择对应的视频，然后点击分析按钮。")
             Image(
                 painter = painterResource("screenshot/subtitles-$theme/Subtitles-1.png"),
                 contentDescription = "Subtitles-1",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(633.dp).height(199.dp).padding(start = 20.dp)
             )
-            Text("\n2. 选择 SRT 字幕，也可以拖放文件到窗口快速打开，如果有对应的视频，就选择对应的视频，然后点击分析按钮。")
+            Text("\n2. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，\n词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
-                painter = painterResource("screenshot/subtitles-$theme/Subtitles-2.png"),
-                contentDescription = "Subtitles-2",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
-            )
-            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
-            Image(
-                painter = painterResource("screenshot/subtitles-$theme/Subtitles-3.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-2.png"),
                 contentDescription = "Subtitles-3",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(405.dp).height(379.dp).padding(start = 20.dp)
             )
-            Text("\n4. 还可以把所有的派生词替换为原型词。")
+            Text("\n3. 还可以把所有的派生词替换为原型词。")
             Image(
-                painter = painterResource("screenshot/subtitles-$theme/Subtitles-4.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-3.png"),
                 contentDescription = "Subtitles-4",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(407.dp).height(366.dp).padding(start = 20.dp)
             )
-            Text("\n5. 经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
+            Text("\n4. 如果有数字还可以过滤数字。")
             Image(
-                painter = painterResource("screenshot/subtitles-$theme/Subtitles-5.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-4.png"),
+                contentDescription = "Subtitles-4",
+                modifier = Modifier.width(409.dp).height(354.dp).padding(start = 20.dp)
+            )
+            Text("\n5. 经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，\n点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
+            Image(
+                painter = painterResource("screenshot/mkv-$theme/MKV-5.png"),
                 contentDescription = "Subtitles-5",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(479.dp).height(752.dp).padding(start = 20.dp)
             )
             Text("\n6. 如果还有你熟悉的词，可以用鼠标单击单词的右上角的删除按钮删除了。")
             Image(
-                painter = painterResource("screenshot/subtitles-$theme/Subtitles-6.png"),
+                painter = painterResource("screenshot/mkv-$theme/MKV-6.png"),
                 contentDescription = "Subtitles-6",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(720.dp).height(383.dp).padding(start = 20.dp)
             )
             Text("\n7. 也可以在记忆单词的时候删除熟悉的词，把鼠标移动到正在记忆的单词，会弹出一个菜单，可以从这里删除单词。")
             Image(
                 painter = painterResource("screenshot/document-$theme/document-7.png"),
                 contentDescription = "document-7",
-                modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
+                modifier = Modifier.width(546.dp).height(316.dp).padding(start = 20.dp)
             )
-            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。\n如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             Row{
                 val uriHandler = LocalUriHandler.current
                 val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
@@ -343,49 +344,49 @@ fun MatroskaPage(){
         Column (Modifier.padding(start = 16.dp, top = 16.dp,end = 16.dp).verticalScroll(stateVertical)){
             val theme = if(MaterialTheme.colors.isLight) "light" else "dark"
             Text("从 MKV 生成的词库，每个单词最多匹配三条字幕。\n")
-            Text("1. 打开从 MKV 生成词库窗口")
+            Text("\n1. 打开从 MKV 生成词库窗口,然后选择 MKV 视频，也可以拖放文件到窗口快速打开，（最新版支持批量生成词库）\n然后点击开始按钮")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-1.png"),
                 contentDescription = "mkv-1",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(588.dp).height(192.dp).padding(start = 20.dp)
             )
-            Text("\n2. 选择 MKV 视频，也可以拖放文件到窗口快速打开，然后点击分析按钮")
+            Text("\n2. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，\n词频为 0 的词包括简单的字母和数字还有不常见的单词。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-2.png"),
                 contentDescription = "mkv-2",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(405.dp).height(379.dp).padding(start = 20.dp)
             )
-            Text("\n3. 在预览区可以看到程序生成的单词。你可以点击左边的过滤词频顺序为0的词，词频为 0 的词包括简单的字母和数字还有不常见的单词。")
+            Text("\n3. 还可以把所有的派生词替换为原型词。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-3.png"),
                 contentDescription = "mkv-3",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(407.dp).height(366.dp).padding(start = 20.dp)
             )
-            Text("\n4. 还可以把所有的派生词替换为原型词。")
+            Text("\n4. 如果有数字还可以过滤数字。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-4.png"),
                 contentDescription = "mkv-4",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(409.dp).height(354.dp).padding(start = 20.dp)
             )
-            Text("\n5. 经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
+            Text("\n5. 经过前面的过滤之后，还是有你很熟悉的词，比如你已经过了很熟悉牛津核心5000词了，\n点击左边的内置词库，然后选择：牛津核心词 -> The_Oxford_5000，选择之后的单词是不是少了很多。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-5.png"),
                 contentDescription = "mkv-5",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(479.dp).height(752.dp).padding(start = 20.dp)
             )
             Text("\n6. 如果还有你熟悉的词，可以用鼠标单击单词的右上角的删除按钮删除了。")
             Image(
                 painter = painterResource("screenshot/mkv-$theme/MKV-6.png"),
                 contentDescription = "mkv-6",
-                modifier = Modifier.width(950.dp).height(580.dp).padding(start = 20.dp)
+                modifier = Modifier.width(720.dp).height(383.dp).padding(start = 20.dp)
             )
             Text("\n7. 也可以在记忆单词的时候删除熟悉的词，把鼠标移动到正在记忆的单词，会弹出一个菜单，可以从这里删除单词。")
             Image(
                 painter = painterResource("screenshot/document-$theme/document-7.png"),
                 contentDescription = "document-7",
-                modifier = Modifier.width(950.dp).height(316.dp).padding(start = 182.dp,end = 162.dp)
+                modifier = Modifier.width(546.dp).height(316.dp).padding(start = 20.dp)
             )
-            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
+            Text("\n8. 词库不要保存到应用程序的安装目录，升级的时候要先卸载软件，卸载的时候会把安装目录删除。\n如果你想把内置词库和生成的词库放到一起，可以把内置的词库复制出来。")
             Row{
                 val uriHandler = LocalUriHandler.current
                 val blueColor = if (MaterialTheme.colors.isLight) Color.Blue else Color(41, 98, 255)
