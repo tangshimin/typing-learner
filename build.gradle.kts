@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.typinglearner"
-version = "1.3.2"
+version = "1.3.3"
 repositories {
     google()
     mavenCentral()
