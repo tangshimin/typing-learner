@@ -790,7 +790,10 @@ fun TypingWord(
 
                             /** 索引递减 */
                             val decreaseIndex = {
-                                if (state.vocabulary.size > 19) state.typingWord.index -= 19
+                                if(state.typingWord.index == state.vocabulary.size - 1){
+                                    val mod = state.vocabulary.size % 20
+                                    state.typingWord.index -= (mod-1)
+                                }else if (state.vocabulary.size > 19) state.typingWord.index -= 19
                                 else state.typingWord.index = 0
                             }
 
