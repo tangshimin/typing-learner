@@ -1547,8 +1547,7 @@ fun Captions(
 
                             (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
                                 if(index<2 && index + 1 < word.captions.size){
-                                    focusManager.moveFocus(FocusDirection.Next)
-                                    focusManager.moveFocus(FocusDirection.Next)
+                                    focusRequesterList[index+1].requestFocus()
                                 }
                                 true
                             }
@@ -1557,8 +1556,7 @@ fun Captions(
                                 if(index == 0){
                                     jumpToWord()
                                 }else{
-                                    focusManager.moveFocus(FocusDirection.Previous)
-                                    focusManager.moveFocus(FocusDirection.Previous)
+                                    focusRequesterList[index-1].requestFocus()
                                 }
 
                                 true
