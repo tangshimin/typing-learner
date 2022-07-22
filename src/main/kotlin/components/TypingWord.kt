@@ -168,12 +168,16 @@ fun TypingWord(
                         val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
                         /** 单词发音的本地路径 */
-                        val audioPath = getAudioPath(
-                            word = currentWord.value,
-                            audioSet = state.audioSet,
-                            addToAudioSet = {state.audioSet.add(it)},
-                            pronunciation = state.typingWord.pronunciation
-                        )
+                        val audioPath by remember(currentWord){
+                            derivedStateOf {
+                                getAudioPath(
+                                    word = currentWord.value,
+                                    audioSet = state.audioSet,
+                                    addToAudioSet = {state.audioSet.add(it)},
+                                    pronunciation = state.typingWord.pronunciation
+                                )
+                            }
+                        }
 
                         /** 是否正在播放单词发音 */
                         var isPlayingAudio by remember { mutableStateOf(false) }
