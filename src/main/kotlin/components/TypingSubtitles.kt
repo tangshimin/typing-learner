@@ -96,6 +96,7 @@ fun TypingSubtitles(
     futureFileChooser: FutureTask<JFileChooser>,
     openLoadingDialog: () -> Unit,
     closeLoadingDialog: () -> Unit,
+    openSearch: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -451,6 +452,10 @@ fun TypingSubtitles(
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.H && keyEvent.type == KeyEventType.KeyUp) -> {
                 setCurrentCaptionVisible(!subtitlesState.currentCaptionVisible)
+                true
+            }
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.F && keyEvent.type == KeyEventType.KeyUp) -> {
+                scope.launch { openSearch() }
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.G && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -851,6 +856,9 @@ fun TypingSubtitles(
                                                 .onKeyEvent {
                                                     if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                                         scope.launch { selectable = !selectable }
+                                                        true
+                                                    }else if (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) {
+                                                        scope.launch { openSearch() }
                                                         true
                                                     } else false
                                                 }

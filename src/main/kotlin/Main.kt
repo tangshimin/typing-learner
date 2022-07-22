@@ -17,14 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.TypingSubtitles
-import components.TypingText
-import components.TypingWord
-import components.computeVideoBounds
+import components.*
 import components.flatlaf.UpdateFlatLaf
 import data.VocabularyType
 import data.getHardVocabularyFile
@@ -92,6 +93,16 @@ fun main() = application {
                     WindowMenuBar(state = state, close = {close()})
                     MenuDialogs(state)
                     val scope = rememberCoroutineScope()
+
+                    /** 搜索 */
+                    var searching by remember { mutableStateOf(false) }
+                    /** 等宽字体*/
+                    val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+                    /** 打开搜索 **/
+                    val openSearch:() -> Unit = {
+                        searching = true
+                    }
+
                     val changeTheme:(Boolean) -> Unit = {
                         scope.launch {
                             state.global.isDarkTheme = it
@@ -125,6 +136,14 @@ fun main() = application {
                             state.loadingFileChooserVisible = true
                         }
                     }
+                    if(searching){
+                        Search(
+                            state = state,
+                            vocabulary = state.vocabulary,
+                            onDismissRequest = {searching = false},
+                            fontFamily = monospace
+                        )
+                    }
                     when (state.global.type) {
                         WORD -> {
                             // 显示器缩放
@@ -141,7 +160,8 @@ fun main() = application {
                                 state = state,
                                 audioPlayer = audioPlayerComponent,
                                 videoBounds = videoBounds,
-                                currentWord = currentWord
+                                currentWord = currentWord,
+                                openSearch = {openSearch()},
                             )
                         }
                         SUBTITLES -> {
@@ -162,6 +182,7 @@ fun main() = application {
                                 futureFileChooser = state.futureFileChooser,
                                 openLoadingDialog = { openLoadingDialog()},
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
+                                openSearch = {openSearch()},
                             )
                         }
 
@@ -179,6 +200,7 @@ fun main() = application {
                                 futureFileChooser = state.futureFileChooser,
                                 openLoadingDialog = { openLoadingDialog()},
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
+                                openSearch = {openSearch()},
                             )
                         }
                     }

@@ -72,6 +72,7 @@ fun TypingText(
     futureFileChooser: FutureTask<JFileChooser>,
     openLoadingDialog: () -> Unit,
     closeLoadingDialog: () -> Unit,
+    openSearch: () -> Unit
 ){
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -186,6 +187,10 @@ fun TypingText(
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.O && keyEvent.type == KeyEventType.KeyUp) -> {
                 openFileChooser()
+                true
+            }
+            (keyEvent.isCtrlPressed && keyEvent.key == Key.F && keyEvent.type == KeyEventType.KeyUp) -> {
+                scope.launch {openSearch() }
                 true
             }
             (keyEvent.isCtrlPressed && keyEvent.key == Key.D && keyEvent.type == KeyEventType.KeyUp) -> {
@@ -550,6 +555,9 @@ fun TypingText(
                                                 .onKeyEvent {
                                                     if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                                         scope.launch { selectable = !selectable }
+                                                        true
+                                                    }else if (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) {
+                                                        scope.launch {openSearch() }
                                                         true
                                                     } else false
                                                 }

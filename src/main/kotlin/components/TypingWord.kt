@@ -82,6 +82,7 @@ fun TypingWord(
     currentWord: Word?,
     state: AppState,
     videoBounds: Rectangle,
+    openSearch: () -> Unit
 ) {
 
     /** 协程构建器 */
@@ -161,9 +162,6 @@ fun TypingWord(
                         /** 字幕输入框焦点请求器*/
                         val (focusRequester1,focusRequester2,focusRequester3) = remember { FocusRequester.createRefs() }
 
-                        /** 搜索 */
-                        var searching by remember { mutableStateOf(false) }
-
                         /** 等宽字体*/
                         val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
@@ -181,11 +179,6 @@ fun TypingWord(
 
                         /** 是否正在播放单词发音 */
                         var isPlayingAudio by remember { mutableStateOf(false) }
-
-                        /** 打开搜索 **/
-                        val openSearch:() -> Unit = {
-                            searching = true
-                        }
 
                         /**
                          * 用快捷键播放视频时被调用的回调函数
@@ -281,7 +274,7 @@ fun TypingWord(
                                 }
                                 (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        searching = !searching
+                                        openSearch()
                                     }
                                     true
                                 }
@@ -1130,14 +1123,7 @@ fun TypingWord(
                                 )
                             }
                         }
-                        if(searching){
-                            Search(
-                                state = state,
-                                vocabulary = state.vocabulary,
-                                onDismissRequest = {searching = false},
-                                fontFamily = monospace
-                            )
-                        }
+
                     }
                 } else {
                     Surface(Modifier.fillMaxSize()) {
