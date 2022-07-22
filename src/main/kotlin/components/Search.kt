@@ -95,14 +95,14 @@ fun Search(
 
                 // 先搜索词库
                 for (word in vocabulary.wordList) {
-                    if(word.value == input){
+                    if(word.value.lowercase() == input.lowercase()){
                         searchResult = word.deepCopy()
                         break
                     }
                 }
                 // 如果词库里面没有，就搜索内置词典
                 if((searchResult == null) || searchResult!!.value.isEmpty()){
-                    val dictWord = Dictionary.query(input)
+                    val dictWord = Dictionary.query(input.lowercase())
                     if(dictWord != null){
                         searchResult = dictWord.deepCopy()
                     }
