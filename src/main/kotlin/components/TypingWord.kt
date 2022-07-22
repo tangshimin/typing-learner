@@ -770,21 +770,6 @@ fun TypingWord(
                                             typingResult.add(Pair(inputChar, false))
                                         }
                                     }
-                                    if (input.length == captionContent.length) {
-                                        when(index){
-                                            0 -> {
-                                                if(currentWord.captions.size>1){
-                                                    focusRequester2.requestFocus()
-                                                }
-                                            }
-                                            1 -> {
-                                                if(currentWord.captions.size == 3){
-                                                    focusRequester3.requestFocus()
-                                                }
-                                            }
-                                        }
-                                    }
-
                                 }
 
                             }
