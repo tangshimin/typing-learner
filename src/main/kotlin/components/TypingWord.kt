@@ -182,6 +182,11 @@ fun TypingWord(
                         /** 是否正在播放单词发音 */
                         var isPlayingAudio by remember { mutableStateOf(false) }
 
+                        /** 打开搜索 **/
+                        val openSearch:() -> Unit = {
+                            searching = true
+                        }
+
                         /**
                          * 用快捷键播放视频时被调用的回调函数
                          * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
@@ -1060,7 +1065,8 @@ fun TypingWord(
                                 modifier = captionsModifier,
                                 focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3),
                                 jumpToWord = {jumpToWord()},
-                                externalVisible = typingWord.externalSubtitlesVisible
+                                externalVisible = typingWord.externalSubtitlesVisible,
+                                openSearch = {openSearch()}
                             )
                             if (isPlaying) Spacer(
                                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
@@ -1479,6 +1485,7 @@ fun Captions(
     focusRequesterList:List<FocusRequester>,
     jumpToWord: () -> Unit,
     externalVisible:Boolean,
+    openSearch: () -> Unit,
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1587,6 +1594,7 @@ fun Captions(
                         selectable = selectable,
                         setSelectable = {selectable = it},
                         isPathWrong = isPathWrong,
+                        openSearch = {openSearch()}
                     )
                 }
 
@@ -1674,6 +1682,7 @@ fun Caption(
     selectable:Boolean,
     setSelectable:(Boolean) -> Unit,
     isPathWrong:Boolean,
+    openSearch: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
@@ -1770,6 +1779,9 @@ fun Caption(
                             .onKeyEvent {
                                 if (it.isCtrlPressed && it.key == Key.B && it.type == KeyEventType.KeyUp) {
                                     scope.launch { setSelectable(!selectable) }
+                                    true
+                                }else if (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) {
+                                    scope.launch { openSearch() }
                                     true
                                 } else false
                             }
