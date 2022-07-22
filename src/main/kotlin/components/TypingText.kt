@@ -411,7 +411,7 @@ fun TypingText(
                             ) {
                                 val alpha = if(textState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
                                 val textColor =  if(index <  textState.currentIndex){
-                                    MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
+                                    MaterialTheme.colors.primary.copy(alpha = if(MaterialTheme.colors.isLight) ContentAlpha.high else ContentAlpha.medium)
                                 }else if(textState.currentIndex == index){
                                     MaterialTheme.colors.onBackground.copy(alpha = alpha)
                                 }else{

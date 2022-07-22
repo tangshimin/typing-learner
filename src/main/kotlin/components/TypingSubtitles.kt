@@ -672,7 +672,7 @@ fun TypingSubtitles(
                             ) {
                                 val alpha = if(subtitlesState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
                                 val lineColor =  if(index <  subtitlesState.currentIndex){
-                                    MaterialTheme.colors.primary.copy(alpha = ContentAlpha.medium)
+                                    MaterialTheme.colors.primary.copy(alpha = if(MaterialTheme.colors.isLight) ContentAlpha.high else ContentAlpha.medium)
                                 }else if(subtitlesState.currentIndex == index){
                                     if(subtitlesState.currentCaptionVisible){
                                         MaterialTheme.colors.onBackground.copy(alpha = alpha)
