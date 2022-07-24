@@ -157,7 +157,7 @@ fun UpdateDialog(
 
                     Row(
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                        modifier = Modifier.fillMaxWidth().padding(start = 20.dp,top = 10.dp,end = 20.dp)
                     ) {
                         if(latestVersion.isNotEmpty()){
                             val note = "版本：$latestVersion\n$releaseNote"
