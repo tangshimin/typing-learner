@@ -337,55 +337,51 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
-                                    focusRequester1.requestFocus()
-                                    if (state.vocabulary.type == VocabularyType.DOCUMENT) {
-                                        val playTriple = getPayTriple(currentWord, 0)
-                                        plyingIndex = 0
-                                        shortcutPlay(playTriple)
-                                    } else {
-                                        val caption = state.getCurrentWord().captions[0]
-                                        val playTriple =
+                                    if(!state.isDictation){
+                                        val playTriple = if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                            getPayTriple(currentWord, 0)
+                                        } else {
+                                            val caption = state.getCurrentWord().captions[0]
                                             Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        }
                                         plyingIndex = 0
+                                        if (playTriple != null && typingWord.subtitlesVisible) focusRequester1.requestFocus()
                                         shortcutPlay(playTriple)
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
-                                    focusRequester2.requestFocus()
-                                    if (state.getCurrentWord().externalCaptions.size >= 2) {
-                                        val playTriple = getPayTriple(currentWord, 1)
-                                        plyingIndex = 1
-                                        shortcutPlay(playTriple)
-
-                                    } else if (state.getCurrentWord().captions.size >= 2) {
-                                        val caption = state.getCurrentWord().captions[1]
-                                        val playTriple =
+                                    if(!state.isDictation){
+                                        val playTriple = if (state.getCurrentWord().externalCaptions.size >= 2) {
+                                            getPayTriple(currentWord, 1)
+                                        } else if (state.getCurrentWord().captions.size >= 2) {
+                                            val caption = state.getCurrentWord().captions[1]
                                             Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        }else null
                                         plyingIndex = 1
+                                        if (playTriple != null && typingWord.subtitlesVisible) focusRequester2.requestFocus()
                                         shortcutPlay(playTriple)
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
-                                    focusRequester3.requestFocus()
-                                    if (state.getCurrentWord().externalCaptions.size >= 3) {
-                                        val playTriple = getPayTriple(currentWord, 2)
-                                        plyingIndex = 2
-                                        shortcutPlay(playTriple)
-                                    } else if (state.getCurrentWord().captions.size >= 3) {
-                                        val caption = state.getCurrentWord().captions[2]
-                                        val playTriple =
+                                    if(!state.isDictation){
+                                        val playTriple = if (state.getCurrentWord().externalCaptions.size >= 3) {
+                                            getPayTriple(currentWord, 2)
+                                        } else if (state.getCurrentWord().captions.size >= 3) {
+                                            val caption = state.getCurrentWord().captions[2]
                                             Triple(caption, state.vocabulary.relateVideoPath, state.vocabulary.subtitlesTrackId)
+                                        }else null
                                         plyingIndex = 2
+                                        if (playTriple != null && typingWord.subtitlesVisible) focusRequester3.requestFocus()
                                         shortcutPlay(playTriple)
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
                                         if (!state.isDictation) {
+                                            state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
                                             state.saveTypingWordState()
                                         }
                                     }
@@ -605,7 +601,7 @@ fun TypingWord(
 
                             /** 焦点切换到抄写字幕*/
                             val jumpToCaptions:() -> Unit = {
-                                if(currentWord.captions.isNotEmpty()){
+                                if(!state.isDictation && typingWord.subtitlesVisible && currentWord.captions.isNotEmpty()){
                                     focusRequester1.requestFocus()
                                 }
                             }
@@ -1466,8 +1462,6 @@ fun Captions(
         ) {
             Column {
                 val scope = rememberCoroutineScope()
-                val focusManager = LocalFocusManager.current
-
                 playTripleMap.forEach { (index, playTriple) ->
                     var captionContent = playTriple.first.content
                     if (captionContent.contains("\r\n")) {
