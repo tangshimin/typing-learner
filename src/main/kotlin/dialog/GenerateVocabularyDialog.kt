@@ -2167,7 +2167,7 @@ private fun readSRT(
                         map[lowercase] = list
                         orderList.add(lowercase)
                     } else {
-                        if (map[lowercase]!!.size < 3 && !map[word]!!.contains(dataCaption)) {
+                        if (map[lowercase]!!.size < 3 && !map[lowercase]!!.contains(dataCaption)) {
                             map[lowercase]?.add(dataCaption)
                         }
                     }
