@@ -25,7 +25,6 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -126,13 +125,27 @@ fun TypingWord(
             }
             Box(Modifier.fillMaxSize()) {
                 val endPadding = 0.dp
-                if (isMacOS()) {
-                    MacOSTitle(
-                        title = title,
-                        window = window,
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp)
+                Column(Modifier.align(Alignment.TopCenter).padding(top = 10.dp)){
+                    if (isMacOS()) {
+                        MacOSTitle(
+                            title = title,
+                            window = window,
+                        )
+                    }
+                    val index = if (state.isDictation) {
+                        "听写测试   ${state.dictationIndex + 1}/${state.dictationWords.size}"
+                    }else if (state.isReviewWrongList) {
+                        "复习错误单词   ${state.dictationIndex + 1}/${state.dictationWords.size}"
+                    } else {
+                        "${state.typingWord.index + 1}/${state.vocabulary.size}"
+                    }
+                    Text(text = index,
+                        color = MaterialTheme.colors.onBackground,
                     )
                 }
+
+
+
 
                 /** 速度组件的状态 */
                 val speed = remember { MutableSpeedState() }
@@ -1142,21 +1155,6 @@ fun TypingWord(
 
 }
 
-@Composable
-fun MacOSTitle(
-    title: String,
-    window: ComposeWindow,
-    modifier: Modifier
-) {
-    Text(
-        text = title,
-        color = MaterialTheme.colors.onBackground,
-        modifier = modifier
-    )
-    window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-    window.rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
-}
 
 /**
  * 词型组件
