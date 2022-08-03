@@ -1106,9 +1106,15 @@ fun TypingWord(
                                     close = { showEditWordDialog = false }
                                 )
                             }
+
+                            /** 关闭对话框 */
+                            val close: () -> Unit = {
+                                showChapterFinishedDialog = false
+                                if(isVocabularyFinished) isVocabularyFinished = false
+                            }
                             if (showChapterFinishedDialog) {
                                 ChapterFinishedDialog(
-                                    close = { showChapterFinishedDialog = false },
+                                    close = { close() },
                                     isVocabularyFinished = isVocabularyFinished,
                                     correctRate = correctRate(),
                                     isDictation = state.isDictation,
