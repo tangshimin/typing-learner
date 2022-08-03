@@ -538,7 +538,6 @@ fun TypingWord(
                                 typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
 
                                 state.isDictation = false
-                                state.isReviewWrongList = false
                             }
 
 
@@ -546,7 +545,6 @@ fun TypingWord(
                             fun enterReviewMode(reviewList: List<Word>) {
                                 // 先把 typing 的状态恢复
                                 exitDictationMode()
-                                state.isDictation = true
                                 state.isReviewWrongList = true
                                 state.dictationWords = reviewList
                                 state.dictationIndex = 0
@@ -622,8 +620,8 @@ fun TypingWord(
                             val toNext: () -> Unit = {
                                 scope.launch {
                                     clear()
-                                    if (state.isDictation) {
-                                        if ((state.dictationIndex + 1) % state.dictationWords.size == 0) {
+                                    if (state.isDictation || state.isReviewWrongList) {
+                                        if (state.dictationIndex + 1 == state.dictationWords.size) {
                                             /**
                                              * 在听写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
                                              * 在非听写模式下按Enter键就不会有这种感觉，因为按Enter键，
@@ -657,11 +655,18 @@ fun TypingWord(
                             /** 切换到上一个单词 */
                             val previous :() -> Unit = {
                                 scope.launch {
-                                    if(!state.isDictation){
+                                    // 正常记忆单词
+                                    if(!state.isDictation && !state.isReviewWrongList){
                                         clear()
                                         if((state.typingWord.index) % 20 != 0 ){
                                             state.typingWord.index -= 1
                                             state.saveTypingWordState()
+                                        }
+                                    // 复习错误单词
+                                    }else if (state.isReviewWrongList){
+                                        clear()
+                                        if(state.dictationIndex > 0 ){
+                                            state.dictationIndex -= 1
                                         }
                                     }
                                 }
@@ -814,6 +819,7 @@ fun TypingWord(
                             /** 下一章 */
                             val nextChapter: () -> Unit = {
                                 if (state.isDictation) exitDictationMode()
+                                if (state.isReviewWrongList) state.isReviewWrongList = false
                                 state.typingWord.index += 1
                                 state.typingWord.chapter++
                                 resetChapterTime()
@@ -829,8 +835,8 @@ fun TypingWord(
                                     if (!state.isDictation || state.isReviewWrongList) {
                                         state.isReviewWrongList = false
                                         enterDictationMode()
+                                    // 再听写一次
                                     } else {
-                                        // 再听写一次
                                         state.dictationIndex = 0
                                         // 重新生成一个乱序的单词列表
                                         state.dictationWords = state.generateDictationWords(currentWord.value)
@@ -938,7 +944,6 @@ fun TypingWord(
                                     wordVisible = typingWord.wordVisible,
                                     pronunciation = typingWord.pronunciation,
                                     isDictation = state.isDictation,
-                                    isReviewWrongList = state.isReviewWrongList,
                                     fontFamily = monospace,
                                     audioPath = audioPath,
                                     correctTime = wordCorrectTime,

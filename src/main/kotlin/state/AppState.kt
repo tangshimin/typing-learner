@@ -68,7 +68,7 @@ class AppState {
     /** 是否是听写模式 */
     var isDictation by mutableStateOf(false)
 
-    /** 听写模式 -> 复习错误单词模式 */
+    /** 复习错误单词模式 */
     var isReviewWrongList by mutableStateOf(false)
 
     /** 听写的单词 */
@@ -308,7 +308,7 @@ class AppState {
 
     /** 获得当前单词 */
     fun getCurrentWord(): Word {
-        if (isDictation) {
+        if (isDictation || isReviewWrongList) {
             return dictationWords[dictationIndex]
         }
         return getWord(typingWord.index)

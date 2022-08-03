@@ -48,7 +48,6 @@ import javax.sound.sampled.FloatControl
  * @param wordVisible 单词可见性
  * @param pronunciation 单词发音
  * @param isDictation 是否是听写模式
- * @param isReviewWrongList 是否是复习错误单词模式
  * @param correctTime 单词的正确数
  * @param wrongTime 单词的错误数
  * @param textFieldValue 用户输入的字符串
@@ -65,7 +64,6 @@ fun Word(
     isDictation:Boolean,
     wordVisible:Boolean,
     pronunciation: String,
-    isReviewWrongList:Boolean,
     fontFamily: FontFamily,
     audioPath: String,
     correctTime: Int,
@@ -100,7 +98,7 @@ fun Word(
                 .height(intrinsicSize = IntrinsicSize.Max)
                 .padding(start = 50.dp)
                 .onPointerEvent(PointerEventType.Enter) {
-                    if (!isDictation || (isReviewWrongList)) {
+                    if (!isDictation) {
                         showMenu()
                     }
                 }) {
@@ -172,7 +170,7 @@ fun Word(
                             }
                         }
                         val remainChars = wordValue.substring(typingResult.size)
-                        if (isDictation && !isReviewWrongList) {
+                        if (isDictation) {
                             withStyle(
                                 style = SpanStyle(
                                     color = MaterialTheme.colors.onBackground,

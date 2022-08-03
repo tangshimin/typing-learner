@@ -115,15 +115,15 @@ fun ChapterFinishedDialog(
                     val title = if (isVocabularyFinished) {
                         "您已完成最后一个章节"
                     } else if (isDictation) {
-                        if (isReviewWrongList) {
-                            "您已复习完错误单词"
-                        } else "您已听写完本章节"
+                            "您已听写完本章节"
+                    } else if (isReviewWrongList){
+                        "您已复习完错误单词"
+                    }else "您已学习完本章节"
 
-                    } else "您已学习完本章节"
-                    Text(text = "$title", color = MaterialTheme.colors.onBackground)
+                    Text(text = title, color = MaterialTheme.colors.onBackground)
                 }
 
-                if (isDictation && !isReviewWrongList) {
+                if (isDictation) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
@@ -215,7 +215,7 @@ fun ChapterFinishedDialog(
 
                     }
                     Spacer(Modifier.width(15.dp))
-                    if (!isDictation) {
+                    if (!isDictation && !isReviewWrongList) {
                         TooltipArea(
                             tooltip = {
                                 Surface(
@@ -264,7 +264,7 @@ fun ChapterFinishedDialog(
                         }
                     }
                     Spacer(Modifier.width(15.dp))
-                    if (isDictation && !isReviewWrongList &&  correctRate < 100F ) {
+                    if (isDictation  &&  correctRate < 100F ) {
                         TooltipArea(
                             tooltip = {
                                 Surface(

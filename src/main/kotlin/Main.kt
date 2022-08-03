@@ -264,9 +264,9 @@ private fun computeTitle(state: AppState): String {
         WORD -> {
             return if (state.vocabulary.wordList.isNotEmpty()) {
                 val suffix = if (state.isDictation) {
-                    if (state.isReviewWrongList) {
-                        "复习错误单词 - ${state.dictationIndex + 1}"
-                    } else "听写测试 - ${state.dictationIndex + 1}"
+                      "听写测试 - ${state.dictationIndex + 1}"
+                }else if (state.isReviewWrongList) {
+                    "复习错误单词 - ${state.dictationIndex + 1}"
                 } else {
                     "${state.typingWord.index + 1}"
                 }
