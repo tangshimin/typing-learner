@@ -226,7 +226,7 @@ fun GenerateVocabularyDialog(
         val trackList = remember { mutableStateListOf<Pair<Int, String>>() }
 
         /**
-         * 这个 filterState 有四个状态：Idle、"Parse"、"Filtering"、"End"
+         * 这个 filterState 有四个状态：Idle、Parse、Filtering、End
          */
         var filterState by remember { mutableStateOf(Idle) }
 
@@ -526,7 +526,7 @@ fun GenerateVocabularyDialog(
 
         /** 分析文件里的单词 */
         val analysis : (String,Int) -> Unit = { pathName,trackId ->
-            filterState = Parse
+            filterState = Parsing
             vocabularyFilterList.clear()
             documentWords.clear()
             Thread(Runnable() {
@@ -741,7 +741,7 @@ fun GenerateVocabularyDialog(
                             // 单词预览和任务列表
                             Box(Modifier.fillMaxSize()) {
                                 when (filterState) {
-                                    Parse -> {
+                                    Parsing -> {
                                         Column(
                                             verticalArrangement = Arrangement.Center,
                                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -793,7 +793,7 @@ fun GenerateVocabularyDialog(
                                             changeSort = {sort = it}
                                         )
                                     }
-                                    else -> {}
+                                    Idle -> {}
                                 }
 
                                     if (loading) {
@@ -958,8 +958,16 @@ data class RecentItem(val time: String, val name: String, val path: String, val 
     }
 }
 
+/** FilterState 有四个状态：Idle、"Parse"、"Filtering"、"End" */
 enum class FilterState {
-    Idle, Parse, Filtering, End
+    /** 空闲状态，预览区为空 */
+    Idle,
+    /** 正在解析文档或字幕 */
+    Parsing,
+    /** 正在过滤单词 */
+    Filtering,
+    /** 单词过滤完成，可以显示了*/
+    End
 }
 
 @OptIn(ExperimentalSerializationApi::class)
