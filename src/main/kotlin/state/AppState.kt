@@ -60,7 +60,7 @@ class AppState {
     var vocabulary = loadMutableVocabulary(typingWord.vocabularyPath)
 
     /** 困难词库 */
-    var hardVocabulary = loadHardMutableVocabulary()
+    var hardVocabulary = loadMutableVocabularyByName("HardVocabulary")
 
     /** 最近生成的词库列表 */
     var recentList = readRecentList()
@@ -91,6 +91,9 @@ class AppState {
 
     /** 是否显示【过滤词库】窗口 */
     var filterVocabulary by mutableStateOf(false)
+
+    /** 是否显示【导入词库到熟悉词库】窗口 */
+    var importFamiliarVocabulary by mutableStateOf(false)
 
     /** 是否显示【从文档生成词库】窗口 */
     var generateVocabularyFromDocument by mutableStateOf(false)
@@ -225,7 +228,9 @@ class AppState {
                     global.size.height.value,
                     global.placement,
                     global.autoUpdate,
-                    global.ignoreVersion
+                    global.ignoreVersion,
+                    global.bncNum,
+                    global.frqNum
                 )
                 val json = encodeBuilder.encodeToString(globalData)
                 val settings = getGlobalSettingsFile()

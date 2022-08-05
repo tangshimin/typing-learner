@@ -33,6 +33,8 @@ import androidx.compose.ui.input.pointer.PointerIconDefaults
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.res.ResourceLoader
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -112,7 +114,7 @@ fun GenerateVocabularyDialog(
     title: String,
     type: VocabularyType
 ) {
-    val windowWidth = if(type == MKV) 1320.dp else 1210.dp
+    val windowWidth = if(type == MKV) 1320.dp else 1285.dp
     Dialog(
         title = title,
         onCloseRequest = {
@@ -120,7 +122,7 @@ fun GenerateVocabularyDialog(
         },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(windowWidth, 800.dp)
+            size = DpSize(windowWidth, 850.dp)
         ),
     ) {
         val scope = rememberCoroutineScope()
@@ -244,28 +246,46 @@ fun GenerateVocabularyDialog(
         val vocabularyFilterList = remember { mutableStateListOf<File>() }
 
         /**
-         * 是否过滤 BNC 词频为0的单词
+         * 是否过滤所有的数字
          */
         var numberFilter by remember { mutableStateOf(false) }
 
         /**
-         * 是否过滤 BNC 词频为0的单词
+         * 是否过滤 BNC 词频前 1000 的单词，最常见的 1000 词
          */
-        var notBncFilter by remember { mutableStateOf(false) }
+        var bncNumberFilter by remember { mutableStateOf(false) }
 
         /**
-         * 是否过滤 FRQ 词频为0的单词
+         * 是否过滤 COCA 词频前 1000 的单词，最常见的 1000 词
          */
-        var notFrqFilter by remember { mutableStateOf(false) }
+        var frqNumFilter by remember{ mutableStateOf(false) }
+
+        /**
+         * 是否过滤 BNC 词频为0的单词
+         */
+        var bncZeroFilter by remember { mutableStateOf(false) }
+
+        /**
+         * 是否过滤 COCA 词频为0的单词
+         */
+        var frqZeroFilter by remember { mutableStateOf(false) }
 
         /**
          * 是否替换索引派生词
          */
         var replaceToLemma by remember { mutableStateOf(false) }
 
+        /** 熟悉词库 */
+        val familiarVocabulary = remember{loadMutableVocabularyByName("FamiliarVocabulary")}
+
+        /** 用鼠标删除的单词列表 */
+        val removedWords = remember{ mutableStateListOf<Word>() }
+
         var progressText by remember { mutableStateOf("") }
 
         var loading by remember { mutableStateOf(false) }
+
+        var sort by remember { mutableStateOf("appearance") }
 
         /** 文件选择器的标题 */
         val chooseText = when (title) {
@@ -538,7 +558,9 @@ fun GenerateVocabularyDialog(
                 }
                 words.forEach { word -> documentWords.add(word) }
                 filterState =
-                    if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || vocabularyFilterList.isNotEmpty()) {
+                    if (numberFilter || bncNumberFilter || frqNumFilter ||
+                        bncZeroFilter || frqZeroFilter || replaceToLemma ||
+                        vocabularyFilterList.isNotEmpty()) {
                         Filtering
                     } else {
                         End
@@ -574,7 +596,9 @@ fun GenerateVocabularyDialog(
                 }
                 words.forEach { word -> documentWords.add(word) }
                 filterState =
-                    if (numberFilter || notBncFilter || notFrqFilter || replaceToLemma || vocabularyFilterList.isNotEmpty()) {
+                    if (numberFilter || bncNumberFilter || frqNumFilter ||
+                        bncZeroFilter || frqZeroFilter || replaceToLemma ||
+                        vocabularyFilterList.isNotEmpty()) {
                         Filtering
                     } else {
                         End
@@ -593,6 +617,20 @@ fun GenerateVocabularyDialog(
 
         }
 
+        /**
+         * 手动点击删除的单词，一般都是熟悉的词，
+         * 所有需要添加到熟悉词库
+         */
+        val removeWord:(Word) -> Unit = {
+            previewList.remove(it)
+            removedWords.add(it)
+            familiarVocabulary.wordList.add(it)
+            scope.launch {
+                familiarVocabulary.size = familiarVocabulary.wordList.size
+                val familiarFile = getFamiliarVocabularyFile()
+                saveVocabulary(familiarVocabulary.serializeVocabulary, familiarFile.absolutePath)
+            }
+        }
 
         val contentPanel = ComposePanel()
         contentPanel.setContent {
@@ -605,18 +643,32 @@ fun GenerateVocabularyDialog(
                         Column(Modifier.width(width).fillMaxHeight()) {
                             BasicFilter(
                                 numberFilter = numberFilter,
-                                setNumberFilter = {
+                                changeNumberFilter = {
                                     numberFilter = it
                                     filterState = Filtering
                                 },
-                                notBncFilter = notBncFilter,
-                                setNotBncFilter = {
-                                    notBncFilter = it
+                                bncNum = state.global.bncNum,
+                                setBncNum = {state.global.bncNum = it},
+                                bncNumFilter = bncNumberFilter,
+                                changeBncNumFilter = {
+                                    bncNumberFilter = it
                                     filterState = Filtering
                                 },
-                                notFrqFilter = notFrqFilter,
-                                setNotFrqFilter = {
-                                    notFrqFilter = it
+                                frqNum = state.global.frqNum,
+                                setFrqNum = {state.global.frqNum = it},
+                                frqNumFilter = frqNumFilter,
+                                changeFrqFilter = {
+                                    frqNumFilter = it
+                                    filterState = Filtering
+                                },
+                                bncZeroFilter = bncZeroFilter,
+                                changeBncZeroFilter = {
+                                    bncZeroFilter = it
+                                    filterState = Filtering
+                                },
+                                frqZeroFilter = frqZeroFilter,
+                                changeFrqZeroFilter = {
+                                    frqZeroFilter = it
                                     filterState = Filtering
                                 },
                                 replaceToLemma = replaceToLemma,
@@ -641,6 +693,11 @@ fun GenerateVocabularyDialog(
                                 recentList = state.recentList,
                                 removeInvalidRecentItem = {
                                     state.removeInvalidRecentItem(it)
+                                },
+                                familiarVocabulary = familiarVocabulary,
+                                updateFamiliarVocabulary = {
+                                    val wordList = loadMutableVocabularyByName("FamiliarVocabulary").wordList
+                                    familiarVocabulary.wordList.addAll(wordList)
                                 }
                             )
                         }
@@ -701,18 +758,26 @@ fun GenerateVocabularyDialog(
                                             Modifier.width(60.dp).align(Alignment.Center)
                                         )
                                         Thread(Runnable {
+                                            // 根据词频或原型过滤单词
                                             val filteredDocumentList = filterDocumentWords(
                                                 documentWords,
                                                 numberFilter,
-                                                notBncFilter,
-                                                notFrqFilter,
+                                                state.global.bncNum,
+                                                bncNumberFilter,
+                                                state.global.frqNum,
+                                                frqNumFilter,
+                                                bncZeroFilter,
+                                                frqZeroFilter,
                                                 replaceToLemma
                                             )
                                             previewList.clear()
+                                            // 根据选择的词库过滤单词
                                             val filteredList = filterSelectVocabulary(
                                                 selectedFileList = vocabularyFilterList,
                                                 filteredDocumentList = filteredDocumentList
                                             )
+                                            // 过滤手动删除的单词
+                                            filteredList.removeAll(removedWords)
                                             previewList.addAll(filteredList)
                                             filterState = End
                                         }).start()
@@ -721,12 +786,12 @@ fun GenerateVocabularyDialog(
                                     }
                                     End -> {
                                         PreviewWords(
-                                            type = type,
                                             previewList = previewList,
                                             summaryVocabulary = summaryVocabulary,
-                                            removeWord = {
-                                                previewList.remove(it)
-                                            })
+                                            removeWord = { removeWord(it) },
+                                            sort = sort,
+                                            changeSort = {sort = it}
+                                        )
                                     }
                                     else -> {}
                                 }
@@ -842,8 +907,8 @@ fun GenerateVocabularyDialog(
                                             documentWords.clear()
                                             vocabularyFilterList.clear()
                                             numberFilter = false
-                                            notBncFilter = false
-                                            notFrqFilter = false
+                                            bncZeroFilter = false
+                                            frqZeroFilter = false
                                             replaceToLemma = false
                                         }
 
@@ -918,13 +983,14 @@ private fun getWordLemma(word: Word): String? {
 
 @Composable
 fun Summary(
-    type: VocabularyType,
     list: List<Word>,
-    summaryVocabulary: Map<String, List<String>>
+    summaryVocabulary: Map<String, List<String>>,
+    sort:String,
+    changeSort:(String) -> Unit,
 ) {
 
     Column(Modifier.fillMaxWidth()) {
-        val height = if (type == DOCUMENT) 61.dp else 40.dp
+        val height =  61.dp
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
@@ -957,6 +1023,72 @@ fun Summary(
                 Text("${summary[3]} 词", color = MaterialTheme.colors.onBackground)
             }
 
+
+            var expanded by remember { mutableStateOf(false) }
+            Box {
+                val width = 195.dp
+                val text = when(sort){
+                    "appearance" -> "按出现的顺序排序"
+                    "bnc" -> "按 BNC 词频排序"
+                    else -> "按 COCA 词频排序"
+                }
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier
+                        .width(width)
+                        .padding(start =10.dp)
+                        .background(Color.Transparent)
+                        .border(1.dp, Color.Transparent)
+                ) {
+                    Text(text = text)
+                    Icon(Icons.Default.ExpandMore, contentDescription = "Localized description")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.width(width)
+                        .height(140.dp)
+                ) {
+                    val selectedColor = if(MaterialTheme.colors.isLight) Color(245, 245, 245) else Color(41, 42, 43)
+                    val backgroundColor = Color.Transparent
+                    DropdownMenuItem(
+                        onClick = {
+                            expanded = false
+                            changeSort("bnc")
+                        },
+                        modifier = Modifier.width(width).height(40.dp)
+                            .background( if(sort == "bnc")selectedColor else backgroundColor )
+                    ) {
+                        Text("BNC    词频")
+                    }
+                    DropdownMenuItem(
+                        onClick = {
+                            expanded = false
+                            changeSort("coca")
+                        },
+                        modifier = Modifier.width(width).height(40.dp)
+                            .background(if(sort == "coca") selectedColor else backgroundColor)
+                    ) {
+                        Text("COCA  词频")
+
+                    }
+
+
+                    DropdownMenuItem(
+                        onClick = {
+                            expanded = false
+                            changeSort("appearance")
+                        },
+                        modifier = Modifier.width(width).height(40.dp)
+                            .background(if(sort == "appearance") selectedColor else backgroundColor)
+                    ) {
+                        Text("出现的顺序")
+                    }
+
+
+                }
+
+            }
         }
         Divider()
     }
@@ -1021,11 +1153,19 @@ private fun loadSummaryVocabulary(): Map<String, List<String>> {
 @Composable
 fun BasicFilter(
     numberFilter: Boolean,
-    setNumberFilter: (Boolean) -> Unit,
-    notBncFilter: Boolean,
-    setNotBncFilter: (Boolean) -> Unit,
-    notFrqFilter: Boolean,
-    setNotFrqFilter: (Boolean) -> Unit,
+    changeNumberFilter: (Boolean) -> Unit,
+    bncNum:Int,
+    setBncNum:(Int) -> Unit,
+    bncNumFilter:Boolean,
+    changeBncNumFilter:(Boolean) -> Unit,
+    frqNum:Int,
+    setFrqNum:(Int) -> Unit,
+    frqNumFilter:Boolean,
+    changeFrqFilter:(Boolean) -> Unit,
+    bncZeroFilter: Boolean,
+    changeBncZeroFilter: (Boolean) -> Unit,
+    frqZeroFilter: Boolean,
+    changeFrqZeroFilter: (Boolean) -> Unit,
     replaceToLemma: Boolean,
     setReplaceToLemma: (Boolean) -> Unit,
 ) {
@@ -1051,7 +1191,99 @@ fun BasicFilter(
             }
             Checkbox(
                 checked = numberFilter,
-                onCheckedChange = { setNumberFilter(it) },
+                onCheckedChange = { changeNumberFilter(it) },
+                modifier = Modifier.size(30.dp, 30.dp)
+            )
+        }
+        Divider()
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            Row(Modifier.width(textWidth)) {
+                Text("过滤 ", color = MaterialTheme.colors.onBackground)
+                Text("BNC", color = MaterialTheme.colors.onBackground,
+                modifier = Modifier.padding(end = 1.dp))
+                Text("   词频前 ", color = MaterialTheme.colors.onBackground)
+                BasicTextField(
+                    value = "$bncNum",
+                    onValueChange = {
+                        val input = it.toIntOrNull()
+                        if (input != null && input >= 0) {
+                            setBncNum(input)
+                        }else{
+                            setBncNum(0)
+                        }
+
+                    },
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                    textStyle = TextStyle(
+                        lineHeight = LocalTextStyle.current.lineHeight,
+                        fontSize = LocalTextStyle.current.fontSize,
+                        color = MaterialTheme.colors.onBackground
+                    ),
+                    decorationBox = { innerTextField ->
+                        Row(Modifier.padding(start = 2.dp, top = 2.dp, end = 4.dp, bottom = 2.dp)) {
+                            innerTextField()
+                        }
+                    },
+                    modifier = Modifier
+                        .focusable()
+                        .width(IntrinsicSize.Max)
+                        .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
+                )
+                Text(" 的单词", color = MaterialTheme.colors.onBackground)
+            }
+            Checkbox(
+                checked = bncNumFilter,
+                onCheckedChange = { changeBncNumFilter(it) },
+                modifier = Modifier.size(30.dp, 30.dp)
+            )
+        }
+        Divider()
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(Modifier.width(textWidth)) {
+                Text("过滤 COCA 词频前 ", color = MaterialTheme.colors.onBackground)
+                Box{
+                    BasicTextField(
+                        value = "$frqNum",
+                        onValueChange = {
+                            val input = it.toIntOrNull()
+                           if (input != null && input >= 0) {
+                               setFrqNum(input)
+                            }else{
+                               setFrqNum(0)
+                            }
+                        },
+                        singleLine = true,
+                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                        textStyle = TextStyle(
+                            lineHeight = LocalTextStyle.current.lineHeight,
+                            fontSize = LocalTextStyle.current.fontSize,
+                            color = MaterialTheme.colors.onBackground
+                        ),
+                        decorationBox = { innerTextField ->
+                            Row(Modifier.padding(start = 2.dp, top = 2.dp, end = 4.dp, bottom = 2.dp)) {
+                                innerTextField()
+                            }
+                        },
+                        modifier = Modifier
+                            .width(IntrinsicSize.Max)
+                            .border(border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)))
+                    )
+                }
+                Text(" 的单词", color = MaterialTheme.colors.onBackground)
+            }
+            Checkbox(
+                checked = frqNumFilter,
+                onCheckedChange = { changeFrqFilter(it) },
                 modifier = Modifier.size(30.dp, 30.dp)
             )
         }
@@ -1100,8 +1332,8 @@ fun BasicFilter(
                 Text("   语料库词频顺序为0的词", color = textColor)
             }
             Checkbox(
-                checked = notBncFilter,
-                onCheckedChange = { setNotBncFilter(it) },
+                checked = bncZeroFilter,
+                onCheckedChange = { changeBncZeroFilter(it) },
                 modifier = Modifier.size(30.dp, 30.dp)
             )
         }
@@ -1145,8 +1377,8 @@ fun BasicFilter(
                 Text(" 语料库词频顺序为0的词", color = textColor)
             }
             Checkbox(
-                checked = notFrqFilter,
-                onCheckedChange = { setNotFrqFilter(it) },
+                checked = frqZeroFilter,
+                onCheckedChange = { changeFrqZeroFilter(it) },
                 modifier = Modifier.size(30.dp, 30.dp)
             )
         }
@@ -1182,6 +1414,8 @@ fun VocabularyFilter(
     vocabularyFilterListRemove: (File) -> Unit,
     recentList: List<RecentItem>,
     removeInvalidRecentItem: (RecentItem) -> Unit,
+    familiarVocabulary: MutableVocabulary,
+    updateFamiliarVocabulary:() -> Unit
 ) {
     Row(Modifier.fillMaxWidth().background(MaterialTheme.colors.background)) {
         var selectedPath: TreePath? = null
@@ -1347,6 +1581,64 @@ fun VocabularyFilter(
                         .width(139.dp)
                 ) {
                     Text(text = "选择词库")
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                var showDialog by remember { mutableStateOf(false) }
+                if (showDialog) {
+                    FamiliarDialog(
+                        futureFileChooser = futureFileChooser,
+                        close = {
+                            showDialog = false
+                            updateFamiliarVocabulary()
+                        },
+
+                        )
+                }
+                OutlinedButton(
+                    onClick = {
+                        if (familiarVocabulary.wordList.isEmpty()) {
+                            val result = JOptionPane.showConfirmDialog(
+                                null,
+                                "熟悉词库现在还没有单词，是否导入单词到熟悉词库",
+                                "",
+                                JOptionPane.YES_NO_OPTION
+                            )
+                            if (result == 0) {
+                                showDialog = true
+                            }
+                        } else {
+                            val familiarFile = getFamiliarVocabularyFile()
+                            vocabularyFilterListAdd(File(familiarFile.absolutePath))
+                        }
+
+                    },
+                    modifier = Modifier
+                        .width(139.dp)
+                ) {
+
+                    if(familiarVocabulary.wordList.isNotEmpty()){
+                        BadgedBox(badge = {
+                            Badge {
+                                val badgeNumber = "${familiarVocabulary.wordList.size}"
+                                Text(
+                                    badgeNumber,
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "$badgeNumber new notifications"
+                                    }
+                                )
+                            }
+                        }) {
+                            Text(text = "熟悉词库")
+                        }
+                    }else{
+                        Text(text = "熟悉词库")
+                    }
+
                 }
             }
 
@@ -1684,8 +1976,12 @@ fun SelectFile(
 fun filterDocumentWords(
     documentWords: List<Word>,
     numberFilter: Boolean,
-    notBncFilter: Boolean,
-    notFrqFilter: Boolean,
+    bncNum:Int,
+    bncNumFilter:Boolean,
+    frqNum:Int,
+    frqNumFilter: Boolean,
+    bncZeroFilter: Boolean,
+    frqZeroFilter: Boolean,
     replaceToLemma: Boolean
 ): List<Word> {
     val previewList = ArrayList(documentWords)
@@ -1702,10 +1998,19 @@ fun filterDocumentWords(
     documentWords.forEach { word ->
 
         if (numberFilter && (word.value.toDoubleOrNull() != null)){
+            // 过滤数字
             previewList.remove(word)
-        }else if (notBncFilter && word.bnc == 0){
+        }else if(bncNumFilter && (word.bnc!! in 1 until bncNum)){
+            // 过滤最常见的词
             previewList.remove(word)
-        }else if (notFrqFilter && word.frq == 0){
+        }else if(frqNumFilter && (word.frq!! in 1 until frqNum)){
+            // 过滤最常见的词
+            previewList.remove(word)
+        }else if (bncZeroFilter && word.bnc == 0){
+            // 过滤 BNC 词频为 0 的词
+            previewList.remove(word)
+        }else if (frqZeroFilter && word.frq == 0){
+            // 过滤 COCA 词频为 0 的词
             previewList.remove(word)
         }
 
@@ -1747,7 +2052,22 @@ fun filterDocumentWords(
             if(validLemma != null){
                 previewList.remove(word)
                 if (!previewList.contains(validLemma)){
-                    previewList.add(index,validLemma)
+                    // 默认 add 为真
+                    var add = true
+                    // 但是，如果单词的词频为 0 或者是最常见的单词就不添加
+                    if(bncNumFilter && (validLemma.bnc!! in 1 until bncNum)){
+                        add = false
+                    }else if(frqNumFilter && (validLemma.frq!! in 1 until frqNum)){
+                        add = false
+                    }else if (bncZeroFilter && validLemma.bnc == 0){
+                        add = false
+                    }else if (frqZeroFilter && validLemma.frq == 0){
+                        add = false
+                    }
+
+                    if(add){
+                        previewList.add(index,validLemma)
+                    }
                 }
             }
 
@@ -1760,8 +2080,7 @@ fun filterDocumentWords(
 fun filterSelectVocabulary(
     selectedFileList: List<File>,
     filteredDocumentList: List<Word>
-): List<Word> {
-
+): MutableList<Word> {
     var list = ArrayList(filteredDocumentList)
     selectedFileList.forEach { file ->
         if (file.exists()) {
@@ -1781,13 +2100,46 @@ fun filterSelectVocabulary(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PreviewWords(
-    type: VocabularyType,
     previewList: List<Word>,
     summaryVocabulary: Map<String, List<String>>,
-    removeWord: (Word) -> Unit
+    removeWord: (Word) -> Unit,
+    sort:String,
+    changeSort:(String) -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
-        Summary(type, previewList, summaryVocabulary)
+
+        Summary(previewList, summaryVocabulary,sort, changeSort = {changeSort(it)})
+        val sortedList = when(sort){
+            "bnc" -> {
+                val sorted = previewList.sortedBy { it.bnc }
+                val zeroBnc = mutableListOf<Word>()
+                val greaterThanZero = mutableListOf<Word>()
+                for(word in sorted){
+                    if(word.bnc == 0){
+                        zeroBnc.add(word)
+                    }else{
+                        greaterThanZero.add(word)
+                    }
+                }
+                greaterThanZero.addAll(zeroBnc)
+                greaterThanZero
+            }
+            "coca" -> {
+                val sorted = previewList.sortedBy { it.frq }
+                val zeroFrq = mutableListOf<Word>()
+                val greaterThanZero = mutableListOf<Word>()
+                for(word in sorted){
+                    if(word.frq == 0){
+                        zeroFrq.add(word)
+                    }else{
+                        greaterThanZero.add(word)
+                    }
+                }
+                greaterThanZero.addAll(zeroFrq)
+                greaterThanZero
+            }
+            else  -> previewList
+        }
         val listState = rememberLazyGridState()
         Box(Modifier.fillMaxWidth()) {
             LazyVerticalGrid(
@@ -1798,7 +2150,7 @@ fun PreviewWords(
                     .padding(start = 50.dp, end = 60.dp),
                 state = listState
             ) {
-                itemsIndexed(previewList) { _: Int, word ->
+                itemsIndexed(sortedList) { _: Int, word ->
 
                     TooltipArea(
                         tooltip = {
@@ -2308,7 +2660,6 @@ private fun readMKV(
         }
     }
     setProgressText("从视频中提取出${orderList.size}个单词，正在批量查询单词，如果词典里没有就丢弃")
-//    val validSet = Dictionary.querySet(map.keys)
     val validList = Dictionary.queryList(orderList)
     setProgressText("${validList.size}个有效单词")
     validList.forEach { word ->

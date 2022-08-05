@@ -200,17 +200,20 @@ fun loadVocabulary(path: String): Vocabulary {
     }
 
 }
+/** 主要加载困难词库和熟悉词库 */
+fun loadMutableVocabularyByName(name: String):MutableVocabulary{
+    val file = if (name == "FamiliarVocabulary") {
+        getFamiliarVocabularyFile()
+    } else getHardVocabularyFile()
 
-fun loadHardMutableVocabulary():MutableVocabulary{
-    val hardFile = getHardVocabularyFile()
-    return if (hardFile.exists()) {
+    return if (file.exists()) {
         try {
-            val vocabulary = Json.decodeFromString<Vocabulary>(hardFile.readText())
+            val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
             MutableVocabulary(vocabulary)
         } catch (exception: Exception) {
             exception.printStackTrace()
             val vocabulary = Vocabulary(
-                name = "HardVocabulary",
+                name = name,
                 type = VocabularyType.DOCUMENT,
                 language = "",
                 size = 0,
@@ -218,13 +221,13 @@ fun loadHardMutableVocabulary():MutableVocabulary{
                 subtitlesTrackId = 0,
                 wordList = mutableListOf()
             )
-            JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：${hardFile.absoluteFile}\n" + exception.message)
+            JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：${file.absoluteFile}\n" + exception.message)
             MutableVocabulary(vocabulary)
         }
 
     } else {
         val vocabulary = Vocabulary(
-            name = "HardVocabulary",
+            name = name,
             type = VocabularyType.DOCUMENT,
             language = "",
             size = 0,
@@ -235,6 +238,13 @@ fun loadHardMutableVocabulary():MutableVocabulary{
         MutableVocabulary(vocabulary)
 }}
 
+
+/** 返回熟悉词库文件 */
+fun getFamiliarVocabularyFile():File{
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "FamiliarVocabulary.json")
+}
+/** 返回困难词库文件 */
 fun getHardVocabularyFile():File{
     val settingsDir = getSettingsDirectory()
     return File(settingsDir, "HardVocabulary.json")

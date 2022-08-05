@@ -32,6 +32,8 @@ data class GlobalData(
     val placement:WindowPlacement = WindowPlacement.Floating,
     val autoUpdate:Boolean = true,
     val ignoreVersion:String = "",
+    val bnc:Int = 1000,
+    val frq:Int = 1000
 )
 
 /** 全局的可观察状态 */
@@ -110,6 +112,17 @@ class GlobalState(globalData: GlobalData) {
      * 忽略的版本
      */
     var ignoreVersion by mutableStateOf(globalData.ignoreVersion)
+
+    /**
+     * 过滤 BNC 词频最常见的单词数量，默认为 1000
+     */
+    var bncNum by mutableStateOf(globalData.bnc)
+
+    /**
+     * 过滤 COCA 词频最常见的单词数量，默认为 1000
+     */
+    var frqNum by mutableStateOf(globalData.frq)
+
 }
 @Composable
  fun computeFontSize(textStyle: String): TextUnit {

@@ -372,6 +372,9 @@ private fun FrameWindowScope.WindowMenuBar(
         Item("过滤词库(F)", mnemonic = 'F', onClick = {
             state.filterVocabulary = true
         })
+        Item("导入词库到熟悉词库(I)", mnemonic = 'F', onClick = {
+            state.importFamiliarVocabulary = true
+        })
         Separator()
         Item("从文档生成词库(D)", mnemonic = 'D', onClick = {
             state.generateVocabularyFromDocument = true
@@ -613,6 +616,12 @@ fun MenuDialogs(state: AppState) {
             state = state,
             title = "过滤词库",
             type = VocabularyType.DOCUMENT
+        )
+    }
+    if (state.importFamiliarVocabulary) {
+        FamiliarDialog(
+            futureFileChooser = state.futureFileChooser,
+            close = { state.importFamiliarVocabulary = false }
         )
     }
     if (state.generateVocabularyFromDocument) {
