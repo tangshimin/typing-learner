@@ -983,23 +983,25 @@ fun TypingWord(
                             Box(
                                 Modifier.onPointerEvent(PointerEventType.Exit) { activeMenu = false }
                             ) {
-                                Word(
-                                    word = currentWord,
-                                    global = state.global,
-                                    wordVisible = typingWord.wordVisible,
-                                    pronunciation = typingWord.pronunciation,
-                                    isDictation = state.isDictation,
-                                    fontFamily = monospace,
-                                    audioPath = audioPath,
-                                    correctTime = wordCorrectTime,
-                                    wrongTime = wordWrongTime,
-                                    textFieldValue = wordTextFieldValue,
-                                    typingResult = wordTypingResult,
-                                    checkTyping = { checkWordInput(it) },
-                                    focusRequester = wordFocusRequester,
-                                    textFieldKeyEvent = {wordKeyEvent(it)},
-                                    showMenu = {activeMenu = true}
-                                )
+                                Row(Modifier.align(Alignment.Center)){
+                                    Word(
+                                        word = currentWord,
+                                        global = state.global,
+                                        wordVisible = typingWord.wordVisible,
+                                        pronunciation = typingWord.pronunciation,
+                                        isDictation = state.isDictation,
+                                        fontFamily = monospace,
+                                        audioPath = audioPath,
+                                        correctTime = wordCorrectTime,
+                                        wrongTime = wordWrongTime,
+                                        textFieldValue = wordTextFieldValue,
+                                        typingResult = wordTypingResult,
+                                        checkTyping = { checkWordInput(it) },
+                                        focusRequester = wordFocusRequester,
+                                        textFieldKeyEvent = {wordKeyEvent(it)},
+                                        showMenu = {activeMenu = true}
+                                    )
+                                }
                                 if (activeMenu) {
                                     Row(modifier = Modifier.align(Alignment.TopCenter)) {
                                         val contains = state.hardVocabulary.wordList.contains(currentWord)
