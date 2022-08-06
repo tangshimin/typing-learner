@@ -34,11 +34,14 @@ dependencies {
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
     implementation("org.apache.maven:maven-artifact:3.8.6")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.2")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation(compose("org.jetbrains.compose.ui:ui-test-junit4"))
 }
 
 
-
+tasks.test {
+    useJUnitPlatform()
+}
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"

@@ -70,21 +70,10 @@ const val USER = "sa"
 const val PASS = ""
 
 object Dictionary {
-    // 350万条数据
-    private fun getURL(): String {
-        val property = "compose.application.resources.dir"
-        val dir = System.getProperty(property)
-        return if (dir != null) {
-            // 打包之后的环境
-            "jdbc:h2:./app/resources/dictionary/stardict"
-        } else {
-            // 开发环境
-            "jdbc:h2:./resources/common/dictionary/stardict"
-        }
-    }
+
 
     // 70万条数据
-    private fun getEcdictURL(): String {
+    private fun getURL(): String {
         val property = "compose.application.resources.dir"
         val dir = System.getProperty(property)
         return if (dir != null) {
@@ -101,16 +90,12 @@ object Dictionary {
     }
 
 
-    /**
-     * 查询一个单词
-     */
+    /** 查询一个单词 */
     fun query(word: String): Word? {
         try {
             Class.forName(JDBC_DRIVER)
-//            val DB_URL = getURL()
-            val DB_URL = getEcdictURL()
-            DriverManager.getConnection(DB_URL, USER, PASS).use { conn ->
-//                val sql = "SELECT * from stardict WHERE word = ?"
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
                 val sql = "SELECT * from ecdict WHERE word = ?"
                 conn.prepareStatement(sql).use { statement ->
 
@@ -134,17 +119,13 @@ object Dictionary {
         return null
     }
 
-    /**
-     * 查询一个列表
-     */
+    /** 查询一个列表 */
     fun queryList(words: List<String>): MutableList<Word> {
         val results = mutableListOf<Word>()
         try {
             Class.forName(JDBC_DRIVER)
-//            val DB_URL = getURL()
-            val DB_URL = getEcdictURL()
-            DriverManager.getConnection(DB_URL, USER, PASS).use { conn ->
-//                val sql = "SELECT * from stardict WHERE word = ?"
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
                 val sql = "SELECT * from ecdict WHERE word = ?"
                 conn.prepareStatement(sql).use { statement ->
 
@@ -173,15 +154,58 @@ object Dictionary {
         return results
     }
 
-    /**
-     * 执行更新
-     */
+    /** 查询所有 BNC 词频小于 num 的单词 */
+    fun queryByBncLessThan(num:Int):List<Word>{
+        val sql = "SELECT * FROM ecdict WHERE bnc < $num AND bnc != 0 " +
+                  "ORDER BY bnc"
+        val results = mutableListOf<Word>()
+        try{
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url,USER,PASS).use{conn ->
+                conn.createStatement().use { statement ->
+                    val result = statement.executeQuery(sql)
+                    while(result.next()){
+                        val word = mapToWord(result)
+                        results.add(word)
+                    }
+                }
+            }
+        }catch (se:SQLException){
+            se.printStackTrace()
+        }
+        return results
+    }
+
+    /** 查询所有 FRQ 词频小于 num 的单词 */
+    fun queryByFrqLessThan(num:Int):List<Word>{
+        val sql = "SELECT * FROM ecdict WHERE frq < $num AND frq != 0 " +
+                  "ORDER BY frq"
+        val results = mutableListOf<Word>()
+        try{
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url,USER,PASS).use{conn ->
+                conn.createStatement().use { statement ->
+                    val result = statement.executeQuery(sql)
+                    while(result.next()){
+                        val word = mapToWord(result)
+                        results.add(word)
+                    }
+                }
+            }
+        }catch (se:SQLException){
+            se.printStackTrace()
+        }
+        return results
+    }
+
+    /** 执行更新 */
     fun executeUpdate(sql: String) {
         try {
             Class.forName(JDBC_DRIVER)
-//            val DB_URL = getURL()
-            val DB_URL = getEcdictURL()
-            DriverManager.getConnection(DB_URL, USER, PASS).use { conn ->
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
                 conn.createStatement().use { statement ->
                     statement.executeUpdate(sql)
                 }
@@ -192,6 +216,70 @@ object Dictionary {
             e.printStackTrace()
         }
     }
+
+    /** 查询 BNC 词频的最大值 */
+    fun queryBncMax():Int{
+        try {
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
+                val sql = "SELECT MAX(bnc) as max_bnc from ecdict"
+                val statement = conn.createStatement()
+                val result = statement.executeQuery(sql)
+                if(result.next()){
+                    return result.getInt(1)
+                }else return 0
+            }
+
+        } catch (e: Exception) {
+            //Handle errors for Class.forName
+            e.printStackTrace()
+            return 0
+        }
+    }
+
+    /** 查询 COCA 词频的最大值 */
+    fun queryFrqMax():Int{
+        try {
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
+                val sql = "SELECT MAX(frq) as max_frq from ecdict"
+                val statement = conn.createStatement()
+                val result = statement.executeQuery(sql)
+                if(result.next()){
+                    return result.getInt(1)
+                }else return 0
+            }
+
+        } catch (e: Exception) {
+            //Handle errors for Class.forName
+            e.printStackTrace()
+            return 0
+        }
+    }
+
+    /** 内置词典单词总数 */
+    fun wordCount():Int{
+        try {
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
+                val sql = "SELECT COUNT(*) as count from ecdict"
+                val statement = conn.createStatement()
+                val result = statement.executeQuery(sql)
+                if(result.next()){
+                    return result.getInt(1)
+                }else return 0
+            }
+
+        } catch (e: Exception) {
+            //Handle errors for Class.forName
+            e.printStackTrace()
+            return 0
+        }
+    }
+
 }
 
 /**
@@ -236,33 +324,6 @@ fun mapToWord(result: ResultSet): Word {
         mutableListOf(),
         mutableListOf()
     )
-}
-
-
-fun main() {
-//    val start = System.currentTimeMillis()
-//    val weAre = Dictionary.query("we're")
-//    println("查询 we're 耗时 ${System.currentTimeMillis() - start}")
-//
-//    val start2 = System.currentTimeMillis()
-//    val apple = Dictionary.query("apple")
-//    println("查询 apple 耗时 ${System.currentTimeMillis() - start2}")
-//
-//    val start3 = System.currentTimeMillis()
-//    val zoo = Dictionary.query("zoo")
-//    println("查询 zoo 耗时 ${System.currentTimeMillis() - start3}")
-//
-//    val does = Dictionary.query("does")
-//    println(does)
-//    val did = Dictionary.query("did")
-//    println(did)
-//    val done = Dictionary.query("done")
-//    println(done)
-//
-//    val updateDoes = "UPDATE ecdict SET exchange = '0:do' WHERE word = 'does'"
-
-
-//    Dictionary.executeUpdate()
 }
 
 
