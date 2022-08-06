@@ -376,10 +376,21 @@ private fun FrameWindowScope.WindowMenuBar(
             state.importFamiliarVocabulary = true
         })
         Separator()
+        var showWordFrequency by remember { mutableStateOf(false) }
+        Item("根据词频生成词库(C)", mnemonic = 'C', onClick = {showWordFrequency = true })
+        if(showWordFrequency){
+            WordFrequencyDialog(
+                futureFileChooser = state.futureFileChooser,
+                saveToRecentList = { name, path ->
+                    state.saveToRecentList(name, path,0)
+                },
+                close = {showWordFrequency = false}
+            )
+        }
         Item("从文档生成词库(D)", mnemonic = 'D', onClick = {
             state.generateVocabularyFromDocument = true
         })
-        Item("从字幕生成词库(C)", mnemonic = 'C', onClick = {
+        Item("从字幕生成词库(Z)", mnemonic = 'Z', onClick = {
             state.generateVocabularyFromSubtitles = true
         })
         Item("从 MKV 视频生成词库(V)", mnemonic = 'V', onClick = {
