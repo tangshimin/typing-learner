@@ -926,6 +926,14 @@ fun TypingWord(
                                         previous()
                                         true
                                     }
+                                    (it.isCtrlPressed && it.isShiftPressed && it.key == Key.I && it.type == KeyEventType.KeyUp) -> {
+                                        // 消耗快捷键，消耗之后，就不会触发 Ctrl + I 了
+                                        true
+                                    }
+                                    (it.isCtrlPressed && it.isShiftPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
+                                        jumpToCaptions()
+                                        true
+                                    }
 
                                     (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
                                         jumpToCaptions()
@@ -1054,19 +1062,23 @@ fun TypingWord(
                                 .fillMaxWidth()
                                 .height(intrinsicSize = IntrinsicSize.Max)
                                 .padding(bottom = 0.dp, start = startPadding)
-                                .onPreviewKeyEvent {
-                                    if ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
-                                        && it.type == KeyEventType.KeyUp
-                                    ) {
-                                        toNext()
-                                        if (state.isDictation) {
-                                            dictationSkipCurrentWord()
+                                .onKeyEvent {
+                                    when {
+                                        ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
+                                                && it.type == KeyEventType.KeyUp
+                                                ) -> {
+                                            toNext()
+                                            if (state.isDictation) {
+                                                dictationSkipCurrentWord()
+                                            }
+                                            true
                                         }
-                                        true
-                                    }else if(it.key == Key.PageUp && it.type == KeyEventType.KeyUp){
-                                    previous()
-                                    true
-                                }else globalKeyEvent(it)
+                                        (it.key == Key.PageUp && it.type == KeyEventType.KeyUp) -> {
+                                            previous()
+                                            true
+                                        }
+                                        else -> globalKeyEvent(it)
+                                    }
                                 }
                             Captions(
                                 captionsVisible = state.typingWord.subtitlesVisible,
@@ -1546,6 +1558,18 @@ fun Captions(
                         }
                     }
                     var selectable by remember { mutableStateOf(false) }
+                    val focusMoveUp:() -> Unit = {
+                        if(index == 0){
+                            jumpToWord()
+                        }else{
+                            focusRequesterList[index-1].requestFocus()
+                        }
+                    }
+                    val focusMoveDown:() -> Unit = {
+                        if(index<2 && index + 1 < word.captions.size){
+                            focusRequesterList[index+1].requestFocus()
+                        }
+                    }
                     val captionKeyEvent:(KeyEvent) -> Boolean = {
                         when {
                             (it.type == KeyEventType.KeyDown
@@ -1565,21 +1589,20 @@ fun Captions(
                                 scope.launch {  playCurrentCaption() }
                                 true
                             }
-
                             (it.key == Key.DirectionDown && it.type == KeyEventType.KeyUp) -> {
-                                if(index<2 && index + 1 < word.captions.size){
-                                    focusRequesterList[index+1].requestFocus()
-                                }
+                                focusMoveDown()
                                 true
                             }
-
                             (it.key == Key.DirectionUp && it.type == KeyEventType.KeyUp) -> {
-                                if(index == 0){
-                                    jumpToWord()
-                                }else{
-                                    focusRequesterList[index-1].requestFocus()
-                                }
-
+                                focusMoveUp()
+                                true
+                            }
+                            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.I && it.type == KeyEventType.KeyUp) -> {
+                                focusMoveUp()
+                                true
+                            }
+                            (it.isCtrlPressed && it.isShiftPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
+                                focusMoveDown()
                                 true
                             }
                             else -> false

@@ -66,7 +66,6 @@ fun ChapterFinishedDialog(
             size = DpSize(width, height)
         ),
     ) {
-
         WindowDraggableArea {
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -76,7 +75,7 @@ fun ChapterFinishedDialog(
                     .fillMaxSize()
                     .focusable()
                     .focusRequester(focusRequester)
-                    .onPreviewKeyEvent {
+                    .onKeyEvent {
                         when {
                             (it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
                                 // 进入听写模式
