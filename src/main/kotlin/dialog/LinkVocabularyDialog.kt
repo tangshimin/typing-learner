@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import components.ConfirmationDelete
 import components.createTransferHandler
 import data.*
 import player.play
@@ -414,7 +413,7 @@ fun LinkVocabularyDialog(
                                                     )
                                                 }
                                                 if (showConfirmationDialog) {
-                                                    ConfirmationDelete(
+                                                    ConfirmDialog(
                                                         message = "确定要删除 $name 的所有字幕吗?",
                                                         confirm = {
                                                             vocabulary?.wordList?.forEach { word ->

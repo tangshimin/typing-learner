@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 import data.*
 import dialog.ChapterFinishedDialog
+import dialog.ConfirmDialog
 import dialog.EditWordDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -163,11 +165,14 @@ fun TypingWord(
 
                         var plyingIndex by remember { mutableStateOf(0) }
 
-                        /** 显示困难单词图标 */
+                        /** 显示填充后的书签图标 */
                         var showBookmark by remember { mutableStateOf(false) }
 
                         /** 显示删除对话框 */
                         var showDeleteDialog by remember { mutableStateOf(false) }
+
+                        /** 显示把当前单词加入到熟悉词库的确认对话框 */
+                        var showFamiliarDialog by remember { mutableStateOf(false) }
 
                         /** 单词输入框的焦点请求器*/
                         val wordFocusRequester = remember { FocusRequester() }
@@ -216,6 +221,29 @@ fun TypingWord(
                                     }
                                 }
                             }
+                        }
+                        /** 删除当前单词 */
+                        val delete:() -> Unit = {
+                            val index = state.typingWord.index
+                            state.vocabulary.wordList.removeAt(index)
+                            state.vocabulary.size = state.vocabulary.wordList.size
+                            if(state.vocabulary.name == "HardVocabulary"){
+                                state.hardVocabulary.wordList.remove(currentWord)
+                                state.hardVocabulary.size = state.hardVocabulary.wordList.size
+                            }
+                            state.saveCurrentVocabulary()
+                        }
+                        /** 把当前单词加入到熟悉词库 */
+                        val addToFamiliar:() -> Unit = {
+                            val file = getFamiliarVocabularyFile()
+                            val familiar =  loadVocabulary(file.absolutePath)
+                            if(!familiar.wordList.contains(currentWord)){
+                                familiar.wordList.add(currentWord)
+                                familiar.size = familiar.wordList.size
+                            }
+                            saveVocabulary(familiar,file.absolutePath)
+                            delete()
+                            showFamiliarDialog = false
                         }
 
                         /** 处理加入到困难词库的函数 */
@@ -437,6 +465,10 @@ fun TypingWord(
                                         bookmarkClick()
                                     }
                                     showBookmark = true
+                                    true
+                                }
+                                (it.isCtrlPressed && it.key == Key.Y && it.type == KeyEventType.KeyUp) -> {
+                                    showFamiliarDialog = true
                                     true
                                 }
                                 (it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
@@ -973,6 +1005,7 @@ fun TypingWord(
                                         val contains = state.hardVocabulary.wordList.contains(currentWord)
                                         DeleteButton(onClick = { showDeleteDialog = true })
                                         EditButton(onClick = { showEditWordDialog = true })
+                                        FamiliarButton(onClick = {showFamiliarDialog = true})
                                         HardButton(
                                             onClick = { bookmarkClick() },
                                             contains = contains,
@@ -984,7 +1017,7 @@ fun TypingWord(
                                     val contains = state.hardVocabulary.wordList.contains(currentWord)
                                     // 这个按钮只显示 0.3 秒后消失
                                     BookmarkButton(
-                                        modifier = Modifier.align(Alignment.TopCenter).padding(start = 48.dp),
+                                        modifier = Modifier.align(Alignment.TopCenter).padding(start = 96.dp),
                                         contains = contains,
                                         disappear = {showBookmark = false}
                                     )
@@ -1065,26 +1098,25 @@ fun TypingWord(
                             )
 
                             if (showDeleteDialog) {
-                                ConfirmationDelete(
+                                ConfirmDialog(
                                     message = "确定要删除单词 ${currentWord.value} ?",
                                     confirm = {
                                         scope.launch {
-                                            val index = state.typingWord.index
-                                            state.vocabulary.wordList.removeAt(index)
-                                            state.vocabulary.size = state.vocabulary.wordList.size
-                                            if(state.vocabulary.name == "HardVocabulary"){
-                                                state.hardVocabulary.wordList.remove(currentWord)
-                                                state.hardVocabulary.size = state.hardVocabulary.wordList.size
-                                                state.saveCurrentVocabulary()
-                                            }
-                                            state.saveCurrentVocabulary()
+                                            delete()
                                             showDeleteDialog = false
                                         }
                                     },
-                                    close = {
-                                        showDeleteDialog = false
-                                    }
+                                    close = { showDeleteDialog = false }
                                 )
+                            }
+                            if(showFamiliarDialog){
+                                ConfirmDialog(
+                                    message = "确定要把 ${currentWord.value} 加入到熟悉词库？\n" +
+                                            "加入到熟悉词库后，${currentWord.value} 会从当前词库删除。",
+                                    confirm = { scope.launch { addToFamiliar() } },
+                                    close = { showFamiliarDialog = false }
+                                )
+
                             }
                             if (showEditWordDialog) {
                                 EditWordDialog(
@@ -1919,6 +1951,45 @@ fun HardButton(
             val icon = if(contains) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder
             Icon(
                 icon,
+                contentDescription = "Localized description",
+                tint = MaterialTheme.colors.primary
+            )
+        }
+    }
+}
+
+/** 熟悉单词按钮 */
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+fun FamiliarButton(
+    onClick: () -> Unit,
+){
+    TooltipArea(
+        tooltip = {
+            Surface(
+                elevation = 4.dp,
+                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                shape = RectangleShape
+            ) {
+                val ctrl = LocalCtrl.current
+                Row(modifier = Modifier.padding(10.dp)){
+                    Text(text = "加入到熟悉词库" )
+                    CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                        Text(text = " $ctrl + Y")
+                    }
+                }
+            }
+        },
+        delayMillis = 300,
+        tooltipPlacement = TooltipPlacement.ComponentRect(
+            anchor = Alignment.TopCenter,
+            alignment = Alignment.TopCenter,
+            offset = DpOffset.Zero
+        )
+    ) {
+        IconButton(onClick = { onClick() }) {
+            Icon(
+                Icons.Outlined.StarOutline,
                 contentDescription = "Localized description",
                 tint = MaterialTheme.colors.primary
             )
