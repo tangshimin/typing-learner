@@ -71,6 +71,7 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
+import org.mozilla.universalchardet.UniversalDetector
 import player.isWindows
 import state.AppState
 import state.composeAppResource
@@ -84,6 +85,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
+import java.nio.charset.Charset
 import java.nio.file.Paths
 import java.text.Collator
 import java.util.*
@@ -2502,10 +2504,16 @@ private fun readSRT(
             val tokenizer: Tokenizer = TokenizerME(model)
             val formatSRT = FormatSRT()
             val file = File(pathName)
+            val encoding = UniversalDetector.detectCharset(file)
+            val charset =  if(encoding != null){
+                Charset.forName(encoding)
+            }else{
+                Charset.defaultCharset()
+            }
             val inputStream: InputStream = FileInputStream(file)
 
             setProgressText("正在解析字幕文件")
-            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
+            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream,charset)
 
             val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
             val captionList: Collection<subtitleFile.Caption> = captions.values

@@ -51,6 +51,7 @@ import dialog.removeItalicSymbol
 import dialog.removeLocationInfo
 import dialog.replaceNewLine
 import kotlinx.coroutines.launch
+import org.mozilla.universalchardet.UniversalDetector
 import player.*
 import state.GlobalState
 import state.SubtitlesState
@@ -67,6 +68,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.lang.NullPointerException
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.FutureTask
 import java.util.regex.Pattern
@@ -1618,8 +1620,14 @@ fun parseSubtitles(
     val file = File(subtitlesPath)
     if(file.exists()){
         try {
+            val encoding = UniversalDetector.detectCharset(file)
+            val charset =  if(encoding != null){
+                Charset.forName(encoding)
+            }else{
+                Charset.defaultCharset()
+            }
             val inputStream: InputStream = FileInputStream(file)
-            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream)
+            val timedTextObject: TimedTextObject = formatSRT.parseFile(file.name, inputStream,charset)
             val captions: TreeMap<Int, subtitleFile.Caption> = timedTextObject.captions
             val captionList = mutableListOf<Caption>()
             var maxLength = 0
