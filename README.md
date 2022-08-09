@@ -20,26 +20,28 @@
     https://user-images.githubusercontent.com/16540656/174944474-e5947df9-c8ed-4546-9c67-057fe52c2d51.mp4
     
 5. 抄写文本，可以抄写 [古腾堡计划](https://www.gutenberg.org/) 所有 txt 格式的电子书，非[古腾堡计划](https://www.gutenberg.org/) 的电子书，抄写前可能需要先格式化，把每行的字母数量限制在 75 个以内。
+
    ![Demo-Text](https://user-images.githubusercontent.com/16540656/175084580-6b26abc3-671f-455e-ac5f-aa583297a0e0.png)
    
-6. 内置了常用词库(单词本)：四级、六级、专四、专八、考研、TOEFL、IELTS、GRE、GMAT、SAT、牛津核心词、北师大版高中英语、人教版英语、商务英语、外研版英语、新概念英语。这些词是没有链接字幕的，后续可用根据自己的兴趣，链接字幕词库。
 
-7. [如果不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
-8. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
+6. [如果不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 
-9. 用 MKV 视频或字幕生成的词库，可以链接到用文档生成的词库或内置的词库。下面着张图片表示，电影 Sintel 的所有字幕中，有 9 条字幕，匹配了四级词库中的 6 个单词。
+7. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
+
+8. 用 MKV 视频或字幕生成的词库，可以链接到用文档生成的词库或内置的词库。下面着张图片表示，电影 Sintel 的所有字幕中，有 9 条字幕，匹配了四级词库中的 6 个单词。
    
    ![Link Vocabulary](https://user-images.githubusercontent.com/16540656/166690274-2075b736-af51-42f0-a881-6535ca11d4d3.png)
   
-10. 过滤词库，过滤熟悉的单词。
+9. 过滤词库，过滤熟悉的单词。
 
-11. 歌词转字幕 
+10. 歌词转字幕 
 
-12. 合并词库，可以把一整季的电视剧生成的多个字幕词库合并成一个词库。
+11. 合并词库，可以把一整季的电视剧生成的多个字幕词库合并成一个词库。
 
-13. 学习完一章之后，可以选择进入默写模式，在默写模式整个章节的单词是重新随机排序的，默写完了会出现默写的正确率。
-  
-14. 学习完整个词库之后，还有一个重新随机排序整个词库的功能。
+12. 内置了常用词库(单词本)：四级、六级、专四、专八、考研、TOEFL、IELTS、GRE、GMAT、SAT、牛津核心词、北师大版高中英语、人教版英语、商务英语、外研版英语、新概念英语。这些词是没有链接字幕的，后续可用根据自己的兴趣，链接字幕词库。
+
+13. 内置了一个包含 770612 个词条的本地词典，这个词典来自于 [ECDICT](https://github.com/skywind3000/ECDICT) 的基础版，可以用快捷键 `Ctrl + F` 打开搜索框，查询单词。
+
    
 
 ## 应用平台：Windows / macOS   
