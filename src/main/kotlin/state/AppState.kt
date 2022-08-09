@@ -7,6 +7,7 @@ import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
 import data.*
+import state.MemoryStrategy.*
 import dialog.RecentItem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -65,20 +66,23 @@ class AppState {
     /** 最近生成的词库列表 */
     var recentList = readRecentList()
 
-    /** 是否是听写模式 */
-    var isDictation by mutableStateOf(false)
+    /** 记忆单词界面的记忆策略 */
+    var memoryStrategy by mutableStateOf(Normal)
 
-    /** 复习错误单词模式 */
-    var isReviewWrongList by mutableStateOf(false)
+    /** 要听写的单词 */
+    val dictationWords = mutableStateListOf<Word>()
 
-    /** 听写的单词 */
-    var dictationWords = listOf<Word>()
-
-    /** 听写模式的索引 */
+    /** 听写单词时的索引 */
     var dictationIndex by mutableStateOf(0)
 
-    /** 是否打开选择章节窗口 */
-    var openSelectChapter by mutableStateOf(false)
+    /** 要听写复习的单词 */
+    val reviewWords = mutableStateListOf<Word>()
+
+    /** 听写错误的单词 */
+    val wrongWords = mutableStateListOf<Word>()
+
+    /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
+    private val typingWordStateMap = mutableStateMapOf<String, Boolean>()
 
     /** 打开设置 */
     var openSettings by mutableStateOf(false)
@@ -241,32 +245,36 @@ class AppState {
 
     /** 保存记忆单词的设置信息 */
     fun saveTypingWordState() {
-        runBlocking {
-            launch {
-                val dataWordState = DataWordState(
-                    typingWord.wordVisible,
-                    typingWord.phoneticVisible,
-                    typingWord.morphologyVisible,
-                    typingWord.definitionVisible,
-                    typingWord.translationVisible,
-                    typingWord.subtitlesVisible,
-                    typingWord.speedVisible,
-                    typingWord.isPlaySoundTips,
-                    typingWord.soundTipsVolume,
-                    typingWord.pronunciation,
-                    typingWord.isAuto,
-                    typingWord.index,
-                    typingWord.hardVocabularyIndex,
-                    typingWord.vocabularyName,
-                    typingWord.vocabularyPath,
-                    typingWord.externalSubtitlesVisible,
-                )
+        // 只有在正常记忆单词和复习错误单词时的状态改变才需要持久化
+        if (memoryStrategy != Dictation && memoryStrategy != Review) {
+            runBlocking {
+                launch {
+                    val dataWordState = DataWordState(
+                        typingWord.wordVisible,
+                        typingWord.phoneticVisible,
+                        typingWord.morphologyVisible,
+                        typingWord.definitionVisible,
+                        typingWord.translationVisible,
+                        typingWord.subtitlesVisible,
+                        typingWord.speedVisible,
+                        typingWord.isPlaySoundTips,
+                        typingWord.soundTipsVolume,
+                        typingWord.pronunciation,
+                        typingWord.isAuto,
+                        typingWord.index,
+                        typingWord.hardVocabularyIndex,
+                        typingWord.vocabularyName,
+                        typingWord.vocabularyPath,
+                        typingWord.externalSubtitlesVisible,
+                    )
 
-                val json = encodeBuilder.encodeToString(dataWordState)
-                val settings = getWordSettingsFile()
-                settings.writeText(json)
+                    val json = encodeBuilder.encodeToString(dataWordState)
+                    val settings = getWordSettingsFile()
+                    settings.writeText(json)
+                }
             }
         }
+
 
     }
 
@@ -313,10 +321,20 @@ class AppState {
 
     /** 获得当前单词 */
     fun getCurrentWord(): Word {
-        if (isDictation || isReviewWrongList) {
-            return dictationWords[dictationIndex]
+
+        return when (memoryStrategy){
+
+            Normal -> getWord(typingWord.index)
+
+            Dictation -> dictationWords[dictationIndex]
+
+            Review -> reviewWords[dictationIndex]
+
+            NormalReviewWrong -> wrongWords[dictationIndex]
+
+            DictationReviewWrong -> wrongWords[dictationIndex]
         }
-        return getWord(typingWord.index)
+
     }
 
     /** 根据索引返回单词 */
@@ -357,6 +375,44 @@ class AppState {
             list = vocabulary.wordList.subList(start, end).shuffled()
         }
         return list
+    }
+
+    /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
+    fun hiddenInfo() {
+        // 先保存状态
+        typingWordStateMap["isAuto"] = typingWord.isAuto
+        typingWordStateMap["wordVisible"] = typingWord.wordVisible
+        typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
+        typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
+        typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
+        typingWordStateMap["translationVisible"] = typingWord.translationVisible
+        typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
+        // 再改变状态
+        typingWord.isAuto = true
+        typingWord.wordVisible = false
+        typingWord.phoneticVisible = false
+        typingWord.definitionVisible = false
+        typingWord.morphologyVisible = false
+        typingWord.translationVisible = false
+        typingWord.subtitlesVisible = false
+
+    }
+
+    /** 退出听写模式，恢复应用状态 */
+    fun showInfo(clear:Boolean = true) {
+        // 恢复状态
+        typingWord.isAuto = typingWordStateMap["isAuto"]!!
+        typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
+        typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
+        typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
+        typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
+        typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
+        typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
+
+        if(clear){
+            dictationWords.clear()
+        }
+
     }
 
     /** 改变词库 */
@@ -484,6 +540,7 @@ class AppState {
         return set
     }
 }
+
 
 /** 速度组件可观察的状态 */
 class MutableSpeedState {

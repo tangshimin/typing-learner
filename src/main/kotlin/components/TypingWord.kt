@@ -41,9 +41,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 import data.*
+import state.MemoryStrategy.*
 import dialog.ChapterFinishedDialog
 import dialog.ConfirmDialog
 import dialog.EditWordDialog
+import dialog.SelectChapterDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
@@ -127,23 +129,44 @@ fun TypingWord(
             }
             Box(Modifier.fillMaxSize()) {
                 val endPadding = 0.dp
-                Column(Modifier.align(Alignment.TopCenter).padding(top = 10.dp)){
+                Column(Modifier.align(Alignment.TopCenter)){
                     if (isMacOS()) {
+                        Spacer(Modifier.height(10.dp))
                         MacOSTitle(
                             title = title,
                             window = window,
                         )
                     }
-                    val index = if (state.isDictation) {
-                        "听写测试   ${state.dictationIndex + 1}/${state.dictationWords.size}"
-                    }else if (state.isReviewWrongList) {
-                        "复习错误单词   ${state.dictationIndex + 1}/${state.dictationWords.size}"
-                    } else {
-                        "${state.typingWord.index + 1}/${state.vocabulary.size}"
+
+                    val text = when(state.memoryStrategy){
+                        Normal -> { "${state.typingWord.index + 1}/${state.vocabulary.size}"}
+                        Dictation -> { "听写测试   ${state.dictationIndex + 1}/${state.dictationWords.size}"}
+                        Review -> {"听写复习   ${state.dictationIndex + 1}/${state.reviewWords.size}"}
+                        NormalReviewWrong -> { "复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
+                        DictationReviewWrong -> { "听写复习 - 复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
                     }
-                    Text(text = index,
-                        color = MaterialTheme.colors.onBackground,
-                    )
+
+                    Row(verticalAlignment = Alignment.CenterVertically){
+                        val top = if(state.memoryStrategy == Review || state.memoryStrategy == DictationReviewWrong) 0.dp else 10.dp
+                        Text(text = text,
+                            color = MaterialTheme.colors.onBackground,
+                            modifier = Modifier.padding(top = top )
+                        )
+                        if(state.memoryStrategy == Review || state.memoryStrategy == DictationReviewWrong){
+                            Spacer(Modifier.width(20.dp))
+                            ExitButton(onClick = {
+                                state.showInfo()
+                                state.memoryStrategy = Normal
+                                if( state.wrongWords.isNotEmpty()){
+                                    state.wrongWords.clear()
+                                }
+                                if(state.reviewWords.isNotEmpty()){
+                                    state.reviewWords.clear()
+                                }
+
+                            })
+                        }
+                    }
                 }
 
 
@@ -231,6 +254,7 @@ fun TypingWord(
                                 state.hardVocabulary.wordList.remove(currentWord)
                                 state.hardVocabulary.size = state.hardVocabulary.wordList.size
                             }
+
                             state.saveCurrentVocabulary()
                         }
                         /** 把当前单词加入到熟悉词库 */
@@ -322,45 +346,35 @@ fun TypingWord(
                                 (it.isCtrlPressed && it.key == Key.P && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.phoneticVisible = !state.typingWord.phoneticVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.L && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.morphologyVisible = !state.typingWord.morphologyVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.E && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.definitionVisible = !state.typingWord.definitionVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.K && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.translationVisible = !state.typingWord.translationVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.wordVisible = !state.typingWord.wordVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
@@ -378,7 +392,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.Z && it.type == KeyEventType.KeyUp) -> {
-                                    if(!state.isDictation){
+                                    if(state.memoryStrategy != Dictation && state.memoryStrategy != Review ){
                                         val playTriple = if (state.vocabulary.type == VocabularyType.DOCUMENT) {
                                             getPayTriple(currentWord, 0)
                                         } else {
@@ -392,7 +406,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.X && it.type == KeyEventType.KeyUp) -> {
-                                    if(!state.isDictation){
+                                    if(state.memoryStrategy != Dictation && state.memoryStrategy != Review){
                                         val playTriple = if (state.getCurrentWord().externalCaptions.size >= 2) {
                                             getPayTriple(currentWord, 1)
                                         } else if (state.getCurrentWord().captions.size >= 2) {
@@ -406,7 +420,7 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.isShiftPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
-                                    if(!state.isDictation){
+                                    if(state.memoryStrategy != Dictation && state.memoryStrategy != Review){
                                         val playTriple = if (state.getCurrentWord().externalCaptions.size >= 3) {
                                             getPayTriple(currentWord, 2)
                                         } else if (state.getCurrentWord().captions.size >= 3) {
@@ -421,10 +435,8 @@ fun TypingWord(
                                 }
                                 (it.isCtrlPressed && it.key == Key.S && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        if (!state.isDictation) {
-                                            state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
-                                            state.saveTypingWordState()
-                                        }
+                                        state.typingWord.subtitlesVisible = !state.typingWord.subtitlesVisible
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
@@ -439,9 +451,7 @@ fun TypingWord(
                                 (it.isCtrlPressed && it.key == Key.Q && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.isPlaySoundTips = !state.typingWord.isPlaySoundTips
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
@@ -454,9 +464,7 @@ fun TypingWord(
                                 (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         state.typingWord.speedVisible = !state.typingWord.speedVisible
-                                        if (!state.isDictation) {
-                                            state.saveTypingWordState()
-                                        }
+                                        state.saveTypingWordState()
                                     }
                                     true
                                 }
@@ -506,9 +514,6 @@ fun TypingWord(
                             /** 听写模式的错误单词，主要用于听写模式计算正确率*/
                             val dictationWrongWords = remember { mutableStateMapOf<Word, Int>()}
 
-                            /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
-                            val typingWordStateMap = remember{ mutableStateMapOf<String, Boolean>() }
-
                             /** 单词输入框里的字符串*/
                             var wordTextFieldValue by remember { mutableStateOf("") }
 
@@ -546,54 +551,7 @@ fun TypingWord(
                                 dictationWrongWords.clear()
                             }
 
-                            /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
-                            fun enterDictationMode() {
-                                val wordValue = state.getCurrentWord().value
-                                state.dictationWords = state.generateDictationWords(wordValue)
-                                state.dictationIndex = 0
-                                // 先保存状态
-                                typingWordStateMap["isAuto"] = typingWord.isAuto
-                                typingWordStateMap["wordVisible"] = typingWord.wordVisible
-                                typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
-                                typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
-                                typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
-                                typingWordStateMap["translationVisible"] = typingWord.translationVisible
-                                typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
-                                // 再改变状态
-                                typingWord.isAuto = true
-                                typingWord.wordVisible = false
-                                typingWord.phoneticVisible = false
-                                typingWord.definitionVisible = false
-                                typingWord.morphologyVisible = false
-                                typingWord.translationVisible = false
-                                typingWord.subtitlesVisible = false
 
-                                state.isDictation = true
-                            }
-
-                            /** 退出听写模式，恢复应用状态 */
-                            fun exitDictationMode() {
-                                // 恢复状态
-                                typingWord.isAuto = typingWordStateMap["isAuto"]!!
-                                typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
-                                typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
-                                typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
-                                typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
-                                typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
-                                typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
-
-                                state.isDictation = false
-                            }
-
-
-                            /** 进入复习错误单词模式，复习错误单词模式属于听写模式的子模式，并且利用了听写模式的单词列表。 */
-                            fun enterReviewMode(reviewList: List<Word>) {
-                                // 先把 typing 的状态恢复
-                                exitDictationMode()
-                                state.isReviewWrongList = true
-                                state.dictationWords = reviewList
-                                state.dictationIndex = 0
-                            }
 
                             /** 播放错误音效 */
                             val playBeepSound = {
@@ -624,8 +582,8 @@ fun TypingWord(
                             }
 
                             /**
-                             * 当用户在听写模式按 enter 调用的回调，
-                             * 在听写模式跳过单词也算一次错误
+                             * 当用户在听写测试按 enter 调用的函数，
+                             * 在听写测试跳过单词也算一次错误
                              */
                             val dictationSkipCurrentWord: () -> Unit = {
                                 if (wordCorrectTime == 0) {
@@ -637,14 +595,16 @@ fun TypingWord(
                                 }
                             }
 
-                            /** 焦点切换到单词输入框*/
+                            /** 焦点切换到单词输入框 */
                             val jumpToWord:() -> Unit = {
                                 wordFocusRequester.requestFocus()
                             }
 
-                            /** 焦点切换到抄写字幕*/
+                            /** 焦点切换到抄写字幕 */
                             val jumpToCaptions:() -> Unit = {
-                                if(!state.isDictation && typingWord.subtitlesVisible && currentWord.captions.isNotEmpty()){
+                                if((state.memoryStrategy != Dictation && state.memoryStrategy != Review) &&
+                                    typingWord.subtitlesVisible && currentWord.captions.isNotEmpty()
+                                ){
                                     focusRequester1.requestFocus()
                                 }
                             }
@@ -661,54 +621,76 @@ fun TypingWord(
                                 wordWrongTime = 0
                             }
 
+                            /**
+                             * 在听写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
+                             * 在非听写模式下按Enter键就不会有这种感觉，因为按Enter键，
+                             * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
+                             */
+                            val delayPlaySound:() -> Unit = {
+                                Timer("playChapterFinishedSound", false).schedule(1000) {
+                                    playChapterFinished()
+                                }
+                                showChapterFinishedDialog = true
+                            }
+
+                            /** 增加复习错误单词时的索引 */
+                            val increaseWrongIndex:() -> Unit = {
+                                if (state.dictationIndex + 1 == state.wrongWords.size) {
+                                    delayPlaySound()
+                                } else state.dictationIndex++
+                            }
+
                             /** 切换到下一个单词 */
                             val toNext: () -> Unit = {
                                 scope.launch {
                                     clear()
-                                    if (state.isDictation || state.isReviewWrongList) {
-                                        if (state.dictationIndex + 1 == state.dictationWords.size) {
-                                            /**
-                                             * 在听写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
-                                             * 在非听写模式下按Enter键就不会有这种感觉，因为按Enter键，
-                                             * 自己已经输入完成了，有一种期待，预测到了将会播放提示音。
-                                             */
-                                            Timer("playChapterFinishedSound", false).schedule(1000) {
-                                                playChapterFinished()
-                                            }
-                                            showChapterFinishedDialog = true
 
-                                        } else state.dictationIndex++
-                                    } else {
-                                        when {
-                                            (state.typingWord.index == state.vocabulary.size - 1) -> {
-                                                isVocabularyFinished = true
-                                                playChapterFinished()
-                                                showChapterFinishedDialog = true
+                                    when (state.memoryStrategy) {
+                                        Normal -> {
+                                            when {
+                                                (state.typingWord.index == state.vocabulary.size - 1) -> {
+                                                    isVocabularyFinished = true
+                                                    playChapterFinished()
+                                                    showChapterFinishedDialog = true
+                                                }
+                                                ((state.typingWord.index + 1) % 20 == 0) -> {
+                                                    playChapterFinished()
+                                                    showChapterFinishedDialog = true
+                                                }
+                                                else -> state.typingWord.index += 1
                                             }
-                                            ((state.typingWord.index + 1) % 20 == 0) -> {
-                                                playChapterFinished()
-                                                showChapterFinishedDialog = true
-                                            }
-                                            else -> state.typingWord.index += 1
+                                            state.saveTypingWordState()
                                         }
-                                        state.saveTypingWordState()
+                                        Dictation -> {
+                                            if (state.dictationIndex + 1 == state.dictationWords.size) {
+                                                delayPlaySound()
+                                            } else state.dictationIndex++
+                                        }
+                                        Review -> {
+                                            if (state.dictationIndex + 1 == state.reviewWords.size) {
+                                                delayPlaySound()
+                                            } else state.dictationIndex++
+                                        }
+                                        NormalReviewWrong -> { increaseWrongIndex() }
+                                        DictationReviewWrong -> { increaseWrongIndex() }
                                     }
+
                                     wordFocusRequester.requestFocus()
                                 }
                             }
 
-                            /** 切换到上一个单词 */
+                            /** 切换到上一个单词,听写时不允许切换到上一个单词 */
                             val previous :() -> Unit = {
                                 scope.launch {
                                     // 正常记忆单词
-                                    if(!state.isDictation && !state.isReviewWrongList){
+                                    if(state.memoryStrategy == Normal){
                                         clear()
                                         if((state.typingWord.index) % 20 != 0 ){
                                             state.typingWord.index -= 1
                                             state.saveTypingWordState()
                                         }
                                     // 复习错误单词
-                                    }else if (state.isReviewWrongList){
+                                    }else if (state.memoryStrategy == NormalReviewWrong || state.memoryStrategy == DictationReviewWrong ){
                                         clear()
                                         if(state.dictationIndex > 0 ){
                                             state.dictationIndex -= 1
@@ -743,7 +725,8 @@ fun TypingWord(
                                             speed.wrongCount = speed.wrongCount + 1
                                             playBeepSound()
                                             wordWrongTime++
-                                            if (state.isDictation) {
+                                            // 如果是听写测试，或听写复习，需要汇总错误单词
+                                            if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) {
                                                 chapterWrongTime++
                                                 val dictationWrongTime = dictationWrongWords[currentWord]
                                                 if (dictationWrongTime != null) {
@@ -763,7 +746,7 @@ fun TypingWord(
                                         // 输入完全正确
                                         speed.correctCount = speed.correctCount + 1
                                         playSuccessSound()
-                                        if (state.isDictation) chapterCorrectTime++
+                                        if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) chapterCorrectTime++
                                         if (state.typingWord.isAuto) {
                                             Timer("cleanInputChar", false).schedule(50) {
                                                 toNext()
@@ -851,11 +834,22 @@ fun TypingWord(
                                 isVocabularyFinished = false
                             }
 
+
                             /** 复习错误单词 */
                             val reviewWrongWords: () -> Unit = {
                                 val reviewList = dictationWrongWords.keys.toList()
                                 if (reviewList.isNotEmpty()) {
-                                    enterReviewMode(reviewList)
+                                    state.showInfo(clear = false)
+                                    if (state.memoryStrategy == Review ||
+                                        state.memoryStrategy == DictationReviewWrong
+                                    ) {
+                                        state.memoryStrategy = DictationReviewWrong
+                                    }else{
+                                        state.memoryStrategy = NormalReviewWrong
+                                    }
+
+                                    state.wrongWords.addAll(reviewList)
+                                    state.dictationIndex = 0
                                     resetChapterTime()
                                     showChapterFinishedDialog = false
                                 }
@@ -863,28 +857,83 @@ fun TypingWord(
 
                             /** 下一章 */
                             val nextChapter: () -> Unit = {
-                                if (state.isDictation) exitDictationMode()
-                                if (state.isReviewWrongList) state.isReviewWrongList = false
+
+                                if (state.memoryStrategy == NormalReviewWrong ||
+                                    state.memoryStrategy == DictationReviewWrong
+                                ) {
+                                    state.wrongWords.clear()
+                                }
+
+                                if( state.memoryStrategy == Dictation){
+                                    state.showInfo()
+                                }
+
                                 state.typingWord.index += 1
                                 state.typingWord.chapter++
                                 resetChapterTime()
+                                state.memoryStrategy = Normal
                                 state.saveTypingWordState()
                                 showChapterFinishedDialog = false
                             }
 
+
+                            /** 正常记忆单词，进入到听写测试，需要的单词 */
+                            val shuffleNormal:() -> Unit = {
+                                val wordValue = state.getCurrentWord().value
+                                val shuffledList = state.generateDictationWords(wordValue)
+                                state.dictationWords.clear()
+                                state.dictationWords.addAll(shuffledList)
+                            }
+                            /** 从听写复习再次进入到听写测试时，需要的单词 */
+                            val shuffleDictationReview:() -> Unit = {
+                                var shuffledList = state.reviewWords.shuffled()
+                                // 如果打乱顺序的列表的第一个单词，和当前章节的最后一个词相等，就不会触发重组
+                                while(shuffledList.first() == currentWord){
+                                    shuffledList = state.reviewWords.shuffled()
+                                }
+                                state.reviewWords.clear()
+                                state.reviewWords.addAll(shuffledList)
+                            }
                             /** 进入听写模式 */
                             val enterDictation: () -> Unit = {
+                                println("Learn Status:${state.memoryStrategy}")
                                 scope.launch {
                                     state.saveTypingWordState()
-                                    // 正常地进入听写模式，或从复习错误单词进入听写模式
-                                    if (!state.isDictation || state.isReviewWrongList) {
-                                        state.isReviewWrongList = false
-                                        enterDictationMode()
-                                    // 再听写一次
-                                    } else {
-                                        state.dictationIndex = 0
-                                        // 重新生成一个乱序的单词列表
-                                        state.dictationWords = state.generateDictationWords(currentWord.value)
+                                    when(state.memoryStrategy){
+                                        // 从正常记忆单词第一次进入到听写测试
+                                        Normal -> {
+                                            shuffleNormal()
+                                            state.memoryStrategy = Dictation
+                                            state.dictationIndex = 0
+                                            state.hiddenInfo()
+                                        }
+                                        // 正常记忆单词时选择再次听写
+                                        Dictation ->{
+                                            shuffleNormal()
+                                            state.dictationIndex = 0
+                                        }
+                                        // 从复习错误单词进入到听写测试，这里有两种情况：
+                                        // 一种是从正常记忆单词进入到复习错误单词，复习完毕后，再次听写
+                                        NormalReviewWrong ->{
+                                            state.memoryStrategy = Dictation
+                                            state.wrongWords.clear()
+                                            shuffleNormal()
+                                            state.dictationIndex = 0
+                                            state.hiddenInfo()
+                                        }
+                                        // 一种是从听写复习进入到复习错误单词，复习完毕后，再次听写
+                                        DictationReviewWrong ->{
+                                            state.memoryStrategy = Review
+                                            state.wrongWords.clear()
+                                            shuffleDictationReview()
+                                            state.dictationIndex = 0
+                                            state.hiddenInfo()
+                                        }
+                                        // 在听写复习时选择再次听写
+                                        Review ->{
+                                            shuffleDictationReview()
+                                            state.dictationIndex = 0
+                                        }
                                     }
                                     wordFocusRequester.requestFocus()
                                     resetChapterTime()
@@ -917,7 +966,7 @@ fun TypingWord(
                                     ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
                                             && it.type == KeyEventType.KeyUp) -> {
                                         toNext()
-                                        if (state.isDictation) {
+                                        if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) {
                                             dictationSkipCurrentWord()
                                         }
                                         true
@@ -975,13 +1024,19 @@ fun TypingWord(
 
                             LaunchedEffect(state.vocabularyChanged){
                                 if(state.vocabularyChanged){
-                                    wordCorrectTime = 0
-                                    wordWrongTime = 0
-
-                                    if (state.isDictation) {
-                                        exitDictationMode()
+                                    clear()
+                                    if(state.memoryStrategy == NormalReviewWrong ||
+                                        state.memoryStrategy == DictationReviewWrong
+                                    ){
+                                        state.wrongWords.clear()
+                                    }
+                                    if (state.memoryStrategy == Dictation) {
+                                        state.showInfo()
                                         resetChapterTime()
                                     }
+
+                                    if(state.memoryStrategy == Review) state.memoryStrategy = Normal
+
 
                                     state.vocabularyChanged = false
                                 }
@@ -997,7 +1052,7 @@ fun TypingWord(
                                         global = state.global,
                                         wordVisible = typingWord.wordVisible,
                                         pronunciation = typingWord.pronunciation,
-                                        isDictation = state.isDictation,
+                                        isDictation = (state.memoryStrategy == Dictation ||state.memoryStrategy == Review),
                                         fontFamily = monospace,
                                         audioPath = audioPath,
                                         correctTime = wordCorrectTime,
@@ -1068,7 +1123,7 @@ fun TypingWord(
                                                 && it.type == KeyEventType.KeyUp
                                                 ) -> {
                                             toNext()
-                                            if (state.isDictation) {
+                                            if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) {
                                                 dictationSkipCurrentWord()
                                             }
                                             true
@@ -1153,7 +1208,24 @@ fun TypingWord(
                                 )
                             }
 
-                            /** 关闭对话框 */
+                            /** 显示听写复习的选择章节对话框 */
+                            var showChapterDialog by remember { mutableStateOf(false) }
+                            /** 打开听写复习的选择章节对话框 */
+                            val openReviewDialog:() -> Unit = {
+                                showChapterFinishedDialog = false
+                                showChapterDialog = true
+                                resetChapterTime()
+                            }
+
+                            if(showChapterDialog){
+                                SelectChapterDialog(
+                                    close = {showChapterDialog = false},
+                                    state = state,
+                                    isMultiple = true
+                                )
+                            }
+
+                            /** 关闭当前章节结束时跳出的对话框 */
                             val close: () -> Unit = {
                                 showChapterFinishedDialog = false
                                 if(isVocabularyFinished) isVocabularyFinished = false
@@ -1163,8 +1235,9 @@ fun TypingWord(
                                     close = { close() },
                                     isVocabularyFinished = isVocabularyFinished,
                                     correctRate = correctRate(),
-                                    isDictation = state.isDictation,
-                                    isReviewWrongList = state.isReviewWrongList,
+                                    memoryStrategy = state.memoryStrategy,
+                                    openReviewDialog = {openReviewDialog()},
+                                    isReviewWrong = (state.memoryStrategy == NormalReviewWrong || state.memoryStrategy == DictationReviewWrong),
                                     dictationWrongWords = dictationWrongWords,
                                     enterDictation = { enterDictation() },
                                     learnAgain = { learnAgain() },
@@ -2079,9 +2152,41 @@ fun CopyButton(wordValue:String){
     }
 }
 
+/** 退出按钮*/
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+fun ExitButton(onClick: () -> Unit){
+    TooltipArea(
+        tooltip = {
+            Surface(
+                elevation = 4.dp,
+                border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                shape = RectangleShape
+            ) {
+                Text(text = "退出听写复习", modifier = Modifier.padding(10.dp))
+            }
+        },
+        delayMillis = 300,
+        tooltipPlacement = TooltipPlacement.ComponentRect(
+            anchor = Alignment.BottomCenter,
+            alignment = Alignment.BottomCenter,
+            offset = DpOffset.Zero
+        )
+    ) {
+        IconButton(onClick = {
+            onClick()
+        }) {
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = "Localized description",
+                tint = MaterialTheme.colors.primary
+            )
+        }
+    }
+}
 
 
-
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun SearchResultInfo(
     word: Word,

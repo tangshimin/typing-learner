@@ -305,7 +305,7 @@ private fun computeTitle(state: AppState): String {
 /**
  * 菜单栏
  */
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 private fun FrameWindowScope.WindowMenuBar(
     state: AppState,
@@ -410,13 +410,19 @@ private fun FrameWindowScope.WindowMenuBar(
     }
     Menu("章节(C)", mnemonic = 'C') {
         val enable = state.global.type == WORD
+        var showChapterDialog by remember { mutableStateOf(false) }
         Item(
             "选择章节(C)", mnemonic = 'C',
             enabled = enable,
-            onClick = {
-                state.openSelectChapter = true
-            },
+            onClick = { showChapterDialog = true },
         )
+        if(showChapterDialog){
+            SelectChapterDialog(
+                close = {showChapterDialog = false},
+                state = state,
+                isMultiple = false
+            )
+        }
     }
     Menu("字幕(S)", mnemonic = 'S') {
         val enableTypingSubtitles = (state.global.type != SUBTITLES)
@@ -482,6 +488,22 @@ private fun FrameWindowScope.WindowMenuBar(
             "文本格式化(F)", mnemonic = 'F',
             onClick = { showTextFormatDialog = true },
         )
+    }
+    Menu("复习(F)",mnemonic = 'F'){
+        var showChapterDialog by remember { mutableStateOf(false) }
+        Item(
+            text = "听写复习(F)",
+            mnemonic = 'F',
+            enabled = true,
+            onClick = { showChapterDialog = true }
+        )
+        if(showChapterDialog){
+            SelectChapterDialog(
+                close = {showChapterDialog = false},
+                state = state,
+                isMultiple = true
+            )
+        }
     }
     var aboutDialogVisible by remember { mutableStateOf(false) }
     var donateDialogVisible by remember { mutableStateOf(false) }
@@ -607,9 +629,6 @@ fun textSelectionColors(): TextSelectionColors {
 @ExperimentalComposeUiApi
 @Composable
 fun MenuDialogs(state: AppState) {
-    if (state.openSelectChapter) {
-        SelectChapterDialog(state)
-    }
 
     if (state.loadingFileChooserVisible) {
         LoadingDialog()

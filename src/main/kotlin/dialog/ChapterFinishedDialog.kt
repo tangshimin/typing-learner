@@ -23,14 +23,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.Word
+import state.MemoryStrategy
+
 
 /**
  * 当前章节完成之后的对话框
  * @param close 点击取消之后调用的回调函数
  * @param correctRate 正确率
  * @param isVocabularyFinished 是否整个词典的单词都已经学习完成
- * @param isDictation 是否是听写模式
- * @param isReviewWrongList 是否在复习错误单词
+ * @param isReviewWrong 是否在复习错误单词
  * @param dictationWrongWords 听写模式的错误单词
  * @param enterDictation 进入听写模式后调用的回调函数
  * @param learnAgain 选择【重复本章】后调用的回调函数
@@ -46,8 +47,9 @@ fun ChapterFinishedDialog(
     close: () -> Unit,
     correctRate: Float,
     isVocabularyFinished: Boolean,
-    isDictation: Boolean,
-    isReviewWrongList: Boolean,
+    memoryStrategy: MemoryStrategy,
+    openReviewDialog:() -> Unit,
+    isReviewWrong: Boolean,
     dictationWrongWords: Map<Word, Int>,
     enterDictation: () -> Unit,
     learnAgain: () -> Unit,
@@ -75,7 +77,7 @@ fun ChapterFinishedDialog(
                     .fillMaxSize()
                     .focusable()
                     .focusRequester(focusRequester)
-                    .onKeyEvent {
+                    .onPreviewKeyEvent {
                         when {
                             (it.key == Key.V && it.type == KeyEventType.KeyUp) -> {
                                 // 进入听写模式
@@ -91,6 +93,7 @@ fun ChapterFinishedDialog(
                                 learnAgain()
                                 true
                             }
+
                             ((it.key == Key.Enter || it.key == Key.NumPadEnter)
                                     && it.type == KeyEventType.KeyUp) -> {
                                 if (isVocabularyFinished) resetIndex(false)
@@ -105,7 +108,6 @@ fun ChapterFinishedDialog(
                     focusRequester.requestFocus()
                 }
                 val textColor = MaterialTheme.colors.primary
-//                Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -113,16 +115,18 @@ fun ChapterFinishedDialog(
 
                     val title = if (isVocabularyFinished) {
                         "您已完成最后一个章节"
-                    } else if (isDictation) {
+                    } else if (memoryStrategy == MemoryStrategy.Dictation) {
                             "您已听写完本章节"
-                    } else if (isReviewWrongList){
+                    } else if (memoryStrategy == MemoryStrategy.Review) {
+                            "您已测试完本章节"
+                    } else if (isReviewWrong){
                         "您已复习完错误单词"
                     }else "您已学习完本章节"
 
                     Text(text = title, color = MaterialTheme.colors.onBackground)
                 }
 
-                if (isDictation) {
+                if (memoryStrategy == MemoryStrategy.Dictation || memoryStrategy == MemoryStrategy.Review) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
@@ -198,7 +202,13 @@ fun ChapterFinishedDialog(
                             offset = DpOffset.Zero
                         )
                     ) {
-                        if (isVocabularyFinished) {
+                        if(memoryStrategy == MemoryStrategy.Review || memoryStrategy == MemoryStrategy.DictationReviewWrong){
+                            OutlinedButton(onClick = {
+                                openReviewDialog()
+                            }) {
+                                Text("(⏎)选择章节", color = textColor)
+                            }
+                        }else if (isVocabularyFinished) {
                             OutlinedButton(onClick = {
                                 resetIndex(false)
                             }) {
@@ -211,10 +221,10 @@ fun ChapterFinishedDialog(
                                 Text("(⏎)下一章", color = textColor)
                             }
                         }
-
                     }
+
                     Spacer(Modifier.width(15.dp))
-                    if (!isDictation && !isReviewWrongList) {
+                    if (memoryStrategy == MemoryStrategy.Normal) {
                         TooltipArea(
                             tooltip = {
                                 Surface(
@@ -258,12 +268,12 @@ fun ChapterFinishedDialog(
                         OutlinedButton(
                             onClick = { enterDictation() }
                         ) {
-                            val text = if (isDictation) "(V)再听写一次" else "(V)听写测试"
+                            val text = if (memoryStrategy == MemoryStrategy.Dictation || memoryStrategy == MemoryStrategy.Review) "(V)再听写一次" else "(V)听写测试"
                             Text(text = text, color = textColor)
                         }
                     }
                     Spacer(Modifier.width(15.dp))
-                    if (isDictation  &&  correctRate < 100F ) {
+                    if ((memoryStrategy == MemoryStrategy.Dictation || memoryStrategy == MemoryStrategy.Review)  &&  correctRate < 100F ) {
                         TooltipArea(
                             tooltip = {
                                 Surface(

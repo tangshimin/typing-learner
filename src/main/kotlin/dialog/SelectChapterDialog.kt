@@ -7,11 +7,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -22,101 +22,141 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import data.Word
 import kotlinx.serialization.ExperimentalSerializationApi
-import player.isWindows
 import state.AppState
+import state.MemoryStrategy
 
 /**
  * 选择章节
  */
 @OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalMaterialApi::class,
     ExperimentalSerializationApi::class
 )
 @ExperimentalComposeUiApi
 @Composable
-fun SelectChapterDialog(state: AppState) {
+fun SelectChapterDialog(
+    close:() -> Unit,
+    state: AppState,
+    isMultiple:Boolean
+) {
     Dialog(
-        title = "选择章节",
-        onCloseRequest = { state.openSelectChapter = false },
+        title = if(isMultiple) "听写复习" else "选择章节",
+        onCloseRequest = { close() },
         resizable = true,
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
             size = DpSize(930.dp, 785.dp)
         ),
     ) {
-        SelectChapter(
-            state = state,
-            chapter = state.typingWord.chapter,
-            onChapterChanged = {
-                state.typingWord.chapter = it
-            },
-        )
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
-@ExperimentalFoundationApi
-@ExperimentalMaterialApi
-@Composable
-fun SelectChapter(
-    state: AppState,
-    chapter: Int,
-    onChapterChanged: (Int) -> Unit,
-) {
-    Surface(
-        elevation = 5.dp,
-        shape = RectangleShape,
-    ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colors.background)
+        Surface(
+            elevation = 5.dp,
+            shape = RectangleShape,
         ) {
-            Column(modifier = Modifier.align(Alignment.TopCenter)) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 5.dp)
-                ) {
-                    Text("${state.vocabulary.name}  ", color = MaterialTheme.colors.onBackground)
-                    Text("${state.vocabulary.size}", color = MaterialTheme.colors.primary)
-                    Text(" 个单词", color = MaterialTheme.colors.onBackground)
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colors.background)
+            ) {
+                val checkedChapters  = remember{
+                    if(isMultiple){
+                        mutableStateListOf()
+                    }else{
+                        mutableStateListOf(state.typingWord.chapter)
+                    }
                 }
-                Divider()
-            }
-            Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp, bottom = 55.dp)) {
-                Chapters(
-                    checkedChapter = chapter,
-                    size = state.vocabulary.size,
-                    onChapterChanged = {
-                        onChapterChanged(it)
+
+                val selectedWords = remember(checkedChapters){
+                    derivedStateOf {
+                        val list = mutableStateListOf<Word>()
+                        checkedChapters.forEach { chapter ->
+                            val start = chapter * 20 - 20
+                            var end = chapter * 20
+                            if(end > state.vocabulary.wordList.size){
+                                end = state.vocabulary.wordList.size
+                            }
+                            val subList = state.vocabulary.wordList.subList(start, end)
+                            list.addAll(subList)
+                        }
+                        list
+                    }
+                }
+
+                if(isMultiple){
+                    Column(modifier = Modifier.align(Alignment.TopCenter)) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 5.dp)
+                        ) {
+                            Text("选择了${checkedChapters.size}个章节  ", color = MaterialTheme.colors.onBackground)
+                            Text("${selectedWords.value.size}", color = MaterialTheme.colors.primary)
+                            Text(" 个单词", color = MaterialTheme.colors.onBackground)
+                        }
+                        Divider()
+                    }
+                }
+
+
+                Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp, bottom = 55.dp)) {
+                    Chapters(
+                        checkedChapters = checkedChapters,
+                        size = state.vocabulary.size,
+                        isMultiple = isMultiple,
+                        onChapterSelected = {
+                            if(!isMultiple){
+                                checkedChapters.clear()
+                                checkedChapters.add(it)
+                            }else{
+                                if(checkedChapters.contains(it)){
+                                    checkedChapters.remove(it)
+                                }else{
+                                    checkedChapters.add(it)
+                                }
+                            }
+                        },
+                    )
+                }
+                Footer(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    confirm = {
+                        if(isMultiple){
+                            if(state.memoryStrategy != MemoryStrategy.Review && state.memoryStrategy != MemoryStrategy.Dictation){
+                                state.hiddenInfo()
+                            }
+
+                            state.memoryStrategy = MemoryStrategy.Review
+                            state.wrongWords.clear()
+                            state.reviewWords.clear()
+                            state.reviewWords.addAll(selectedWords.value.shuffled())
+                            state.dictationIndex = 0
+
+                        }else{
+                            val chapter = checkedChapters.first()
+                            if (chapter == 0) state.typingWord.chapter = 1
+                            state.typingWord.chapter = chapter
+                            state.typingWord.index = (chapter - 1) * 20
+                            state.saveTypingWordState()
+                        }
+                            close()
+
                     },
-                )
+                    exit = { close() })
             }
-            Footer(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                confirm = {
-                    if (chapter == 0) state.typingWord.chapter = 1
-                    state.typingWord.chapter = chapter
-                    state.typingWord.index = (chapter - 1) * 20
-                    state.openSelectChapter = false
-                    state.saveTypingWordState()
-                },
-                exit = {
-                    state.openSelectChapter = false
-                })
         }
     }
-
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
-fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
+fun Chapters(
+    size: Int,
+    checkedChapters: List<Int>,
+    onChapterSelected: (Int) -> Unit,
+    isMultiple:Boolean
+) {
     Box(
         modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colors.background)
     ) {
@@ -134,17 +174,33 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
         ) {
             itemsIndexed(chapters) { index: Int, item: String ->
                 val chapter = index + 1
-                var checkedState = chapter == checkedChapter
+                var checkedState = if(isMultiple){
+                     checkedChapters.contains(chapter)
+                }else{
+                    chapter == checkedChapters.first()
+                }
+
+                val onClick:() -> Unit = {
+                    if(isMultiple){
+                        onChapterSelected(chapter)
+                    }else{
+                        // 如果已经选择了这个章节，就取消选择这个章节，章节设置为0，
+                        // 否则设置选择的章节
+                        onChapterSelected(if (checkedState) 0 else chapter)
+                    }
+
+                }
+
                 Card(
                     modifier = Modifier
                         .padding(7.5.dp)
                         .clickable {
-                            onChapterChanged(if (checkedState) 0 else chapter)
+                            onClick()
                         },
                     backgroundColor = MaterialTheme.colors.surface,
                     elevation = 3.dp
                 ) {
-                    Box(Modifier.size(width = 144.dp, height = 60.dp)) {
+                    Box(Modifier.size(width = 144.dp, height = 65.dp)) {
                         Text(
                             text = item,
                             color = MaterialTheme.colors.onBackground,
@@ -161,13 +217,22 @@ fun Chapters(size: Int, checkedChapter: Int, onChapterChanged: (Int) -> Unit) {
                             textAlign = TextAlign.Center,
                             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
                         )
-                        if (checkedState) {
+                        if(!isMultiple){
+                            if (checkedState) {
+                                Checkbox(
+                                    checked = true,
+                                    onCheckedChange = { onClick()},
+                                    modifier = Modifier.align(Alignment.BottomEnd)
+                                )
+                            }
+                        }else{
                             Checkbox(
                                 checked = checkedState,
-                                onCheckedChange = { checkedState = it },
+                                onCheckedChange = {  onClick()},
                                 modifier = Modifier.align(Alignment.BottomEnd)
                             )
                         }
+
                     }
                 }
             }
