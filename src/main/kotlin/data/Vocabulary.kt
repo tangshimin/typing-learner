@@ -136,6 +136,9 @@ fun loadMutableVocabulary(path: String): MutableVocabulary {
 
         try {
             val vocabulary = Json.decodeFromString<Vocabulary>(file.readText())
+            if(vocabulary.size != vocabulary.wordList.size){
+                vocabulary.size = vocabulary.wordList.size
+            }
             MutableVocabulary(vocabulary)
         } catch (exception: Exception) {
             exception.printStackTrace()
@@ -149,6 +152,9 @@ fun loadMutableVocabulary(path: String): MutableVocabulary {
                 wordList = mutableListOf()
             )
             JOptionPane.showMessageDialog(null, "词库解析错误：\n地址：$path\n" + exception.message)
+            if(vocabulary.size != vocabulary.wordList.size){
+                vocabulary.size = vocabulary.wordList.size
+            }
             MutableVocabulary(vocabulary)
         }
 
