@@ -1067,25 +1067,7 @@ fun TypingWord(
                             Box(
                                 Modifier.onPointerEvent(PointerEventType.Exit) { activeMenu = false }
                             ) {
-                                Row(Modifier.align(Alignment.Center)){
-                                    Word(
-                                        word = currentWord,
-                                        global = state.global,
-                                        wordVisible = typingWord.wordVisible,
-                                        pronunciation = typingWord.pronunciation,
-                                        isDictation = (state.memoryStrategy == Dictation ||state.memoryStrategy == Review),
-                                        fontFamily = monospace,
-                                        audioPath = audioPath,
-                                        correctTime = wordCorrectTime,
-                                        wrongTime = wordWrongTime,
-                                        textFieldValue = wordTextFieldValue,
-                                        typingResult = wordTypingResult,
-                                        checkTyping = { checkWordInput(it) },
-                                        focusRequester = wordFocusRequester,
-                                        textFieldKeyEvent = {wordKeyEvent(it)},
-                                        showMenu = {activeMenu = true}
-                                    )
-                                }
+                                /** 动态菜单，鼠标移动到单词区域时显示 */
                                 if (activeMenu) {
                                     Row(modifier = Modifier.align(Alignment.TopCenter)) {
                                         val contains = state.hardVocabulary.wordList.contains(currentWord)
@@ -1115,6 +1097,27 @@ fun TypingWord(
                                         disappear = {showBookmark = false}
                                     )
                                 }
+
+                                Row(Modifier.align(Alignment.Center)){
+                                    Word(
+                                        word = currentWord,
+                                        global = state.global,
+                                        wordVisible = typingWord.wordVisible,
+                                        pronunciation = typingWord.pronunciation,
+                                        isDictation = (state.memoryStrategy == Dictation ||state.memoryStrategy == Review),
+                                        fontFamily = monospace,
+                                        audioPath = audioPath,
+                                        correctTime = wordCorrectTime,
+                                        wrongTime = wordWrongTime,
+                                        textFieldValue = wordTextFieldValue,
+                                        typingResult = wordTypingResult,
+                                        checkTyping = { checkWordInput(it) },
+                                        focusRequester = wordFocusRequester,
+                                        textFieldKeyEvent = {wordKeyEvent(it)},
+                                        showMenu = {activeMenu = true}
+                                    )
+                                }
+
                             }
 
 
