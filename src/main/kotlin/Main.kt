@@ -263,7 +263,15 @@ private fun computeTitle(state: AppState): String {
     when (state.global.type) {
         WORD -> {
             return if (state.vocabulary.wordList.isNotEmpty()) {
-                state.typingWord.vocabularyName
+                when (state.typingWord.vocabularyName) {
+                    "FamiliarVocabulary" -> {
+                        "熟悉词库"
+                    }
+                    "HardVocabulary" -> {
+                        "困难词库"
+                    }
+                    else -> state.typingWord.vocabularyName
+                }
             } else {
                 "请选择词库"
             }
