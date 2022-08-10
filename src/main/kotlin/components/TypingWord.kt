@@ -493,7 +493,11 @@ fun TypingWord(
                                     true
                                 }
                                 (it.isCtrlPressed && it.key == Key.Y && it.type == KeyEventType.KeyUp) -> {
-                                    showFamiliarDialog = true
+                                    if(state.vocabulary.name == "FamiliarVocabulary"){
+                                        JOptionPane.showMessageDialog(window, "不能把熟悉词库的单词添加到熟悉词库")
+                                    }else{
+                                        showFamiliarDialog = true
+                                    }
                                     true
                                 }
                                 (it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
@@ -1087,7 +1091,14 @@ fun TypingWord(
                                         val contains = state.hardVocabulary.wordList.contains(currentWord)
                                         DeleteButton(onClick = { showDeleteDialog = true })
                                         EditButton(onClick = { showEditWordDialog = true })
-                                        FamiliarButton(onClick = {showFamiliarDialog = true})
+                                        FamiliarButton(onClick = {
+                                            if(state.vocabulary.name == "FamiliarVocabulary"){
+                                                JOptionPane.showMessageDialog(window, "不能把熟悉词库的单词添加到熟悉词库")
+                                            }else{
+                                                showFamiliarDialog = true
+                                            }
+
+                                        })
                                         HardButton(
                                             onClick = { bookmarkClick() },
                                             contains = contains,
