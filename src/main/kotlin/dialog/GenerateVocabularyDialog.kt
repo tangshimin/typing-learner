@@ -626,6 +626,23 @@ fun GenerateVocabularyDialog(
         val removeWord:(Word) -> Unit = {
             previewList.remove(it)
             removedWords.add(it)
+            // 从字幕生成的词库和从 MKV 生成的词库，需要把内部字幕转换为外部字幕
+            if(it.captions.isNotEmpty()){
+                it.captions.forEach{ caption ->
+                    val externalCaption = ExternalCaption(
+                        relateVideoPath = relateVideoPath,
+                        subtitlesTrackId = selectedTrackId,
+                        subtitlesName = File(selectedFilePath).nameWithoutExtension,
+                        start = caption.start,
+                        end = caption.end,
+                        content = caption.content
+                    )
+                    it.externalCaptions.add(externalCaption)
+                }
+                it.captions.clear()
+            }
+
+
             familiarVocabulary.wordList.add(it)
             scope.launch {
                 familiarVocabulary.size = familiarVocabulary.wordList.size
@@ -770,7 +787,8 @@ fun GenerateVocabularyDialog(
                                                 frqNumFilter,
                                                 bncZeroFilter,
                                                 frqZeroFilter,
-                                                replaceToLemma
+                                                replaceToLemma,
+                                               selectedFileList.isEmpty()
                                             )
                                             previewList.clear()
                                             // 根据选择的词库过滤单词
@@ -1992,7 +2010,8 @@ fun filterDocumentWords(
     frqNumFilter: Boolean,
     bncZeroFilter: Boolean,
     frqZeroFilter: Boolean,
-    replaceToLemma: Boolean
+    replaceToLemma: Boolean,
+    isBatchMKV:Boolean
 ): List<Word> {
     val previewList = ArrayList(documentWords)
     /**
@@ -2001,10 +2020,12 @@ fun filterDocumentWords(
      */
     val lemmaMap = HashMap<Word,String>()
 
-    /**
-     * 原型词 > 字幕列表  映射
-     */
+    /** 原型词 > 内部字幕列表 映射 */
     val captionsMap = HashMap<String, MutableList<Caption>>()
+
+    /** 原型词 -> 外部字幕列表映射,批量生成 MKV 词库时，字幕保存在单词的外部字幕列表 */
+    val externalCaptionsMap = HashMap<String, MutableList<ExternalCaption>>()
+
     documentWords.forEach { word ->
 
         if (numberFilter && (word.value.toDoubleOrNull() != null)){
@@ -2027,19 +2048,38 @@ fun filterDocumentWords(
         val lemma = getWordLemma(word)
         if (replaceToLemma && !lemma.isNullOrEmpty()) {
             lemmaMap[word] = lemma
-            if (captionsMap[lemma].isNullOrEmpty()) {
-                captionsMap[lemma] = word.captions
-            } else {
-                // do 有四个派生词，四个派生词可能在文件的不同位置，可能有四个不同的字幕列表
-                val list = mutableListOf<Caption>()
-                list.addAll(captionsMap[lemma]!!)
-                for (caption in word.captions) {
-                    if(list.size<3){
-                        list.add(caption)
+            // 处理内部字幕，批量的从 MKV 生成词库时，字幕保存在外部字幕列表
+            if(!isBatchMKV){
+                if (captionsMap[lemma].isNullOrEmpty()) {
+                    captionsMap[lemma] = word.captions
+                } else {
+                    // do 有四个派生词，四个派生词可能在文件的不同位置，可能有四个不同的字幕列表
+                    val list = mutableListOf<Caption>()
+                    list.addAll(captionsMap[lemma]!!)
+                    for (caption in word.captions) {
+                        if(list.size<3){
+                            list.add(caption)
+                        }
                     }
+                    captionsMap[lemma] = list
                 }
-                captionsMap[lemma] = list
+            // 处理外部字幕，批量的从 MKV 生成词库时，字幕保存在外部字幕列表
+            }else{
+                if (externalCaptionsMap[lemma].isNullOrEmpty()) {
+                    externalCaptionsMap[lemma] = word.externalCaptions
+                } else {
+                    // do 有四个派生词，四个派生词可能在文件的不同位置，可能有四个不同的字幕列表
+                    val list = mutableListOf<ExternalCaption>()
+                    list.addAll(externalCaptionsMap[lemma]!!)
+                    for (externalCaption in word.externalCaptions) {
+                        if(list.size<3){
+                            list.add(externalCaption)
+                        }
+                    }
+                    externalCaptionsMap[lemma] = list
+                }
             }
+
         }
     }
     // 查询单词原型
@@ -2047,8 +2087,16 @@ fun filterDocumentWords(
     val result = Dictionary.queryList(queryList)
     val validLemmaMap = HashMap<String,Word>()
     result.forEach { word ->
-        val captions = captionsMap[word.value]!!
-        word.captions = captions
+        // 处理内部字幕
+        if(!isBatchMKV){
+            val captions = captionsMap[word.value]!!
+            word.captions = captions
+        // 处理外部字幕
+        }else{
+            val externalCaptions = externalCaptionsMap[word.value]!!
+            word.externalCaptions = externalCaptions
+        }
+
         validLemmaMap[word.value] = word
     }
 

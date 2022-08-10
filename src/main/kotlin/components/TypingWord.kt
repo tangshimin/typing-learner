@@ -261,6 +261,23 @@ fun TypingWord(
                         val addToFamiliar:() -> Unit = {
                             val file = getFamiliarVocabularyFile()
                             val familiar =  loadVocabulary(file.absolutePath)
+                            if (state.vocabulary.type == VocabularyType.MKV ||
+                                state.vocabulary.type == VocabularyType.SUBTITLES
+                            ) {
+                                currentWord.captions.forEach{caption ->
+                                    val externalCaption = ExternalCaption(
+                                        relateVideoPath = state.vocabulary.relateVideoPath,
+                                        subtitlesTrackId = state.vocabulary.subtitlesTrackId,
+                                        subtitlesName = state.vocabulary.name,
+                                        start = caption.start,
+                                        end = caption.end,
+                                        content = caption.content
+                                    )
+                                    currentWord.externalCaptions.add(externalCaption)
+                                }
+                                currentWord.captions.clear()
+
+                            }
                             if(!familiar.wordList.contains(currentWord)){
                                 familiar.wordList.add(currentWord)
                                 familiar.size = familiar.wordList.size
