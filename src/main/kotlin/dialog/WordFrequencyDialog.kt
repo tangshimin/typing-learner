@@ -68,13 +68,17 @@ fun WordFrequencyDialog(
                 Thread(Runnable {
                     done = false
                     waiting = true
-                    // 词频数据并不是连续的，中间有断开，但是用于选择 1000 时，想要 1000 个单词，
-                    // 生成词库时，先生成一个大于1000列表，让在截取前面 1000 个单词。
+                    // 词频数据并不是连续的，中间有断开，但是用户选择 1000 时，想要 1000 个单词，
+                    // 生成词库时，如果用户选择生成最熟悉的 1000 词，先生成一个大于1000列表，然后再截取前面 1000 个单词。
                     val actualNum = if (num < 100) {
                         num + 20
                     } else if (num in 100 until 1000) {
                         num + 100
-                    } else num + 1000
+                    } else if(num in 1000 until 7000){
+                        num + 1000
+                    }else if(num in 7000 until 16000){
+                        num + 2000
+                    }else num + 4000
 
                     val list = if (selectState == "BNC") {
                         Dictionary.queryByBncLessThan(actualNum)
@@ -148,9 +152,9 @@ fun WordFrequencyDialog(
                             onValueChange = {
                                 val input = it.toIntOrNull()
                                 if (input != null) {
-                                    if(input>50000){
-                                        num = 50000
-                                        JOptionPane.showMessageDialog(window,"不能超过最大值 50000")
+                                    if(input>30000){
+                                        num = 30000
+                                        JOptionPane.showMessageDialog(window,"不能超过最大值 30000")
                                     }else if(input < 0){
                                         JOptionPane.showMessageDialog(window,"不能为负数")
                                         num = 0
