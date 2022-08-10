@@ -64,7 +64,7 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.schedule
-
+import androidx.compose.ui.unit.TextUnit
 /**
  * 应用程序的核心组件
  * @param state 应用程序的状态
@@ -1123,23 +1123,26 @@ fun TypingWord(
 
                             Phonetic(
                                 word = currentWord,
-                                phoneticVisible = state.typingWord.phoneticVisible
+                                phoneticVisible = state.typingWord.phoneticVisible,
                             )
                             Morphology(
                                 word = currentWord,
                                 isPlaying = isPlaying,
                                 searching = false,
-                                morphologyVisible = state.typingWord.morphologyVisible
+                                morphologyVisible = state.typingWord.morphologyVisible,
+                                fontSize = state.global.detailFontSize
                             )
                             Definition(
                                 word = currentWord,
                                 definitionVisible = state.typingWord.definitionVisible,
                                 isPlaying = isPlaying,
+                                fontSize = state.global.detailFontSize
                             )
                             Translation(
                                 word = currentWord,
                                 translationVisible = state.typingWord.translationVisible,
-                                isPlaying = isPlaying
+                                isPlaying = isPlaying,
+                                fontSize = state.global.detailFontSize
                             )
 
                             val videoSize = videoBounds.size
@@ -1191,7 +1194,8 @@ fun TypingWord(
                                 focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3),
                                 jumpToWord = {jumpToWord()},
                                 externalVisible = typingWord.externalSubtitlesVisible,
-                                openSearch = {openSearch()}
+                                openSearch = {openSearch()},
+                                fontSize = state.global.detailFontSize
                             )
                             if (isPlaying) Spacer(
                                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
@@ -1321,6 +1325,7 @@ fun Morphology(
     isPlaying: Boolean,
     searching: Boolean,
     morphologyVisible: Boolean,
+    fontSize: TextUnit
 ) {
     if (morphologyVisible && !isPlaying) {
         val exchanges = word.exchange.split("/")
@@ -1376,7 +1381,7 @@ fun Morphology(
                     val textColor = MaterialTheme.colors.onBackground
                     val plainStyle = SpanStyle(
                         color = textColor,
-                        fontSize = 16.sp
+                        fontSize = fontSize,
                     )
 
 
@@ -1495,14 +1500,20 @@ fun Definition(
     word: Word,
     definitionVisible: Boolean,
     isPlaying: Boolean,
+    fontSize: TextUnit
 ) {
     if (definitionVisible && !isPlaying) {
         val rows = word.definition.length - word.definition.replace("\n", "").length
+        val width = if(fontSize == MaterialTheme.typography.h5.fontSize){
+            600.dp
+        }else  if(fontSize == MaterialTheme.typography.h6.fontSize){
+            575.dp
+        }else 555.dp
         val normalModifier = Modifier
-            .width(554.dp)
+            .width(width)
             .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
         val greaterThen10Modifier = Modifier
-            .width(554.dp)
+            .width(width)
             .height(260.dp)
             .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
         Column {
@@ -1513,7 +1524,7 @@ fun Definition(
                         Text(
                             textAlign = TextAlign.Start,
                             overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.body1.copy(lineHeight = 26.sp),
+                            fontSize = fontSize,
                             color = MaterialTheme.colors.onBackground,
                             modifier = Modifier.align(Alignment.CenterStart),
                             text = word.definition,
@@ -1543,20 +1554,27 @@ fun Definition(
 fun Translation(
     translationVisible: Boolean,
     isPlaying: Boolean,
-    word: Word
+    word: Word,
+    fontSize: TextUnit
 ) {
     if (translationVisible && !isPlaying) {
         Column {
+            val width = if(fontSize == MaterialTheme.typography.h5.fontSize){
+                600.dp
+            }else  if(fontSize == MaterialTheme.typography.h6.fontSize){
+                575.dp
+            }else 555.dp
             Row(
                 horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
-                    .width(554.dp)
+                    .width(width)
                     .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
             ) {
                 SelectionContainer {
                     Text(
                         text = word.translation,
                         textAlign = TextAlign.Start,
+                        fontSize = fontSize,
                         color = MaterialTheme.colors.onBackground
                     )
                 }
@@ -1612,6 +1630,7 @@ fun Captions(
     jumpToWord: () -> Unit,
     externalVisible:Boolean,
     openSearch: () -> Unit,
+    fontSize: TextUnit
 ) {
     if (captionsVisible) {
         val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
@@ -1729,7 +1748,8 @@ fun Captions(
                         selectable = selectable,
                         setSelectable = {selectable = it},
                         isPathWrong = isPathWrong,
-                        openSearch = {openSearch()}
+                        openSearch = {openSearch()},
+                        fontSize = fontSize
                     )
                 }
 
@@ -1818,16 +1838,31 @@ fun Caption(
     setSelectable:(Boolean) -> Unit,
     isPathWrong:Boolean,
     openSearch: () -> Unit,
+    fontSize: TextUnit
 ) {
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
+        val rowHeight = if(fontSize == MaterialTheme.typography.h5.fontSize){
+            24.dp * 2 + 4.dp
+        }else if(fontSize == MaterialTheme.typography.h6.fontSize){
+            20.dp * 2 + 4.dp
+        }else if(fontSize == MaterialTheme.typography.subtitle1.fontSize){
+            16.dp * 2 + 4.dp
+        }else if(fontSize == MaterialTheme.typography.subtitle2.fontSize){
+            14.dp * 2 + 4.dp
+        }else if(fontSize == MaterialTheme.typography.body1.fontSize){
+            16.dp * 2 + 4.dp
+        }else if(fontSize == MaterialTheme.typography.body2.fontSize){
+            14.dp * 2 + 4.dp
+        }else  16.dp * 2 + 4.dp
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(36.dp).width(IntrinsicSize.Max)
+            modifier = Modifier.height(rowHeight).width(IntrinsicSize.Max)
         ) {
             val dropMenuFocusRequester = remember { FocusRequester() }
             Box(Modifier.width(IntrinsicSize.Max).padding(top = 8.dp, bottom = 8.dp)) {
+                val textHeight = rowHeight -4.dp
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { input ->
@@ -1837,10 +1872,10 @@ fun Caption(
                     },
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                    textStyle = LocalTextStyle.current.copy(color = Color.Transparent),
+                    textStyle = LocalTextStyle.current.copy(color = Color.Transparent,fontSize = fontSize),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(32.dp)
+                        .height(textHeight)
                         .align(Alignment.CenterStart)
                         .focusRequester(focusRequester)
                         .onKeyEvent { captionKeyEvent(it) }
@@ -1848,7 +1883,7 @@ fun Caption(
                 Text(
                     textAlign = TextAlign.Start,
                     color = MaterialTheme.colors.onBackground,
-                    modifier = Modifier.align(Alignment.CenterStart).height(32.dp),
+                    modifier = Modifier.align(Alignment.CenterStart).height(textHeight),
                     overflow = TextOverflow.Ellipsis,
                     text = buildAnnotatedString {
                         typingResult.forEach { (char, correct) ->
@@ -1856,7 +1891,7 @@ fun Caption(
                                 withStyle(
                                     style = SpanStyle(
                                         color = MaterialTheme.colors.primary,
-                                        fontSize = LocalTextStyle.current.fontSize,
+                                        fontSize = fontSize,
                                         letterSpacing = LocalTextStyle.current.letterSpacing,
                                         fontFamily = LocalTextStyle.current.fontFamily,
                                     )
@@ -1867,7 +1902,7 @@ fun Caption(
                                 withStyle(
                                     style = SpanStyle(
                                         color = Color.Red,
-                                        fontSize = LocalTextStyle.current.fontSize,
+                                        fontSize = fontSize,
                                         letterSpacing = LocalTextStyle.current.letterSpacing,
                                         fontFamily = LocalTextStyle.current.fontFamily,
                                     )
@@ -1885,7 +1920,7 @@ fun Caption(
                         withStyle(
                             style = SpanStyle(
                                 color = MaterialTheme.colors.onBackground,
-                                fontSize = LocalTextStyle.current.fontSize,
+                                fontSize = fontSize,
                                 letterSpacing = LocalTextStyle.current.letterSpacing,
                                 fontFamily = LocalTextStyle.current.fontFamily,
                             )
@@ -1908,6 +1943,7 @@ fun Caption(
                         cursorBrush = SolidColor(MaterialTheme.colors.primary),
                         textStyle =  LocalTextStyle.current.copy(
                             color = MaterialTheme.colors.onBackground.copy(alpha = ContentAlpha.high),
+                            fontSize = fontSize,
                         ),
                         modifier = Modifier.focusable()
                             .focusRequester(dropMenuFocusRequester)
@@ -2238,7 +2274,8 @@ fun SearchResultInfo(
         word = word,
         isPlaying = false,
         searching = true,
-        morphologyVisible = true
+        morphologyVisible = true,
+        fontSize = state.global.detailFontSize
     )
     Spacer(Modifier.height(8.dp))
     Divider()

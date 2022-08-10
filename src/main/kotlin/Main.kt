@@ -89,7 +89,8 @@ fun main() = application {
                 onCloseRequest = {close() },
             ) {
                 MaterialTheme(colors = state.colors) {
-                    state.global.fontSize = computeFontSize(state.global.textStyle)
+                    state.global.wordFontSize = computeFontSize(state.global.wordTextStyle)
+                    state.global.detailFontSize = computeFontSize(state.global.detailTextStyle)
                     WindowMenuBar(state = state, close = {close()})
                     MenuDialogs(state)
                     val scope = rememberCoroutineScope()

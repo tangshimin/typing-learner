@@ -23,7 +23,8 @@ data class GlobalData(
     val keystrokeVolume: Float = 0.75F,
     val isPlayKeystrokeSound: Boolean = true,
     val primaryColorValue: ULong = 18377412168996880384UL,
-    val textStyle: String = "H2",
+    val wordTextStyle: String = "H2",
+    val detailTextStyle: String = "Body1",
     val letterSpacing: Float = 5F,
     val x:Float = 100F,
     val y:Float = 100F,
@@ -75,14 +76,25 @@ class GlobalState(globalData: GlobalData) {
     var primaryColor by mutableStateOf(Color(globalData.primaryColorValue))
 
     /**
-     * 字体样式
+     * 单词的字体样式，需要持久化
      */
-    var textStyle by mutableStateOf(globalData.textStyle)
+    var wordTextStyle by mutableStateOf(globalData.wordTextStyle)
 
     /**
-     * 字体大小
+     * 详细信息的字体样式，需要持久化
      */
-    var fontSize by mutableStateOf(TextUnit.Unspecified)
+    var detailTextStyle by mutableStateOf(globalData.detailTextStyle)
+
+    /**
+     * 单词的字体大小，不用持久化
+     */
+    var wordFontSize by mutableStateOf(TextUnit.Unspecified)
+
+    /**
+     * 详细信息的的字体大小，不用持久化
+     */
+    var detailFontSize by mutableStateOf(TextUnit.Unspecified)
+
     /**
      *  字间隔空
      */

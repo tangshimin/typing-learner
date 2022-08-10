@@ -82,7 +82,7 @@ fun Word(
         ) {
             var textHeight by remember { mutableStateOf(0.dp) }
             val bottom = computeBottom(
-               textStyle =  global.textStyle,
+               textStyle =  global.wordTextStyle,
                 textHeight = textHeight,
             )
             val smallStyleList = listOf("H5","H6","Subtitle1","Subtitle2","Body1","Body2","Button","Caption","Overline")
@@ -95,7 +95,7 @@ fun Word(
                         showMenu()
                     }
                 }) {
-                val fontSize = global.fontSize
+                val fontSize = global.wordFontSize
                 CompositionLocalProvider(
                     LocalTextInputService provides null
                 ) {
@@ -214,7 +214,7 @@ fun Word(
             Column {
                 val top = (textHeight - 36.dp).div(2)
                 var numberFontSize = LocalTextStyle.current.fontSize
-                if(smallStyleList.contains(global.textStyle)) numberFontSize = MaterialTheme.typography.overline.fontSize
+                if(smallStyleList.contains(global.wordTextStyle)) numberFontSize = MaterialTheme.typography.overline.fontSize
                 Spacer(modifier = Modifier.height(top))
                 Text(text = "${if (correctTime > 0) correctTime else ""}",
                     color = MaterialTheme.colors.primary,
@@ -227,7 +227,7 @@ fun Word(
             }
             var paddingTop = textHeight.div(2) - 20.dp
             if(paddingTop<0.dp) paddingTop =  0.dp
-            if(global.textStyle == "H1") paddingTop = 23.dp
+            if(global.wordTextStyle == "H1") paddingTop = 23.dp
 
             AudioButton(
                 audioPath = audioPath,
