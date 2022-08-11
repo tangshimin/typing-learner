@@ -626,29 +626,37 @@ fun GenerateVocabularyDialog(
         val removeWord:(Word) -> Unit = {
             previewList.remove(it)
             removedWords.add(it)
-            // 从字幕生成的词库和从 MKV 生成的词库，需要把内部字幕转换为外部字幕
-            if(it.captions.isNotEmpty()){
-                it.captions.forEach{ caption ->
-                    val externalCaption = ExternalCaption(
-                        relateVideoPath = relateVideoPath,
-                        subtitlesTrackId = selectedTrackId,
-                        subtitlesName = File(selectedFilePath).nameWithoutExtension,
-                        start = caption.start,
-                        end = caption.end,
-                        content = caption.content
-                    )
-                    it.externalCaptions.add(externalCaption)
+            // 如果是过滤词库，同时过滤的是熟悉词库，要把删除的单词从内存中的熟悉词库删除
+            if (state.filterVocabulary && File(selectedFilePath).nameWithoutExtension == "FamiliarVocabulary") {
+                familiarVocabulary.wordList.remove(it)
+            }else{
+                // 从字幕生成的词库和从 MKV 生成的词库，需要把内部字幕转换为外部字幕
+                if (it.captions.isNotEmpty()) {
+                    it.captions.forEach { caption ->
+                        val externalCaption = ExternalCaption(
+                            relateVideoPath = relateVideoPath,
+                            subtitlesTrackId = selectedTrackId,
+                            subtitlesName = File(selectedFilePath).nameWithoutExtension,
+                            start = caption.start,
+                            end = caption.end,
+                            content = caption.content
+                        )
+                        it.externalCaptions.add(externalCaption)
+                    }
+                    it.captions.clear()
                 }
-                it.captions.clear()
+
+                // 把单词添加到熟悉词库
+                if(!familiarVocabulary.wordList.contains(it)){
+                    familiarVocabulary.wordList.add(it)
+                }
             }
-
-
-            familiarVocabulary.wordList.add(it)
             scope.launch {
                 familiarVocabulary.size = familiarVocabulary.wordList.size
                 val familiarFile = getFamiliarVocabularyFile()
                 saveVocabulary(familiarVocabulary.serializeVocabulary, familiarFile.absolutePath)
             }
+
         }
 
         val contentPanel = ComposePanel()
@@ -884,7 +892,11 @@ fun GenerateVocabularyDialog(
                                     fileChooser.dialogTitle = "保存词库"
                                     val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
                                     val fileName = File(selectedFilePath).nameWithoutExtension
-                                    fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
+                                    if(state.filterVocabulary && File(selectedFilePath).nameWithoutExtension == "FamiliarVocabulary"){
+                                        fileChooser.selectedFile = File(selectedFilePath)
+                                    }else{
+                                        fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
+                                    }
                                     val userSelection = fileChooser.showSaveDialog(window)
                                     if (userSelection == JFileChooser.APPROVE_OPTION) {
                                         val selectedFile = fileChooser.selectedFile
@@ -1648,7 +1660,6 @@ fun VocabularyFilter(
                     modifier = Modifier
                         .width(139.dp)
                 ) {
-
                     if(familiarVocabulary.wordList.isNotEmpty()){
                         BadgedBox(badge = {
                             Badge {
