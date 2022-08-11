@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.typinglearner"
-version = "1.3.6"
+version = "1.4.0"
 repositories {
     google()
     mavenCentral()
@@ -73,6 +73,7 @@ compose.desktop {
             copyright = "Copyright 2022 Shimin Tang. All rights reserved."
             licenseFile.set(project.file("LICENSE"))
             windows{
+//                console = true
                 dirChooser = true
                 perUserInstall = true
                 menuGroup = "Typing Learner"
