@@ -187,7 +187,17 @@ fun AboutDialog(
 
                     }
                     3 -> {
-                        Column (Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp)){
+                        Box(Modifier.fillMaxSize()){
+                            val stateVertical = rememberScrollState(0)
+                        Column (Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp)
+                            .verticalScroll(stateVertical)){
+
+
+                            val GPL2 = Pair( "GPL 2","https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html")
+                            val GPL3 = Pair( "GPL 3","https://www.gnu.org/licenses/gpl-3.0.en.html")
+                            val Apache2 = Pair( "Apache-2.0","https://www.apache.org/licenses/LICENSE-2.0")
+                            val MIT = Pair( "MIT","https://opensource.org/licenses/mit-license.php")
+                            val EPL2 = Pair( "EPL2","https://www.eclipse.org/legal/epl-v20.html")
 
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -196,10 +206,6 @@ fun AboutDialog(
                                 Text("软件")
                                 Text("License")
                             }
-                            val GPL2 = Pair( "GPL 2","https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html")
-                            val GPL3 = Pair( "GPL 3","https://www.gnu.org/licenses/gpl-3.0.en.html")
-                            val Apache2 = Pair( "Apache-2.0","https://www.apache.org/licenses/LICENSE-2.0")
-                            val MIT = Pair( "MIT","https://opensource.org/licenses/mit-license.php")
 
                             Divider()
                             Dependency(
@@ -267,20 +273,20 @@ fun AboutDialog(
                             Dependency(
                                 name = "Compose Desktop",
                                 url = "https://github.com/JetBrains/compose-jb",
-                                version = "1.1.1",
+                                version = "1.2.0-alpha01-dev745",
                                 license = Apache2,
                             )
 
                             Dependency(
                                 name = "jetbrains compose material3",
-                                url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material3/material3",
+                                url = "https://github.com/JetBrains/compose-jb",
                                 version = "1.0.1",
                                 license = Apache2,
                             )
 
                             Dependency(
                                 name = "material-icons-extended",
-                                url = "https://mvnrepository.com/artifact/org.jetbrains.compose.material/material-icons-extended",
+                                url = "https://github.com/JetBrains/compose-jb",
                                 version = "1.0.1",
                                 license = Apache2,
                             )
@@ -308,6 +314,52 @@ fun AboutDialog(
                                 name = "maven-artifact",
                                 url = "https://maven.apache.org/",
                                 version = "3.8.6",
+                                license = Apache2,
+                            )
+                            Dependency(
+                                name = "ComposeReorderable",
+                                url = "https://github.com/aclassen/ComposeReorderable",
+                                version = "0.9.6.2",
+                                license = Apache2,
+                            )
+                            Row(horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
+                                Row{
+                                    LinkText(
+                                        text = "Juniversalchardet",
+                                        url = "https://github.com/albfernandez/juniversalchardet"
+                                    )
+                                    Spacer(Modifier.width(5.dp))
+                                    Text("2.4.0")
+                                }
+                                Row{
+                                    LinkText(
+                                        text = "MPL 1.1",
+                                        url = "https://www.mozilla.org/en-US/MPL/1.1/"
+                                    )
+                                    Text("/")
+                                    LinkText(
+                                        text = "GPL 3.0",
+                                        url = "http://www.gnu.org/licenses/gpl.txt"
+                                    )
+                                    Text("/")
+                                    LinkText(
+                                        text = "LGPL 3.0",
+                                        url = "http://www.gnu.org/licenses/lgpl.txt"
+                                    )
+                                }
+
+                            }
+                            Dependency(
+                                name = "junit-jupiter",
+                                url = "https://junit.org/junit5/",
+                                version = "5.8.1",
+                                license = EPL2,
+                            )
+                            Dependency(
+                                name = "jetbrains compose ui-test-junit4",
+                                url = "https://github.com/JetBrains/compose-jb",
+                                version = "1.2.0-alpha01-dev620",
                                 license = Apache2,
                             )
                             Dependency(
@@ -371,6 +423,15 @@ fun AboutDialog(
                                     url = "https://freesound.org/people/dland/sounds/320181/"
                                 )
                             }
+
+                        }
+
+                            VerticalScrollbar(
+                                style = LocalScrollbarStyle.current.copy(shape = if(isWindows()) RectangleShape else RoundedCornerShape(4.dp)),
+                                modifier = Modifier.align(Alignment.CenterEnd)
+                                    .fillMaxHeight(),
+                                adapter = rememberScrollbarAdapter(stateVertical)
+                            )
                         }
                     }
                 }
