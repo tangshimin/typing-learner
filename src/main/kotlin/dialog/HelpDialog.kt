@@ -594,6 +594,10 @@ fun LinkVocabularyPage(){
 @Composable
 fun ShortcutKeyPage() {
     Column(Modifier.fillMaxSize()) {
+
+        val ctrl = LocalCtrl.current
+        val shift = if (isMacOS()) "⇧" else "Shift"
+
         SelectionContainer {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -601,11 +605,9 @@ fun ShortcutKeyPage() {
                 modifier = Modifier.padding(start = 16.dp,top = 16.dp,bottom = 10.dp)
             ) {
                 Text("激活复制", modifier = Modifier.padding(end = 20.dp))
-                val ctrl = LocalCtrl.current
                 val annotatedString = buildAnnotatedString {
 
                     val background = if (MaterialTheme.colors.isLight) Color.LightGray else Color(35, 35, 35)
-                    val shift = if (isMacOS()) "⇧" else "Shift"
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("如果想复制正在抄写的字幕或文本可以先抄写到要复制的词，然后使用")
                     }
@@ -699,7 +701,7 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  Ctrl + Shift + A ")
+                        append("  $ctrl + $shift + A ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("\n向上移动光标")
@@ -710,7 +712,7 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  Ctrl + Shift + I ")
+                        append("  $ctrl + $shift + I ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("\n向下移动光标")
@@ -721,7 +723,7 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  Ctrl + Shift + K ")
+                        append("  $ctrl + $shift + K ")
                     }
                 }
                 Text(annotatedString)
@@ -747,7 +749,7 @@ fun ShortcutKeyPage() {
                             background = background
                         )
                     ) {
-                        append("  Ctrl + F ")
+                        append("  $ctrl + F ")
                     }
                     withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground)) {
                         append("  会优先搜索当前词库，如果当前词库没有查到，再搜索内置词典。")
@@ -798,16 +800,22 @@ fun SpecialDirectory() {
             modifier = Modifier.width(140.dp)){
             Text("内置词库文件夹")
         }
-        OutlinedButton(onClick = {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop()
-                    .isSupported(Desktop.Action.OPEN)
+
+        if (!isMacOS()) {
+            OutlinedButton(
+                onClick = {
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop()
+                            .isSupported(Desktop.Action.OPEN)
+                    ) {
+                        Desktop.getDesktop().open(File("."))
+                    }
+                },
+                modifier = Modifier.width(140.dp)
             ) {
-                Desktop.getDesktop().open(File("."))
+                Text("安装目录")
             }
-        },
-            modifier = Modifier.width(140.dp)){
-            Text("安装目录")
         }
+
 
     }
 }

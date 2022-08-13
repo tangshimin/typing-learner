@@ -129,14 +129,11 @@ fun TypingWord(
             }
             Box(Modifier.fillMaxSize()) {
                 val endPadding = 0.dp
-                Column(Modifier.align(Alignment.TopCenter)){
-                    if (isMacOS()) {
-                        Spacer(Modifier.height(10.dp))
-                        MacOSTitle(
-                            title = title,
-                            window = window,
-                        )
-                    }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                ){
 
                     val text = when(state.memoryStrategy){
                         Normal -> { "${state.typingWord.index + 1}/${state.vocabulary.size}"}
@@ -146,7 +143,19 @@ fun TypingWord(
                         DictationReviewWrong -> { "听写复习 - 复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically){
+                    if (isMacOS()) {
+                        Spacer(Modifier.height(10.dp))
+                        MacOSTitle(
+                            title = title,
+                            window = window,
+                        )
+                    }
+
+
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center){
                         val top = if(state.memoryStrategy == Review || state.memoryStrategy == DictationReviewWrong) 0.dp else 10.dp
                         Text(text = text,
                             color = MaterialTheme.colors.onBackground,
