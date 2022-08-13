@@ -24,10 +24,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import data.Dictionary
-import data.MutableVocabulary
-import data.Word
-import data.deepCopy
+import data.*
 import kotlinx.coroutines.launch
 import player.*
 import state.AppState
@@ -85,6 +82,9 @@ fun Search(
         val focusRequester = remember { FocusRequester() }
         var input by remember { mutableStateOf("") }
 
+        /** 熟悉词库 */
+        val familiarVocabulary = remember{ loadMutableVocabularyByName("FamiliarVocabulary") }
+
         val search:(String) -> Unit = {
             scope.launch {
                 input = it
@@ -92,13 +92,22 @@ fun Search(
                     searchResult!!.value = ""
                 }
 
-                // 先搜索词库
-                for (word in vocabulary.wordList) {
-                    if(word.value.lowercase() == input.lowercase()){
-                        searchResult = word.deepCopy()
-                        break
+                val inputWord = Word(value = input.lowercase())
+                // 先搜索当前词库
+                val index = vocabulary.wordList.indexOf(inputWord)
+                if(index != -1){
+                    searchResult = vocabulary.wordList.get(index)
+                }
+                // 如果当前词库没有，或者当前词库的单词没有字幕，再搜索熟悉词库。
+                if((searchResult == null) || searchResult!!.value.isEmpty() ||
+                    (searchResult!!.captions.isEmpty() && searchResult!!.externalCaptions.isEmpty())){
+                    val indexOf = familiarVocabulary.wordList.indexOf(inputWord)
+                    if(indexOf != -1){
+                        val familiar = familiarVocabulary.wordList.get(indexOf).deepCopy()
+                        searchResult = familiar
                     }
                 }
+
                 // 如果词库里面没有，就搜索内置词典
                 if((searchResult == null) || searchResult!!.value.isEmpty()){
                     val dictWord = Dictionary.query(input.lowercase())
