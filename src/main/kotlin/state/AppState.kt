@@ -29,11 +29,11 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
-
+/** 状态容器 */
 @ExperimentalSerializationApi
 class AppState {
 
-    /** 应用程序的全局状态 */
+    /** 所有界面共享的状态 */
     var global: GlobalState = loadGlobalState()
 
     /** Material 颜色 */
