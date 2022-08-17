@@ -96,7 +96,7 @@ fun Search(
                 // 先搜索当前词库
                 val index = vocabulary.wordList.indexOf(inputWord)
                 if(index != -1){
-                    searchResult = vocabulary.wordList.get(index)
+                    searchResult = vocabulary.wordList.get(index).deepCopy()
                 }
                 // 如果当前词库没有，或者当前词库的单词没有字幕，再搜索熟悉词库。
                 if((searchResult == null) || searchResult!!.value.isEmpty() ||
