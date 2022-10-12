@@ -3,9 +3,9 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.0"
-    id("org.jetbrains.compose") version "1.2.0-alpha01-dev745"
-    kotlin("plugin.serialization") version "1.7.0"
+    kotlin("jvm") version "1.7.20"
+    id("org.jetbrains.compose") version "1.2.0"
+    kotlin("plugin.serialization") version "1.7.20"
 }
 
 group = "com.typinglearner"
@@ -48,6 +48,15 @@ tasks.withType<KotlinCompile>().configureEach {
         kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
 }
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
 /**
  *  `src/main/resources` 文件夹里的文件会被打包到 typing-learner.jar 里面，然后通过 getResource 访问，
  *   只读文件可以放在 `src/main/resources` 文件夹里面，需要修改的文件不能放在这个文件夹里面
@@ -68,7 +77,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Typing Learner"
             packageVersion = version.toString()
-            modules("java.sql")
+            modules("java.instrument", "java.sql", "jdk.unsupported")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
             copyright = "Copyright 2022 Shimin Tang. All rights reserved."
             licenseFile.set(project.file("LICENSE"))
