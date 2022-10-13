@@ -2,7 +2,7 @@ package player
 
 import com.sun.jna.NativeLibrary
 import state.getResourcesFile
-import uk.co.caprica.vlcj.binding.RuntimeUtil
+import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.player.base.MediaPlayer
