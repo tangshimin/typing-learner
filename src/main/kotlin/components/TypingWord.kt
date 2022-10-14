@@ -2000,6 +2000,7 @@ fun Caption(
             ) {
                 IconButton(onClick = {
                     playCurrentCaption()
+                    focusRequester.requestFocus()
                 }) {
                     val tint = if(isPlaying && playingIndex == index) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground
                     Icon(
