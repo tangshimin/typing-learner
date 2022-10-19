@@ -38,7 +38,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 import data.*
 import state.MemoryStrategy.*
@@ -1925,7 +1924,14 @@ fun Caption(
                                 }
                             }
                         }
-                        val remainChars = captionContent.substring(typingResult.size)
+
+                        // 增加一个检查，检查字幕的字符长度，有的字幕是机器生成的，一段可能会有很多字幕，
+                        // 可能会超出限制，导致程序崩溃。
+                        var remainChars = captionContent.substring(typingResult.size)
+                        if(remainChars.length>400){
+                            remainChars = remainChars.substring(0,400)
+                        }
+
                         withStyle(
                             style = SpanStyle(
                                 color = MaterialTheme.colors.onBackground,
@@ -1945,8 +1951,15 @@ fun Caption(
                     onDismissRequest = { setSelectable(false) },
                     offset = DpOffset(0.dp, (-30).dp)
                 ) {
+
+                    // 增加一个检查，检查字幕的字符长度，有的字幕是机器生成的，一段可能会有很多字幕，
+                    // 可能会超出限制，导致程序崩溃。
+                    var content = if(captionContent.length>400){
+                       captionContent.substring(0,400)
+                    }else captionContent
+
                     BasicTextField(
-                        value = captionContent,
+                        value = content,
                         onValueChange = {},
                         singleLine = true,
                         cursorBrush = SolidColor(MaterialTheme.colors.primary),
