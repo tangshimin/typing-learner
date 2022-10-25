@@ -41,10 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowState
 import data.*
 import state.MemoryStrategy.*
-import dialog.ChapterFinishedDialog
-import dialog.ConfirmDialog
-import dialog.EditWordDialog
-import dialog.SelectChapterDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
@@ -64,6 +60,13 @@ import javax.swing.JOptionPane
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.schedule
 import androidx.compose.ui.unit.TextUnit
+import dialog.*
+import state.getResourcesFile
+import java.nio.file.Paths
+import java.time.LocalDateTime
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileSystemView
+
 /**
  * 应用程序的核心组件
  * @param state 应用程序的状态
@@ -977,12 +980,62 @@ fun TypingWord(
                              * @param isShuffle 是否打乱词库
                              */
                             val resetIndex: (isShuffle: Boolean) -> Unit = { isShuffle ->
+                                // 如果要打乱顺序
+                                if (isShuffle) {
+                                    // 内置词库的地址
+                                    val path = getResourcesFile("vocabulary").absolutePath
+                                    // 如果要打乱的词库是内置词库，要选择一个地址，保存打乱后的词库，
+                                    // 如果不选择地址的话，软件升级后词库会被重置。
+                                    if(state.typingWord.vocabularyPath.startsWith(path)){
+                                        val fileChooser = state.futureFileChooser.get()
+                                        fileChooser.dialogType = JFileChooser.SAVE_DIALOG
+                                        fileChooser.dialogTitle = "保存重置后的词库"
+                                        val myDocuments = FileSystemView.getFileSystemView().defaultDirectory.path
+                                        val fileName = File(state.typingWord.vocabularyPath).nameWithoutExtension
+                                        fileChooser.selectedFile = File("$myDocuments${File.separator}$fileName.json")
+                                        val userSelection = fileChooser.showSaveDialog(window)
+                                        if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                            val selectedFile = fileChooser.selectedFile
+                                            val vocabularyDirPath =  Paths.get(getResourcesFile("vocabulary").absolutePath)
+                                            val savePath = Paths.get(selectedFile.absolutePath)
+                                            if(savePath.startsWith(vocabularyDirPath)){
+                                                JOptionPane.showMessageDialog(null,"不能把词库保存到应用程序安装目录，因为软件更新或卸载时，词库会被重置或者被删除")
+                                            }else{
+                                                state.vocabulary.wordList.shuffle()
+                                               val shuffledList = state.vocabulary.wordList
+                                                val vocabulary = Vocabulary(
+                                                    name = selectedFile.nameWithoutExtension,
+                                                    type = VocabularyType.DOCUMENT,
+                                                    language = "english",
+                                                    size = state.vocabulary.size,
+                                                    relateVideoPath = state.vocabulary.relateVideoPath,
+                                                    subtitlesTrackId = state.vocabulary.subtitlesTrackId,
+                                                    wordList = shuffledList
+                                                )
+
+                                                saveVocabulary(vocabulary, selectedFile.absolutePath)
+                                                state.changeVocabulary(selectedFile,0)
+                                                // changeVocabulary 会把内置词库保存到最近列表，
+                                                // 保存后，如果再切换列表，就会有两个名字相同的词库，
+                                                // 所以需要把刚刚添加的词库从最近列表删除
+                                                for(i in 0 until state.recentList.size){
+                                                    val recentItem = state.recentList[i]
+                                                    if(recentItem.name == state.vocabulary.name){
+                                                        state.removeRecentItem(recentItem)
+                                                        break
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        state.vocabulary.wordList.shuffle()
+                                        state.saveCurrentVocabulary()
+                                    }
+
+                                }
+
                                 state.typingWord.index = 0
                                 state.typingWord.chapter = 1
-                                if (isShuffle) {
-                                    state.vocabulary.wordList.shuffle()
-                                    state.saveCurrentVocabulary()
-                                }
                                 state.saveTypingWordState()
                                 resetChapterTime()
                                 showChapterFinishedDialog = false

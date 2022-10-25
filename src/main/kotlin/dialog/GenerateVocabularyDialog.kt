@@ -719,7 +719,7 @@ fun GenerateVocabularyDialog(
                                 },
                                 recentList = state.recentList,
                                 removeInvalidRecentItem = {
-                                    state.removeInvalidRecentItem(it)
+                                    state.removeRecentItem(it)
                                 },
                                 familiarVocabulary = familiarVocabulary,
                                 updateFamiliarVocabulary = {

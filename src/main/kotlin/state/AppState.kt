@@ -518,7 +518,7 @@ class AppState {
 
     }
 
-    fun removeInvalidRecentItem(recentItem: RecentItem) {
+    fun removeRecentItem(recentItem: RecentItem) {
         runBlocking {
             launch {
                 recentList.remove(recentItem)

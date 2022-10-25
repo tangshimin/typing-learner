@@ -364,7 +364,7 @@ private fun FrameWindowScope.WindowMenuBar(
                             state.saveGlobalState()
                             state.loadingFileChooserVisible = false
                         } else {
-                            state.removeInvalidRecentItem(recentItem)
+                            state.removeRecentItem(recentItem)
                             JOptionPane.showMessageDialog(null, "文件地址错误：\n${recentItem.path}")
                         }
 
