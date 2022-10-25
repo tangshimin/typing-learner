@@ -541,11 +541,16 @@ fun TypingSubtitles(
                             listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
                         }
                     }
-                    val startTimeWidth = 50.dp
-                    val endPadding = 10.dp
 
-                    val maxWidth = startTimeWidth + endPadding + (subtitlesState.sentenceMaxLength * charWidth).dp
+                    val startPadding = 30.dp
+                    val endPadding = 10.dp
                     val indexWidth = (captionList.size.toString().length * 14).dp
+                    val buttonWidth = 48.dp
+                    var rowWidth = indexWidth + startPadding + (subtitlesState.sentenceMaxLength * charWidth).dp +  endPadding + buttonWidth
+
+                    if(subtitlesState.sentenceMaxLength < 50) rowWidth += 120.dp
+
+
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -669,7 +674,7 @@ fun TypingSubtitles(
                                 horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .width(maxWidth)
+                                    .width(rowWidth)
                                     .padding(start = 150.dp)
                             ) {
                                 val alpha = if(subtitlesState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
