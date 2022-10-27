@@ -63,7 +63,6 @@ import androidx.compose.ui.unit.TextUnit
 import dialog.*
 import state.getResourcesFile
 import java.nio.file.Paths
-import java.time.LocalDateTime
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
 
@@ -136,15 +135,7 @@ fun TypingWord(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier.align(Alignment.TopCenter)
                 ){
-
-                    val text = when(state.memoryStrategy){
-                        Normal -> { "${state.typingWord.index + 1}/${state.vocabulary.size}"}
-                        Dictation -> { "听写测试   ${state.dictationIndex + 1}/${state.dictationWords.size}"}
-                        Review -> {"听写复习   ${state.dictationIndex + 1}/${state.reviewWords.size}"}
-                        NormalReviewWrong -> { "复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
-                        DictationReviewWrong -> { "听写复习 - 复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
-                    }
-
+                    // macOS 的标题栏和 windows 不一样，需要特殊处理
                     if (isMacOS()) {
                         Spacer(Modifier.height(10.dp))
                         MacOSTitle(
@@ -153,7 +144,14 @@ fun TypingWord(
                         )
                     }
 
-
+                    // 记忆单词时的状态信息
+                    val text = when(state.memoryStrategy){
+                        Normal -> { "${state.typingWord.index + 1}/${state.vocabulary.size}"}
+                        Dictation -> { "听写测试   ${state.dictationIndex + 1}/${state.dictationWords.size}"}
+                        Review -> {"听写复习   ${state.dictationIndex + 1}/${state.reviewWords.size}"}
+                        NormalReviewWrong -> { "复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
+                        DictationReviewWrong -> { "听写复习 - 复习错误单词   ${state.dictationIndex + 1}/${state.wrongWords.size}"}
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -197,6 +195,7 @@ fun TypingWord(
                         /** 是否正在播放视频 */
                         var isPlaying by remember { mutableStateOf(false) }
 
+                        /** 快捷键播放字幕的索引 */
                         var plyingIndex by remember { mutableStateOf(0) }
 
                         /** 显示填充后的书签图标 */
@@ -217,7 +216,8 @@ fun TypingWord(
                         /** 等宽字体*/
                         val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
-                        /** 单词发音的本地路径 */
+                        /** 单词发音的本地路径，这个路径是根据单词进行计算的，
+                         * 如果单词改变了，单词发音就跟着改变。*/
                         val audioPath by remember(currentWord){
                             derivedStateOf {
                                 getAudioPath(
@@ -233,8 +233,8 @@ fun TypingWord(
                         var isPlayingAudio by remember { mutableStateOf(false) }
 
                         /**
-                         * 用快捷键播放视频时被调用的回调函数
-                         * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
+                         * 用快捷键播放视频时被调用的函数，
+                         * Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
                          */
                         @OptIn(ExperimentalSerializationApi::class)
                         val shortcutPlay: (playTriple: Triple<Caption, String, Int>?) -> Unit = { playTriple ->
@@ -256,8 +256,9 @@ fun TypingWord(
                                 }
                             }
                         }
+
                         /** 删除当前单词 */
-                        val delete:() -> Unit = {
+                        val deleteWord:() -> Unit = {
                             val index = state.typingWord.index
                             state.vocabulary.wordList.removeAt(index)
                             state.vocabulary.size = state.vocabulary.wordList.size
@@ -268,10 +269,12 @@ fun TypingWord(
 
                             state.saveCurrentVocabulary()
                         }
+                        
                         /** 把当前单词加入到熟悉词库 */
                         val addToFamiliar:() -> Unit = {
                             val file = getFamiliarVocabularyFile()
                             val familiar =  loadVocabulary(file.absolutePath)
+                            // 如果当前词库是 MKV 或 SUBTITLES 类型的词库，需要把内置词库转换成外部词库。
                             if (state.vocabulary.type == VocabularyType.MKV ||
                                 state.vocabulary.type == VocabularyType.SUBTITLES
                             ) {
@@ -294,7 +297,7 @@ fun TypingWord(
                                 familiar.size = familiar.wordList.size
                             }
                             saveVocabulary(familiar,file.absolutePath)
-                            delete()
+                            deleteWord()
                             showFamiliarDialog = false
                         }
 
@@ -977,7 +980,7 @@ fun TypingWord(
 
                             /**
                              * 重置索引
-                             * @param isShuffle 是否打乱词库
+                             * 参数 isShuffle 是否打乱词库
                              */
                             val resetIndex: (isShuffle: Boolean) -> Unit = { isShuffle ->
                                 // 如果要打乱顺序
@@ -1267,7 +1270,7 @@ fun TypingWord(
                                     message = "确定要删除单词 ${currentWord.value} ?",
                                     confirm = {
                                         scope.launch {
-                                            delete()
+                                            deleteWord()
                                             showDeleteDialog = false
                                         }
                                     },
@@ -2007,7 +2010,7 @@ fun Caption(
 
                     // 增加一个检查，检查字幕的字符长度，有的字幕是机器生成的，一段可能会有很多字幕，
                     // 可能会超出限制，导致程序崩溃。
-                    var content = if(captionContent.length>400){
+                    val content = if(captionContent.length>400){
                        captionContent.substring(0,400)
                     }else captionContent
 
