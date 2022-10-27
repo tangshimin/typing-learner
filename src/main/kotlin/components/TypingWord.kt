@@ -192,6 +192,12 @@ fun TypingWord(
 
                         val typingWord = state.typingWord
 
+                        /** 当前单词的正确次数 */
+                        var wordCorrectTime by remember {mutableStateOf(0)}
+
+                        /** 当前单词的错误次数 */
+                        var wordWrongTime by remember {mutableStateOf(0)}
+
                         /** 是否正在播放视频 */
                         var isPlaying by remember { mutableStateOf(false) }
 
@@ -266,7 +272,8 @@ fun TypingWord(
                                 state.hardVocabulary.wordList.remove(currentWord)
                                 state.hardVocabulary.size = state.hardVocabulary.wordList.size
                             }
-
+                            wordCorrectTime = 0
+                            wordWrongTime = 0
                             state.saveCurrentVocabulary()
                         }
                         
@@ -534,11 +541,6 @@ fun TypingWord(
                                 .background(MaterialTheme.colors.background)
                                 .focusable(true)
                         ) {
-                            /** 当前单词的正确次数 */
-                            var wordCorrectTime by remember {mutableStateOf(0)}
-
-                            /** 当前单词的错误次数 */
-                            var wordWrongTime by remember {mutableStateOf(0)}
 
                             /** 当前章节的正确数，主要用于听写模式计算正确率 */
                             var chapterCorrectTime by remember { mutableStateOf(0F)}
