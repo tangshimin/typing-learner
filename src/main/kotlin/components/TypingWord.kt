@@ -804,7 +804,6 @@ fun TypingWord(
 
                             /** 检查输入的字幕 */
                             val checkCaptionsInput: (Int, String, String) -> Unit = { index, input, captionContent ->
-                                if (input.length <= captionContent.length) {
                                     when(index){
                                         0 -> captionsTextFieldValue1 = input
                                         1 -> captionsTextFieldValue2 = input
@@ -815,28 +814,32 @@ fun TypingWord(
                                     val inputChars = input.toMutableList()
                                     for (i in inputChars.indices) {
                                         val inputChar = inputChars[i]
-                                        val char = captionContent[i]
-                                        if (inputChar == char) {
-                                            typingResult.add(Pair(char, true))
-                                        }else if (inputChar == ' ' && (char == '[' || char == ']')) {
-                                            typingResult.add(Pair(char, true))
-                                            // 音乐符号不好输入，所以可以使用空格替换
-                                        }else if (inputChar == ' ' && (char == '♪')) {
-                                            typingResult.add(Pair(char, true))
-                                            // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
-                                            inputChars.add(i,'♪')
-                                            inputChars.removeAt(i+1)
-                                            val textFieldValue = String(inputChars.toCharArray())
-                                            when(index){
-                                                0 -> captionsTextFieldValue1 = textFieldValue
-                                                1 -> captionsTextFieldValue2 = textFieldValue
-                                                2 -> captionsTextFieldValue3 = textFieldValue
+                                        if(i<captionContent.length){
+                                            val captionChar = captionContent[i]
+                                            if (inputChar == captionChar) {
+                                                typingResult.add(Pair(captionChar, true))
+                                            }else if (inputChar == ' ' && (captionChar == '[' || captionChar == ']')) {
+                                                typingResult.add(Pair(captionChar, true))
+                                                // 音乐符号不好输入，所以可以使用空格替换
+                                            }else if (inputChar == ' ' && (captionChar == '♪')) {
+                                                typingResult.add(Pair(captionChar, true))
+                                                // 音乐符号占用两个空格，所以插入♪ 再删除一个空格
+                                                inputChars.add(i,'♪')
+                                                inputChars.removeAt(i+1)
+                                                val textFieldValue = String(inputChars.toCharArray())
+                                                when(index){
+                                                    0 -> captionsTextFieldValue1 = textFieldValue
+                                                    1 -> captionsTextFieldValue2 = textFieldValue
+                                                    2 -> captionsTextFieldValue3 = textFieldValue
+                                                }
+                                            } else {
+                                                typingResult.add(Pair(inputChar, false))
                                             }
-                                        } else {
+                                        }else{
                                             typingResult.add(Pair(inputChar, false))
                                         }
+
                                     }
-                                }
 
                             }
 
@@ -1983,23 +1986,26 @@ fun Caption(
                             }
                         }
 
-                        // 增加一个检查，检查字幕的字符长度，有的字幕是机器生成的，一段可能会有很多字幕，
-                        // 可能会超出限制，导致程序崩溃。
-                        var remainChars = captionContent.substring(typingResult.size)
-                        if(remainChars.length>400){
-                            remainChars = remainChars.substring(0,400)
+                        if (!(typingResult.isNotEmpty() && captionContent.length < typingResult.size)) {
+                            var remainChars = captionContent.substring(typingResult.size)
+                            // 增加一个检查，检查字幕的字符长度，有的字幕是机器生成的，一段可能会有很多字幕，
+                            // 可能会超出限制，导致程序崩溃。
+                            if (remainChars.length > 400) {
+                                remainChars = remainChars.substring(0, 400)
+                            }
+
+                            withStyle(
+                                style = SpanStyle(
+                                    color = MaterialTheme.colors.onBackground,
+                                    fontSize = fontSize,
+                                    letterSpacing = LocalTextStyle.current.letterSpacing,
+                                    fontFamily = LocalTextStyle.current.fontFamily,
+                                )
+                            ) {
+                                append(remainChars)
+                            }
                         }
 
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colors.onBackground,
-                                fontSize = fontSize,
-                                letterSpacing = LocalTextStyle.current.letterSpacing,
-                                fontFamily = LocalTextStyle.current.fontFamily,
-                            )
-                        ) {
-                            append(remainChars)
-                        }
                     },
                 )
 
