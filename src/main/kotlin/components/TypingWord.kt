@@ -45,7 +45,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
-import state.MutableSpeedState
 import state.TypingType
 import theme.createColors
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
@@ -57,7 +56,6 @@ import java.time.Duration
 import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
-import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.schedule
 import androidx.compose.ui.unit.TextUnit
 import dialog.*
@@ -129,7 +127,6 @@ fun TypingWord(
                 Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
             }
             Box(Modifier.fillMaxSize()) {
-                val endPadding = 0.dp
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -180,14 +177,10 @@ fun TypingWord(
 
 
 
-
-                /** 速度组件的状态 */
-                val speed = remember { MutableSpeedState() }
-
                 if (currentWord != null) {
                     Box(
                         Modifier.align(Alignment.Center)
-                            .padding(end = endPadding,bottom = 58.dp)
+                            .padding(end = 0.dp,bottom = 58.dp)
                     ) {
 
                         val typingWord = state.typingWord
@@ -499,13 +492,6 @@ fun TypingWord(
                                     }
                                     true
                                 }
-                                (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
-                                    scope.launch {
-                                        state.typingWord.speedVisible = !state.typingWord.speedVisible
-                                        state.saveTypingWordState()
-                                    }
-                                    true
-                                }
                                 (it.isCtrlPressed && it.key == Key.I && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
                                         bookmarkClick()
@@ -759,7 +745,6 @@ fun TypingWord(
                                             // 字母输入错误
                                             done = false
                                             wordTypingResult.add(Pair(wordChar, false))
-                                            speed.wrongCount = speed.wrongCount + 1
                                             playBeepSound()
                                             wordWrongTime++
                                             // 如果是听写测试，或听写复习，需要汇总错误单词
@@ -781,7 +766,6 @@ fun TypingWord(
                                     // 用户输入的单词完全正确
                                     if (wordTypingResult.size == currentWord.value.length && done) {
                                         // 输入完全正确
-                                        speed.correctCount = speed.correctCount + 1
                                         playSuccessSound()
                                         if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) chapterCorrectTime++
                                         if (state.typingWord.isAuto) {
@@ -1050,7 +1034,6 @@ fun TypingWord(
                                 isVocabularyFinished = false
                             }
 
-                            var lastInputTime by remember { mutableStateOf(0L) }
                             val wordKeyEvent: (KeyEvent) -> Boolean = { it: KeyEvent ->
                                 when {
                                     ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
@@ -1086,25 +1069,6 @@ fun TypingWord(
                                             && it.key != Key.NumPadEnter
                                             ) -> {
                                         playKeySound()
-                                        lastInputTime = System.currentTimeMillis()
-                                        // 如果计时器没有启动，就启动一个新的计时器
-                                        if (!speed.isStart) {
-                                            speed.isStart = true
-                                            speed.timer = fixedRateTimer("timer", false, 0L, 1 * 1000) {
-                                                speed.time = speed.time.plusSeconds(1)
-                                            }
-                                            // 超过一分钟没有输入自动取消计时器
-                                            speed.autoPauseTimer =
-                                                fixedRateTimer("autoPause", false, 0L, 60 * 1000) {
-                                                    val span = System.currentTimeMillis() - lastInputTime
-                                                    if (span > 60 * 1000) {
-                                                        speed.isStart = false
-                                                        // 取消计时器
-                                                        speed.timer.cancel()
-                                                        speed.autoPauseTimer.cancel()
-                                                    }
-                                                }
-                                        }
                                         true
                                     }
                                     else -> false
@@ -1364,15 +1328,7 @@ fun TypingWord(
                         }
                     }
                 }
-                val speedAlignment = Alignment.TopEnd
-                Speed(
-                    speedVisible = state.typingWord.speedVisible,
-                    speed = speed,
-                    modifier = Modifier
-                        .width(IntrinsicSize.Max)
-                        .align(speedAlignment)
-                        .padding(end = endPadding)
-                )
+
             }
         }
         Settings(

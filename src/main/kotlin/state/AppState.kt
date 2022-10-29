@@ -6,8 +6,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
 import components.flatlaf.InitializeFileChooser
-import data.*
-import state.MemoryStrategy.*
+import data.Word
+import data.getHardVocabularyFile
+import data.loadMutableVocabulary
+import data.loadMutableVocabularyByName
 import dialog.RecentItem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -17,12 +19,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
+import state.MemoryStrategy.*
 import theme.createColors
 import java.io.File
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.concurrent.FutureTask
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
@@ -257,7 +257,6 @@ class AppState {
                         typingWord.definitionVisible,
                         typingWord.translationVisible,
                         typingWord.subtitlesVisible,
-                        typingWord.speedVisible,
                         typingWord.isPlaySoundTips,
                         typingWord.soundTipsVolume,
                         typingWord.pronunciation,
@@ -542,17 +541,6 @@ class AppState {
     }
 }
 
-
-/** 速度组件可观察的状态 */
-class MutableSpeedState {
-    var isStart by mutableStateOf(false)
-    var inputCount by mutableStateOf(0)
-    var correctCount by mutableStateOf(0F)
-    var wrongCount by mutableStateOf(0)
-    var time: LocalTime by mutableStateOf(LocalTime.parse("00:00:00", DateTimeFormatter.ofPattern("HH:mm:ss")))
-    var timer by mutableStateOf(Timer())
-    var autoPauseTimer by mutableStateOf(Timer())
-}
 
 /** 序列化配置 */
 private val encodeBuilder = Json {

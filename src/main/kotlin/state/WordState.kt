@@ -16,7 +16,6 @@ data class DataWordState(
     val definitionVisible: Boolean = true,
     val translationVisible: Boolean = true,
     val subtitlesVisible: Boolean = true,
-    val speedVisible: Boolean = false,
     val isPlaySoundTips: Boolean = true,
     val soundTipsVolume: Float = 0.6F,
     val pronunciation: String = "us",
@@ -61,11 +60,6 @@ class WordState(dataWordState: DataWordState) {
      * 字幕组件的可见性
      */
     var subtitlesVisible by mutableStateOf(dataWordState.subtitlesVisible)
-
-    /**
-     * 速度组件的可见性
-     */
-    var speedVisible by mutableStateOf(dataWordState.speedVisible)
 
     /**
      * 是否播放提示音

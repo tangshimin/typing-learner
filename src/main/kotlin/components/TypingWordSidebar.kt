@@ -265,32 +265,6 @@ fun TypingWordSidebar(state: AppState) {
                         },
                     )
                 }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().clickable { }.padding(start = 16.dp, end = 8.dp)
-                ) {
-                    Row {
-                        Text("显示速度", color = MaterialTheme.colors.onBackground)
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = "$ctrl+N",
-                            color = MaterialTheme.colors.onBackground
-                        )
-                    }
-
-                    Spacer(Modifier.width(15.dp))
-                    Switch(
-                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.speedVisible,
-                        onCheckedChange = {
-                            scope.launch {
-                                state.typingWord.speedVisible = it
-                                state.saveTypingWordState()
-                            }
-                        },
-                    )
-                }
                 Divider()
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
