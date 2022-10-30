@@ -217,7 +217,7 @@ fun AboutDialog(
                             Dependency(
                                 name = "VLCJ",
                                 url = "https://github.com/caprica/vlcj",
-                                version = "4.8.2",
+                                version = "4.7.2",
                                 license = GPL3,
                             )
                             Dependency(
