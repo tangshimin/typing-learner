@@ -909,14 +909,9 @@ fun TypingSubtitles(
                                             val density = LocalDensity.current.density
                                             IconButton(onClick = {
                                                 playCurrentCaption(caption)
+                                                textFieldRequester.requestFocus()
                                             },
                                                 modifier = Modifier
-                                                    .onKeyEvent {
-                                                        if (it.key == Key.Spacebar && it.type == KeyEventType.KeyUp) {
-                                                            playCurrentCaption(caption)
-                                                            true
-                                                        } else false
-                                                    }
                                                     .onGloballyPositioned { coordinates ->
                                                         val rect = coordinates.boundsInWindow()
                                                         if(!rect.isEmpty){
