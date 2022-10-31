@@ -96,32 +96,28 @@ fun Word(
                     }
                 }) {
                 val fontSize = global.wordFontSize
-                CompositionLocalProvider(
-                    LocalTextInputService provides null
-                ) {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { input ->
-                            scope.launch {
-                                checkTyping(input)
-                            }
-                        },
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                        textStyle = TextStyle(
-                            color = Color.Transparent,
-                            fontSize = fontSize,
-                            letterSpacing =  global.letterSpacing,
-                            fontFamily =fontFamily
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = bottom)
-                            .align(Alignment.Center)
-                            .focusRequester(focusRequester)
-                            .onKeyEvent { textFieldKeyEvent(it) }
-                    )
-                }
+                BasicTextField(
+                    value = textFieldValue,
+                    onValueChange = { input ->
+                        scope.launch {
+                            checkTyping(input)
+                        }
+                    },
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                    textStyle = TextStyle(
+                        color = Color.Transparent,
+                        fontSize = fontSize,
+                        letterSpacing =  global.letterSpacing,
+                        fontFamily =fontFamily
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = bottom)
+                        .align(Alignment.Center)
+                        .focusRequester(focusRequester)
+                        .onKeyEvent { textFieldKeyEvent(it) }
+                )
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }

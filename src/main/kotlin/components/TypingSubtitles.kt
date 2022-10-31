@@ -29,7 +29,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -67,7 +66,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.NullPointerException
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.FutureTask
@@ -729,51 +727,47 @@ fun TypingSubtitles(
                                         )
                                     }
 
-                                    CompositionLocalProvider(
-                                        LocalTextInputService provides null
-                                    ) {
-                                        BasicTextField(
-                                            value = textFieldValue,
-                                            onValueChange = { checkTyping(it) },
-                                            singleLine = true,
-                                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                                            textStyle = MaterialTheme.typography.h5.copy(
-                                                color = Color.Transparent,
-                                                fontFamily = monospace
-                                            ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(bottom = 5.dp)
-                                                .align(Alignment.CenterStart)
-                                                .focusable()
-                                                .onKeyEvent { textFieldKeyEvent(it) }
-                                                .focusRequester(textFieldRequester)
-                                                .onFocusChanged {
-                                                    if (it.isFocused) {
-                                                        scope.launch {
-                                                            subtitlesState.currentIndex = index
-                                                            subtitlesState.firstVisibleItemIndex =
-                                                                listState.firstVisibleItemIndex
-                                                            saveSubtitlesState()
-                                                        }
-                                                    } else if (textFieldValue.isNotEmpty()) {
-                                                        typingResult.clear()
-                                                        textFieldValue = ""
+                                    BasicTextField(
+                                        value = textFieldValue,
+                                        onValueChange = { checkTyping(it) },
+                                        singleLine = true,
+                                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                                        textStyle = MaterialTheme.typography.h5.copy(
+                                            color = Color.Transparent,
+                                            fontFamily = monospace
+                                        ),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 5.dp)
+                                            .align(Alignment.CenterStart)
+                                            .focusable()
+                                            .onKeyEvent { textFieldKeyEvent(it) }
+                                            .focusRequester(textFieldRequester)
+                                            .onFocusChanged {
+                                                if (it.isFocused) {
+                                                    scope.launch {
+                                                        subtitlesState.currentIndex = index
+                                                        subtitlesState.firstVisibleItemIndex =
+                                                            listState.firstVisibleItemIndex
+                                                        saveSubtitlesState()
                                                     }
+                                                } else if (textFieldValue.isNotEmpty()) {
+                                                    typingResult.clear()
+                                                    textFieldValue = ""
                                                 }
-                                        )
-                                        if(pgUp){
-                                            SideEffect {
-                                                if(subtitlesState.currentIndex == index){
-                                                    textFieldRequester.requestFocus()
-                                                    pgUp = false
-                                                }
+                                            }
+                                    )
+                                    if(pgUp){
+                                        SideEffect {
+                                            if(subtitlesState.currentIndex == index){
+                                                textFieldRequester.requestFocus()
+                                                pgUp = false
                                             }
                                         }
-                                        SideEffect {
-                                            if (subtitlesState.currentIndex == index) {
-                                                textFieldRequester.requestFocus()
-                                            }
+                                    }
+                                    SideEffect {
+                                        if (subtitlesState.currentIndex == index) {
+                                            textFieldRequester.requestFocus()
                                         }
                                     }
                                     Text(

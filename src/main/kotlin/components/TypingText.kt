@@ -427,54 +427,48 @@ fun TypingText(
                                         )
                                     }
 
-                                    CompositionLocalProvider(
-                                        LocalTextInputService provides null
-                                    ) {
-                                        BasicTextField(
-                                            value = textFieldValue,
-                                            onValueChange = { checkTyping(it.text) },
-                                            singleLine = true,
-                                            cursorBrush = SolidColor(MaterialTheme.colors.primary),
-                                            textStyle = MaterialTheme.typography.h5.copy(
-                                                color = Color.Transparent,
-                                                fontFamily = monospace
-                                            ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(bottom = 5.dp)
-                                                .align(Alignment.CenterStart)
-                                                .focusable()
-                                                .onKeyEvent { textFieldKeyEvent(it) }
-                                                .focusRequester(textFieldRequester)
-                                                .onFocusChanged {
-                                                    if (it.isFocused) {
-                                                        scope.launch {
-                                                            textState.currentIndex = index
-                                                            textState.firstVisibleItemIndex =
-                                                                listState.firstVisibleItemIndex
-                                                            saveTextState()
-                                                        }
-                                                    } else if (textFieldValue.text.isNotEmpty()) {
-                                                        typingResult.clear()
-                                                        textFieldValue = TextFieldValue()
+                                    BasicTextField(
+                                        value = textFieldValue,
+                                        onValueChange = { checkTyping(it.text) },
+                                        singleLine = true,
+                                        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+                                        textStyle = MaterialTheme.typography.h5.copy(
+                                            color = Color.Transparent,
+                                            fontFamily = monospace
+                                        ),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 5.dp)
+                                            .align(Alignment.CenterStart)
+                                            .focusable()
+                                            .onKeyEvent { textFieldKeyEvent(it) }
+                                            .focusRequester(textFieldRequester)
+                                            .onFocusChanged {
+                                                if (it.isFocused) {
+                                                    scope.launch {
+                                                        textState.currentIndex = index
+                                                        textState.firstVisibleItemIndex =
+                                                            listState.firstVisibleItemIndex
+                                                        saveTextState()
                                                     }
-                                                }
-                                        )
-                                        if(pgUp){
-                                            SideEffect {
-                                                if(textState.currentIndex == index){
-                                                    textFieldRequester.requestFocus()
-                                                    pgUp = false
+                                                } else if (textFieldValue.text.isNotEmpty()) {
+                                                    typingResult.clear()
+                                                    textFieldValue = TextFieldValue()
                                                 }
                                             }
-                                        }
+                                    )
+                                    if(pgUp){
                                         SideEffect {
-                                            if (textState.currentIndex == index) {
+                                            if(textState.currentIndex == index){
                                                 textFieldRequester.requestFocus()
+                                                pgUp = false
                                             }
                                         }
-
-
+                                    }
+                                    SideEffect {
+                                        if (textState.currentIndex == index) {
+                                            textFieldRequester.requestFocus()
+                                        }
                                     }
                                     Text(
                                         text = buildAnnotatedString {
