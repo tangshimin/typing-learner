@@ -50,7 +50,7 @@ import com.matthewn4444.ebml.EBMLReader
 import com.matthewn4444.ebml.UnSupportSubtitlesException
 import com.matthewn4444.ebml.subtitles.SSASubtitles
 import components.createTransferHandler
-import components.parseTrackList
+import player.parseTrackList
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
