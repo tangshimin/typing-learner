@@ -30,7 +30,7 @@
 
 7. [不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 
-8. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)要读一篇陌生单词比较多的英文文档，有不想一边查词典一边看文档，先用文档生成词库，把生成先记一遍，然后看文档的时候会更加流畅。
+8. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)要读一篇陌生单词比较多的英文文档，不想一边查词典一边看文档，先用文档生成词库，把陌生单词先记一遍，然后看文档的时候会更加流畅。
 
 9. [用 MKV 视频或字幕生成的词库，可以链接到用文档生成的词库或内置的词库](https://github.com/tangshimin/typing-learner/wiki/链接字幕词库)。下面着张图片表示，电影 Sintel 的所有字幕中，有 9 条字幕，匹配了四级词库中的 6 个单词。
    
