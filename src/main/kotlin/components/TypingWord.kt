@@ -920,7 +920,6 @@ fun TypingWord(
                             }
                             /** 进入听写模式 */
                             val enterDictation: () -> Unit = {
-                                println("Learn Status:${state.memoryStrategy}")
                                 scope.launch {
                                     state.saveTypingWordState()
                                     when(state.memoryStrategy){
