@@ -191,6 +191,25 @@ fun TypingWord(
                         /** 当前单词的错误次数 */
                         var wordWrongTime by remember {mutableStateOf(0)}
 
+                        /** 单词输入框里的字符串*/
+                        var wordTextFieldValue by remember { mutableStateOf("") }
+
+                        /** 第一条字幕的输入字符串*/
+                        var captionsTextFieldValue1 by remember { mutableStateOf("") }
+
+                        /** 第二条字幕的输入字符串*/
+                        var captionsTextFieldValue2 by remember { mutableStateOf("") }
+
+                        /** 第三条字幕的输入字符串*/
+                        var captionsTextFieldValue3 by remember { mutableStateOf("") }
+
+                        /** 单词输入框输入的结果*/
+                        val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
+
+                        /** 字幕输入框的结果 */
+                        val captionsTypingResultMap =
+                            remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
+
                         /** 是否正在播放视频 */
                         var isPlaying by remember { mutableStateOf(false) }
 
@@ -256,6 +275,18 @@ fun TypingWord(
                             }
                         }
 
+                        /** 清除当前单词的状态 */
+                        val clear:() -> Unit = {
+                            wordTypingResult.clear()
+                            wordTextFieldValue = ""
+                            captionsTypingResultMap.clear()
+                            captionsTextFieldValue1 = ""
+                            captionsTextFieldValue2 = ""
+                            captionsTextFieldValue3 = ""
+                            wordCorrectTime = 0
+                            wordWrongTime = 0
+                        }
+
                         /** 删除当前单词 */
                         val deleteWord:() -> Unit = {
                             val index = state.typingWord.index
@@ -265,8 +296,7 @@ fun TypingWord(
                                 state.hardVocabulary.wordList.remove(currentWord)
                                 state.hardVocabulary.size = state.hardVocabulary.wordList.size
                             }
-                            wordCorrectTime = 0
-                            wordWrongTime = 0
+                            clear()
                             state.saveCurrentVocabulary()
                         }
                         
@@ -537,25 +567,6 @@ fun TypingWord(
                             /** 听写模式的错误单词，主要用于听写模式计算正确率*/
                             val dictationWrongWords = remember { mutableStateMapOf<Word, Int>()}
 
-                            /** 单词输入框里的字符串*/
-                            var wordTextFieldValue by remember { mutableStateOf("") }
-
-                            /** 第一条字幕的输入字符串*/
-                            var captionsTextFieldValue1 by remember { mutableStateOf("") }
-
-                            /** 第二条字幕的输入字符串*/
-                            var captionsTextFieldValue2 by remember { mutableStateOf("") }
-
-                            /** 第三条字幕的输入字符串*/
-                            var captionsTextFieldValue3 by remember { mutableStateOf("") }
-
-                            /** 单词输入框输入的结果*/
-                            val wordTypingResult = remember { mutableStateListOf<Pair<Char, Boolean>>() }
-
-                            /** 字幕输入框的结果 */
-                            val captionsTypingResultMap =
-                                remember { mutableStateMapOf<Int, MutableList<Pair<Char, Boolean>>>() }
-
                             /** 显示本章节已经完成对话框 */
                             var showChapterFinishedDialog by remember { mutableStateOf(false) }
 
@@ -632,17 +643,6 @@ fun TypingWord(
                                 }
                             }
 
-                            /** 清除当前单词的状态 */
-                            val clear:() -> Unit = {
-                                wordTypingResult.clear()
-                                wordTextFieldValue = ""
-                                captionsTypingResultMap.clear()
-                                captionsTextFieldValue1 = ""
-                                captionsTextFieldValue2 = ""
-                                captionsTextFieldValue3 = ""
-                                wordCorrectTime = 0
-                                wordWrongTime = 0
-                            }
 
                             /**
                              * 在听写模式，闭着眼睛听写单词时，刚拼写完单词，就播放这个声音感觉不好，
