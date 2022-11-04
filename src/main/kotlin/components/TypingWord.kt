@@ -1528,11 +1528,15 @@ fun Definition(
 ) {
     if (definitionVisible && !isPlaying) {
         val rows = word.definition.length - word.definition.replace("\n", "").length
-        val width = if(fontSize == MaterialTheme.typography.h5.fontSize){
-            600.dp
-        }else  if(fontSize == MaterialTheme.typography.h6.fontSize){
-            575.dp
-        }else 555.dp
+        val width = when (fontSize) {
+            MaterialTheme.typography.h5.fontSize -> {
+                600.dp
+            }
+            MaterialTheme.typography.h6.fontSize -> {
+                575.dp
+            }
+            else -> 555.dp
+        }
         val normalModifier = Modifier
             .width(width)
             .padding(start = 50.dp, top = 5.dp, bottom = 5.dp)
@@ -1583,11 +1587,15 @@ fun Translation(
 ) {
     if (translationVisible && !isPlaying) {
         Column {
-            val width = if(fontSize == MaterialTheme.typography.h5.fontSize){
-                600.dp
-            }else  if(fontSize == MaterialTheme.typography.h6.fontSize){
-                575.dp
-            }else 555.dp
+            val width = when (fontSize) {
+                MaterialTheme.typography.h5.fontSize -> {
+                    600.dp
+                }
+                MaterialTheme.typography.h6.fontSize -> {
+                    575.dp
+                }
+                else -> 555.dp
+            }
             Row(
                 horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
@@ -1866,19 +1874,27 @@ fun Caption(
 ) {
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier.width(IntrinsicSize.Max)) {
-        val rowHeight = if(fontSize == MaterialTheme.typography.h5.fontSize){
-            24.dp * 2 + 4.dp
-        }else if(fontSize == MaterialTheme.typography.h6.fontSize){
-            20.dp * 2 + 4.dp
-        }else if(fontSize == MaterialTheme.typography.subtitle1.fontSize){
-            16.dp * 2 + 4.dp
-        }else if(fontSize == MaterialTheme.typography.subtitle2.fontSize){
-            14.dp * 2 + 4.dp
-        }else if(fontSize == MaterialTheme.typography.body1.fontSize){
-            16.dp * 2 + 4.dp
-        }else if(fontSize == MaterialTheme.typography.body2.fontSize){
-            14.dp * 2 + 4.dp
-        }else  16.dp * 2 + 4.dp
+        val rowHeight = when (fontSize) {
+            MaterialTheme.typography.h5.fontSize -> {
+                24.dp * 2 + 4.dp
+            }
+            MaterialTheme.typography.h6.fontSize -> {
+                20.dp * 2 + 4.dp
+            }
+            MaterialTheme.typography.subtitle1.fontSize -> {
+                16.dp * 2 + 4.dp
+            }
+            MaterialTheme.typography.subtitle2.fontSize -> {
+                14.dp * 2 + 4.dp
+            }
+            MaterialTheme.typography.body1.fontSize -> {
+                16.dp * 2 + 4.dp
+            }
+            MaterialTheme.typography.body2.fontSize -> {
+                14.dp * 2 + 4.dp
+            }
+            else -> 16.dp * 2 + 4.dp
+        }
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
