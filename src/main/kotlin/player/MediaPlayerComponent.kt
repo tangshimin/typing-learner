@@ -56,8 +56,7 @@ fun createMediaPlayerComponent(): Component {
         }catch ( exception:UnsatisfiedLinkError){
             val message = JEditorPane()
             message.contentType = "text/html"
-            message.text = "没有安装 <a href='https://www.videolan.org/'>VLC 视频播放器</a><br>"+
-                    "typing-learner 需要 VLC 朗读单词发音和播放视频<br>"
+            message.text = "Typing Learner 需要 <a href='https://www.videolan.org/'>VLC 视频播放器</a> 朗读单词发音和播放视频,<a href='https://get.videolan.org/vlc/3.0.17.3/macosx/vlc-3.0.17.3-intel64.dmg'>下载地址</a><br>"
             message.addHyperlinkListener {
                 if(it.eventType == HyperlinkEvent.EventType.ACTIVATED){
                     Desktop.getDesktop().browse(it.url.toURI())
