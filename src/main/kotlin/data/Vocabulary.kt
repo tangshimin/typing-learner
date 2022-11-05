@@ -35,7 +35,7 @@ class MutableVocabulary(vocabulary: Vocabulary) {
     var size by mutableStateOf(vocabulary.size)
     var relateVideoPath by mutableStateOf(vocabulary.relateVideoPath)
     var subtitlesTrackId by mutableStateOf(vocabulary.subtitlesTrackId)
-    var wordList = getMutableStateList(vocabulary.wordList)
+    var wordList = vocabulary.wordList.toMutableStateList()
 
     /**
      * 用于持久化
@@ -45,14 +45,6 @@ class MutableVocabulary(vocabulary: Vocabulary) {
 
 }
 
-/**
- * 获得可观察的单词列表
- */
-fun getMutableStateList(wordList: MutableList<Word>): SnapshotStateList<Word> {
-    val list = mutableStateListOf<Word>()
-    list.addAll(wordList)
-    return list
-}
 
 /**
 links 存储字幕链接,格式：(subtitlePath)[videoPath][subtitleTrackId][index]
