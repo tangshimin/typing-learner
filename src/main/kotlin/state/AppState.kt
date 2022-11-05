@@ -483,9 +483,7 @@ class AppState {
             listOf()
         }
         list = list.sortedByDescending { it.time }
-        val mutableStateList = mutableStateListOf<RecentItem>()
-        mutableStateList.addAll(list)
-        return mutableStateList
+        return list.toMutableStateList()
     }
 
     private fun getRecentListFile(): File {
