@@ -299,7 +299,7 @@ fun TypingWord(
                             clear()
                             state.saveCurrentVocabulary()
                         }
-                        
+
                         /** 把当前单词加入到熟悉词库 */
                         val addToFamiliar:() -> Unit = {
                             val file = getFamiliarVocabularyFile()
@@ -1317,15 +1317,7 @@ fun TypingWord(
 
                     }
                 } else {
-                    Surface(Modifier.fillMaxSize()) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text("请重新选择词库,可以拖放词库到这里", style = MaterialTheme.typography.h6)
-                        }
-                    }
+                    VocabularyEmpty()
                 }
 
             }
@@ -1339,6 +1331,18 @@ fun TypingWord(
 
 }
 
+@Composable
+fun VocabularyEmpty() {
+    Surface(Modifier.fillMaxSize()) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text("请重新选择词库,可以拖放词库到这里", style = MaterialTheme.typography.h6)
+        }
+    }
+}
 
 /**
  * 词型组件
@@ -2351,43 +2355,7 @@ fun SearchResultInfo(
     Divider()
 }
 
-/**
- * 计算视频播放窗口的位置和大小
- */
-fun computeVideoBounds(
-    windowState: WindowState,
-    openSettings: Boolean,
-    density:Float,
-): Rectangle {
-    var mainX = windowState.position.x.value.toInt()
-    var mainY = windowState.position.y.value.toInt()
-    mainX = (mainX).div(density).toInt()
-    mainY = (mainY).div(density).toInt()
 
-    val mainWidth = windowState.size.width.value.toInt()
-    val mainHeight = windowState.size.height.value.toInt()
-
-    val size = if (mainWidth in 801..1079) {
-        Dimension(642, 390)
-    } else if (mainWidth > 1080) {
-        Dimension(1005, 610)
-    } else {
-        Dimension(540, 304)
-    }
-    if(density!=1f){
-        size.width = size.width.div(density).toInt()
-        size.height = size.height.div(density).toInt()
-    }
-    var x = (mainWidth - size.width).div(2)
-    // 232 是单词 + 字幕的高度 ，再加一个文本输入框48 == 280
-    // 48 是内容的 bottom padding
-    var y = ((mainHeight - 280 - size.height).div(2)) + 280 + 15-48
-    x += mainX
-    y += mainY
-    if (openSettings) x += 109
-    val point = Point(x, y)
-    return Rectangle(point, size)
-}
 
 /**
  * @param currentWord 当前正在记忆的单词
