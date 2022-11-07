@@ -37,32 +37,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowState
 import data.*
-import state.MemoryStrategy.*
+import dialog.ChapterFinishedDialog
+import dialog.ConfirmDialog
+import dialog.EditWordDialog
+import dialog.SelectChapterDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
+import state.MemoryStrategy.*
 import state.TypingType
+import state.getResourcesFile
 import theme.createColors
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
-import java.awt.*
+import java.awt.Component
+import java.awt.Rectangle
 import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.nio.file.Paths
 import java.time.Duration
 import java.util.*
+import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
-import kotlin.concurrent.schedule
-import androidx.compose.ui.unit.TextUnit
-import dialog.*
-import state.getResourcesFile
-import java.nio.file.Paths
-import javax.swing.JFileChooser
 import javax.swing.filechooser.FileSystemView
+import kotlin.concurrent.schedule
 
 /**
  * 应用程序的核心组件
@@ -731,20 +734,20 @@ fun TypingWord(
                                  *  防止用户粘贴内容过长，如果粘贴的内容超过 word.value 的长度，
                                  * 会改变 BasicTextField 宽度，和 Text 的宽度不匹配
                                  */
-                                if (wordTextFieldValue.length > currentWord.value.length) {
+                                if (input.length > currentWord.value.length) {
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
-                                } else if (input.length <= currentWord.value.length) {
-                                    val chars = input.toList()
-                                    for (i in chars.indices) {
-                                        val inputChar = chars[i]
+                                } else {
+                                    val inputchars = input.toList()
+                                    for (i in inputchars.indices) {
+                                        val inputChar = inputchars[i]
                                         val wordChar = currentWord.value[i]
                                         if (inputChar == wordChar) {
                                             wordTypingResult.add(Pair(inputChar, true))
                                         } else {
                                             // 字母输入错误
-                                            done = false
                                             wordTypingResult.add(Pair(wordChar, false))
+                                            done = false
                                             playBeepSound()
                                             wordWrongTime++
                                             // 如果是听写测试，或听写复习，需要汇总错误单词
@@ -757,7 +760,8 @@ fun TypingWord(
                                                     dictationWrongWords[currentWord] = 1
                                                 }
                                             }
-                                            Timer("cleanInputChar", false).schedule(50) {
+
+                                            Timer("input wrong cleanInputChar", false).schedule(50) {
                                                 wordTextFieldValue = ""
                                                 wordTypingResult.clear()
                                             }
@@ -769,16 +773,18 @@ fun TypingWord(
                                         playSuccessSound()
                                         if (state.memoryStrategy == Dictation || state.memoryStrategy == Review) chapterCorrectTime++
                                         if (state.typingWord.isAuto) {
-                                            Timer("cleanInputChar", false).schedule(50) {
+
+                                            Timer("input correct to next", false).schedule(50) {
                                                 toNext()
-                                                wordTextFieldValue = ""
-                                                wordTypingResult.clear()
                                             }
                                         } else {
                                             wordCorrectTime++
-                                            Timer("cleanInputChar", false).schedule(50) {
+
+                                            val timer = Timer("input correct clean InputChar", false)
+                                            timer.schedule(50){
                                                 wordTypingResult.clear()
                                                 wordTextFieldValue = ""
+                                                timer.cancel()
                                             }
                                         }
                                     }
