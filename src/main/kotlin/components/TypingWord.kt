@@ -738,9 +738,9 @@ fun TypingWord(
                                     wordTypingResult.clear()
                                     wordTextFieldValue = ""
                                 } else {
-                                    val inputchars = input.toList()
-                                    for (i in inputchars.indices) {
-                                        val inputChar = inputchars[i]
+                                    val inputChars = input.toList()
+                                    for (i in inputChars.indices) {
+                                        val inputChar = inputChars[i]
                                         val wordChar = currentWord.value[i]
                                         if (inputChar == wordChar) {
                                             wordTypingResult.add(Pair(inputChar, true))
