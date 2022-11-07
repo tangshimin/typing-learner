@@ -4,7 +4,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -13,11 +15,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -30,10 +32,7 @@ import kotlinx.coroutines.launch
 import player.AudioButton
 import state.GlobalState
 import state.getResourcesFile
-import javax.sound.sampled.AudioSystem
-import javax.sound.sampled.Clip
-import javax.sound.sampled.DataLine
-import javax.sound.sampled.FloatControl
+import javax.sound.sampled.*
 
 /** 单词组件
  * @param word 单词
@@ -285,6 +284,11 @@ fun playSound(path: String, volume: Float) {
             val format = audioStream.format
             val info: DataLine.Info = DataLine.Info(Clip::class.java, format)
             val clip: Clip = AudioSystem.getLine(info) as Clip
+            clip.addLineListener{event ->
+                if (event.type == LineEvent.Type.STOP) {
+                    clip.close()
+                }
+            }
             clip.open(audioStream)
             val gainControl = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
             val range = gainControl.maximum - gainControl.minimum
