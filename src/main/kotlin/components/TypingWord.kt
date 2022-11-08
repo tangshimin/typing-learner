@@ -780,11 +780,9 @@ fun TypingWord(
                                         } else {
                                             wordCorrectTime++
 
-                                            val timer = Timer("input correct clean InputChar", false)
-                                            timer.schedule(50){
+                                            Timer("input correct clean InputChar", false).schedule(50){
                                                 wordTypingResult.clear()
                                                 wordTextFieldValue = ""
-                                                timer.cancel()
                                             }
                                         }
                                     }
