@@ -19,6 +19,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
+import player.isWindows
 import state.MemoryStrategy.*
 import theme.createColors
 import java.io.File
@@ -537,6 +538,40 @@ class AppState {
         audioDir.list()?.let { set.addAll(it) }
         return set
     }
+
+    val changeTheme: (Boolean) -> Unit = {
+        runBlocking {
+            launch {
+                global.isDarkTheme = it
+                colors = createColors(global.isDarkTheme, global.primaryColor)
+                saveGlobalState()
+            }
+        }
+
+    }
+
+    val backToHome: () -> Unit = {
+        runBlocking {
+            launch {
+                global.type = TypingType.WORD
+                saveGlobalState()
+            }
+        }
+    }
+
+    /** 搜索 */
+    var searching by  mutableStateOf(false)
+    /** 打开搜索 **/
+    val openSearch:() -> Unit = {
+        searching = true
+    }
+
+    val openLoadingDialog:() -> Unit = {
+        if(isWindows()) {
+            loadingFileChooserVisible = true
+        }
+    }
+
 }
 
 

@@ -30,17 +30,23 @@ import player.*
 import state.AppState
 import java.awt.Rectangle
 import java.io.File
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
+import kotlinx.serialization.ExperimentalSerializationApi
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
-fun Search(
-    state: AppState,
-    vocabulary: MutableVocabulary,
-    onDismissRequest:() -> Unit,
-    fontFamily: FontFamily,
-){
+fun Search(state: AppState){
+
+    val vocabulary = state.vocabulary
     var searchResult by remember{ mutableStateOf<Word?>(null) }
     var isPlayingAudio by remember { mutableStateOf(false) }
+    /** 等宽字体*/
+    val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
+    val onDismissRequest :() -> Unit = {
+        state.searching = false
+    }
     val audioPlayer = LocalAudioPlayerComponent.current
     val keyEvent: (KeyEvent) -> Boolean = {
         if (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) {
@@ -145,7 +151,7 @@ fun Search(
                             cursorBrush = SolidColor(MaterialTheme.colors.primary),
                             textStyle = MaterialTheme.typography.h5.copy(
                                 color = MaterialTheme.colors.onBackground,
-                                fontFamily = fontFamily
+                                fontFamily = monospace
                             ),
                             modifier = Modifier.fillMaxWidth()
                                 .padding(top = 5.dp, bottom = 5.dp)

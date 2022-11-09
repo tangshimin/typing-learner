@@ -52,7 +52,6 @@ import state.MemoryStrategy.*
 import state.TypingType
 import state.getResourcesFile
 import theme.createColors
-import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import java.awt.Component
 import java.awt.Rectangle
 import java.io.File
@@ -68,7 +67,7 @@ import javax.swing.filechooser.FileSystemView
 import kotlin.concurrent.schedule
 
 /**
- * 应用程序的核心组件
+ * 应用程序的核心组件，记忆单词界面
  * @param state 应用程序的状态
  * @param videoBounds 视频播放窗口的位置和大小
  */
@@ -83,15 +82,17 @@ import kotlin.concurrent.schedule
 fun TypingWord(
     window: ComposeWindow,
     title: String,
-    audioPlayer: AudioPlayerComponent,
-    currentWord: Word?,
     state: AppState,
     videoBounds: Rectangle,
-    openSearch: () -> Unit
 ) {
 
     /** 协程构建器 */
     val scope = rememberCoroutineScope()
+
+    /** 当前正在记忆的单词 */
+    val currentWord = if(state.vocabulary.wordList.isNotEmpty()){
+        state.getCurrentWord()
+    }else  null
 
     /** 解析拖放的文件 */
     val parseImportFile: (List<File>) -> Unit = { files ->
@@ -237,6 +238,8 @@ fun TypingWord(
                         /** 等宽字体*/
                         val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
 
+                        val audioPlayerComponent = LocalAudioPlayerComponent.current
+
                         /** 单词发音的本地路径，这个路径是根据单词进行计算的，
                          * 如果单词改变了，单词发音就跟着改变。*/
                         val audioPath by remember(currentWord){
@@ -289,6 +292,8 @@ fun TypingWord(
                             wordCorrectTime = 0
                             wordWrongTime = 0
                         }
+
+
 
                         /** 删除当前单词 */
                         val deleteWord:() -> Unit = {
@@ -403,7 +408,7 @@ fun TypingWord(
                                 }
                                 (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyUp) -> {
                                     scope.launch {
-                                        openSearch()
+                                        state.openSearch()
                                     }
                                     true
                                 }
@@ -448,7 +453,7 @@ fun TypingWord(
                                         playAudio(
                                             audioPath = audioPath,
                                             volume = state.global.audioVolume,
-                                            audioPlayerComponent = audioPlayer,
+                                            audioPlayerComponent = audioPlayerComponent,
                                             changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
                                             setIsAutoPlay = {}
                                         )
@@ -1230,7 +1235,7 @@ fun TypingWord(
                                 focusRequesterList = listOf(focusRequester1,focusRequester2,focusRequester3),
                                 jumpToWord = {jumpToWord()},
                                 externalVisible = typingWord.externalSubtitlesVisible,
-                                openSearch = {openSearch()},
+                                openSearch = {state.openSearch()},
                                 fontSize = state.global.detailFontSize
                             )
                             if (isPlaying) Spacer(

@@ -17,22 +17,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.*
+import components.Search
+import components.TypingSubtitles
+import components.TypingText
+import components.TypingWord
 import components.flatlaf.UpdateFlatLaf
 import data.VocabularyType
 import data.getHardVocabularyFile
 import dialog.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.AppState
@@ -40,7 +38,6 @@ import state.TypingType.*
 import state.computeFontSize
 import state.getResourcesFile
 import state.rememberAppState
-import theme.createColors
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
@@ -74,14 +71,16 @@ fun main() = application {
             audioPlayerComponent.mediaPlayer().release()
             state.videoPlayerComponent.mediaPlayer().release()
         }
+
         val windowState = rememberWindowState(
             position = state.global.position,
             placement = state.global.placement,
             size = state.global.size,
         )
 
-        val title = computeTitle(state)
+
         if (isOpen) {
+            val title = computeTitle(state)
             Window(
                 title = title,
                 icon = painterResource("logo/logo.png"),
@@ -93,57 +92,9 @@ fun main() = application {
                     state.global.detailFontSize = computeFontSize(state.global.detailTextStyle)
                     WindowMenuBar(state = state, close = {close()})
                     MenuDialogs(state)
-                    val scope = rememberCoroutineScope()
 
-                    /** 搜索 */
-                    var searching by remember { mutableStateOf(false) }
-                    /** 等宽字体*/
-                    val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
-                    /** 打开搜索 **/
-                    val openSearch:() -> Unit = {
-                        searching = true
-                    }
-
-                    val changeTheme:(Boolean) -> Unit = {
-                        scope.launch {
-                            state.global.isDarkTheme = it
-                            state.colors = createColors(state.global.isDarkTheme, state.global.primaryColor)
-                            state.saveGlobalState()
-                        }
-                    }
-                    val saveGlobalState:() -> Unit = {
-                        scope.launch {
-                            state.saveGlobalState()
-                        }
-                    }
-                    val saveSubtitlesState:() -> Unit = {
-                        scope.launch {
-                            state.saveTypingSubtitlesState()
-                        }
-                    }
-                    val saveTextState:() -> Unit = {
-                        scope.launch {
-                            state.saveTypingTextState()
-                        }
-                    }
-                    val backToHome:() -> Unit = {
-                        scope.launch {
-                            state.global.type = WORD
-                            state.saveGlobalState()
-                        }
-                    }
-                    val openLoadingDialog:() -> Unit = {
-                        if(isWindows()) {
-                            state.loadingFileChooserVisible = true
-                        }
-                    }
-                    if(searching){
-                        Search(
-                            state = state,
-                            vocabulary = state.vocabulary,
-                            onDismissRequest = {searching = false},
-                            fontFamily = monospace
-                        )
+                    if(state.searching){
+                        Search(state = state)
                     }
                     when (state.global.type) {
                         WORD -> {
@@ -151,28 +102,22 @@ fun main() = application {
                             val density = LocalDensity.current.density
                             // 视频播放器的位置，大小
                             val videoBounds = computeVideoBounds(windowState, state.openSettings,density)
-                            val currentWord = if(state.vocabulary.wordList.isNotEmpty()){
-                                state.getCurrentWord()
-                            }else  null
 
                             TypingWord(
                                 window = window,
                                 title = title,
                                 state = state,
-                                audioPlayer = audioPlayerComponent,
                                 videoBounds = videoBounds,
-                                currentWord = currentWord,
-                                openSearch = {openSearch()},
                             )
                         }
                         SUBTITLES -> {
                             TypingSubtitles(
                                 subtitlesState = state.typingSubtitles,
                                 globalState = state.global,
-                                saveSubtitlesState = { saveSubtitlesState() },
-                                saveGlobalState = { saveGlobalState() },
-                                setIsDarkTheme = { changeTheme(it) },
-                                backToHome = { backToHome() },
+                                saveSubtitlesState = { state.saveTypingSubtitlesState() },
+                                saveGlobalState = { state.saveGlobalState() },
+                                setIsDarkTheme = { state.changeTheme(it) },
+                                backToHome = { state.backToHome() },
                                 isOpenSettings = state.openSettings,
                                 setIsOpenSettings = { state.openSettings = it },
                                 window = window,
@@ -181,9 +126,9 @@ fun main() = application {
                                 videoVolume = state.global.videoVolume,
                                 mediaPlayerComponent = state.videoPlayerComponent,
                                 futureFileChooser = state.futureFileChooser,
-                                openLoadingDialog = { openLoadingDialog()},
+                                openLoadingDialog = { state.openLoadingDialog()},
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                openSearch = {openSearch()},
+                                openSearch = {state.openSearch()},
                             )
                         }
 
@@ -193,15 +138,15 @@ fun main() = application {
                                 window = window,
                                 globalState = state.global,
                                 textState = state.typingText,
-                                saveTextState = { saveTextState() },
-                                backToHome = { backToHome() },
+                                saveTextState = { state.saveTypingTextState() },
+                                backToHome = { state.backToHome() },
                                 isOpenSettings = state.openSettings,
                                 setIsOpenSettings = {state.openSettings = it},
-                                setIsDarkTheme = { changeTheme(it) },
+                                setIsDarkTheme = { state.changeTheme(it) },
                                 futureFileChooser = state.futureFileChooser,
-                                openLoadingDialog = { openLoadingDialog()},
+                                openLoadingDialog = { state.openLoadingDialog()},
                                 closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                openSearch = {openSearch()},
+                                openSearch = {state.openSearch()},
                             )
                         }
                     }
@@ -220,7 +165,7 @@ fun main() = application {
                         .launchIn(this)
                 }
 
-
+                /** 启动应用后，自动检查更新 */
                 LaunchedEffect(Unit){
                     if(!uptdated && state.global.autoUpdate){
                         Timer("update",false).schedule(5000){
