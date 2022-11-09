@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -201,16 +200,17 @@ fun TypingText(
         }
     }
 
-    /**  处理拖放文件的函数 */
-    val transferHandler = createTransferHandler(
-        singleFile = true,
-        showWrongMessage = { message ->
-            JOptionPane.showMessageDialog(window, message)
-        },
-        parseImportFile = { parseImportFile(it,OpenMode.Drag) }
-    )
-
-    window.transferHandler = transferHandler
+    //设置窗口的拖放处理函数
+    LaunchedEffect(Unit){
+        val transferHandler = createTransferHandler(
+            singleFile = true,
+            showWrongMessage = { message ->
+                JOptionPane.showMessageDialog(window, message)
+            },
+            parseImportFile = { parseImportFile(it,OpenMode.Drag) }
+        )
+        window.transferHandler = transferHandler
+    }
 
     Box(Modifier.fillMaxSize()
         .background(MaterialTheme.colors.background)

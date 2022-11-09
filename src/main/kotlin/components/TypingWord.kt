@@ -94,34 +94,10 @@ fun TypingWord(
         state.getCurrentWord()
     }else  null
 
-    /** 解析拖放的文件 */
-    val parseImportFile: (List<File>) -> Unit = { files ->
-        scope.launch {
-            val file = files.first()
-            if (file.extension == "json") {
-                if (state.typingWord.vocabularyPath != file.absolutePath) {
-                    val index = state.findVocabularyIndex(file)
-                    state.changeVocabulary(file,index)
-                } else {
-                    JOptionPane.showMessageDialog(window, "词库已打开")
-                }
-
-            } else if (file.extension == "mkv") {
-                JOptionPane.showMessageDialog(window, "如果想打开 MKV 视频文件抄写字幕，\n需要先切换到抄写字幕界面，\n如果想生成词库需要先打开生成词库界面。")
-            } else {
-                JOptionPane.showMessageDialog(window, "只能读取 json 格式的词库")
-            }
-        }
+    //设置窗口的拖放处理函数
+    LaunchedEffect(Unit){
+        setWindowTransferHandler(window,state)
     }
-
-    /**  处理拖放文件的函数 */
-    val transferHandler = createTransferHandler(
-        showWrongMessage = { message ->
-            JOptionPane.showMessageDialog(window, message)
-        },
-        parseImportFile = { parseImportFile(it) }
-    )
-    window.transferHandler = transferHandler
 
     Box(Modifier.background(MaterialTheme.colors.background)) {
         Row {
@@ -2380,4 +2356,32 @@ fun getPayTriple(currentWord: Word, index: Int): Triple<Caption, String, Int>? {
     } else {
         null
     }
+}
+/**  设置处理拖放文件的函数 */
+fun setWindowTransferHandler(
+    window: ComposeWindow,
+    state: AppState
+){
+    println("设置拖拽处理函数")
+    window.transferHandler = createTransferHandler(
+        showWrongMessage = { message ->
+            JOptionPane.showMessageDialog(window, message)
+        },
+        parseImportFile = {files ->
+            val file = files.first()
+            if (file.extension == "json") {
+                if (state.typingWord.vocabularyPath != file.absolutePath) {
+                    val index = state.findVocabularyIndex(file)
+                    state.changeVocabulary(file,index)
+                } else {
+                    JOptionPane.showMessageDialog(window, "词库已打开")
+                }
+
+            } else if (file.extension == "mkv") {
+                JOptionPane.showMessageDialog(window, "如果想打开 MKV 视频文件抄写字幕，\n需要先切换到抄写字幕界面，\n如果想生成词库需要先打开生成词库界面。")
+            } else {
+                JOptionPane.showMessageDialog(window, "只能读取 json 格式的词库")
+            }
+        }
+    )
 }

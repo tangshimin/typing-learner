@@ -469,17 +469,18 @@ fun TypingSubtitles(
         }
     }
 
+    //设置窗口的拖放处理函数
+    LaunchedEffect(Unit){
+        val transferHandler = createTransferHandler(
+            singleFile = false,
+            showWrongMessage = { message ->
+                JOptionPane.showMessageDialog(window, message)
+            },
+            parseImportFile = { parseImportFile(it,OpenMode.Drag) }
+        )
+        window.transferHandler = transferHandler
+    }
 
-    /**  处理拖放文件的函数 */
-    val transferHandler = createTransferHandler(
-        singleFile = false,
-        showWrongMessage = { message ->
-            JOptionPane.showMessageDialog(window, message)
-        },
-        parseImportFile = { parseImportFile(it,OpenMode.Drag) }
-    )
-
-    window.transferHandler = transferHandler
     Box(
         Modifier.fillMaxSize()
             .background(MaterialTheme.colors.background)
