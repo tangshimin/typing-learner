@@ -466,15 +466,17 @@ fun GenerateVocabularyDialog(
 
         }
 
-        /**  处理拖放文件的函数 */
-        val transferHandler = createTransferHandler(
-            singleFile = false,
-            showWrongMessage = { message ->
-                JOptionPane.showMessageDialog(window, message)
-            },
-            parseImportFile = { parseImportFile(it) }
-        )
-        window.transferHandler = transferHandler
+        //设置窗口的拖放处理函数
+        LaunchedEffect(Unit){
+            val transferHandler = createTransferHandler(
+                singleFile = false,
+                showWrongMessage = { message ->
+                    JOptionPane.showMessageDialog(window, message)
+                },
+                parseImportFile = { parseImportFile(it) }
+            )
+            window.transferHandler = transferHandler
+        }
 
         /** 全选 */
         val selectAll:() -> Unit = {

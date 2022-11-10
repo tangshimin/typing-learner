@@ -61,25 +61,28 @@ fun LyricToSubtitlesDialog(
             songLyric.song.clear()
         }
 
-        /**  处理拖放文件的函数 */
-        val transferHandler = createTransferHandler(
-            singleFile = true,
-            showWrongMessage = { message ->
-                JOptionPane.showMessageDialog(window, message)
-            },
-            parseImportFile = { files ->
-                scope.launch {
-                    val file = files.first()
-                    if (file.extension == "lrc") {
-                        setFile(file)
-                    } else {
-                        JOptionPane.showMessageDialog(window, "格式不支持")
-                    }
+        //设置窗口的拖放处理函数
+        LaunchedEffect(Unit){
+            val transferHandler = createTransferHandler(
+                singleFile = true,
+                showWrongMessage = { message ->
+                    JOptionPane.showMessageDialog(window, message)
+                },
+                parseImportFile = { files ->
+                    scope.launch {
+                        val file = files.first()
+                        if (file.extension == "lrc") {
+                            setFile(file)
+                        } else {
+                            JOptionPane.showMessageDialog(window, "格式不支持")
+                        }
 
+                    }
                 }
-            }
-        )
-        window.transferHandler = transferHandler
+            )
+            window.transferHandler = transferHandler
+        }
+
 
 
         /** 打开文件对话框 */

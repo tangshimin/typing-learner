@@ -269,26 +269,28 @@ fun LinkVocabularyDialog(
         ),
     ) {
 
+        //设置窗口的拖放处理函数
+        LaunchedEffect(Unit){
+            val transferHandler = createTransferHandler(
+                showWrongMessage = { message ->
+                    JOptionPane.showMessageDialog(window, message)
+                },
+                parseImportFile = { files ->
+                    val file = files.first()
+                    scope.launch {
+                        if (file.extension == "json") {
+                            handleInputFile(file)
+                        } else {
+                            JOptionPane.showMessageDialog(window, "词库的格式不正确")
+                        }
 
-        /**  处理拖放文件的函数 */
-        val transferHandler = createTransferHandler(
-            showWrongMessage = { message ->
-                JOptionPane.showMessageDialog(window, message)
-            },
-            parseImportFile = { files ->
-                val file = files.first()
-                scope.launch {
-                    if (file.extension == "json") {
-                        handleInputFile(file)
-                    } else {
-                        JOptionPane.showMessageDialog(window, "词库的格式不正确")
+
                     }
-
-
                 }
-            }
-        )
-        window.transferHandler = transferHandler
+            )
+            window.transferHandler = transferHandler
+        }
+
 
         /** 保存词库 */
         val save:() -> Unit = {

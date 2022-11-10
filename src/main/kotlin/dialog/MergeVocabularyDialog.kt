@@ -78,36 +78,39 @@ fun MergeVocabularyDialog(
             fileName = it
         }
 
-        /**  处理拖放文件的函数 */
-        val transferHandler = createTransferHandler(
-            singleFile = false,
-            showWrongMessage = { message ->
-                JOptionPane.showMessageDialog(window, message)
-            },
-            parseImportFile = { files ->
-                scope.launch {
-                    for (file in files) {
-                        if (file.extension == "json") {
-                            if (selectedFileList.size + 1 < 101) {
-                                if (!selectedFileList.contains(file)) {
-                                    selectedFileList.add(file)
+        //设置窗口的拖放处理函数
+        LaunchedEffect(Unit){
+            val transferHandler = createTransferHandler(
+                singleFile = false,
+                showWrongMessage = { message ->
+                    JOptionPane.showMessageDialog(window, message)
+                },
+                parseImportFile = { files ->
+                    scope.launch {
+                        for (file in files) {
+                            if (file.extension == "json") {
+                                if (selectedFileList.size + 1 < 101) {
+                                    if (!selectedFileList.contains(file)) {
+                                        selectedFileList.add(file)
+                                    }
+                                } else {
+                                    isOutOfRange = true
                                 }
+
                             } else {
-                                isOutOfRange = true
+                                JOptionPane.showMessageDialog(window, "词库的格式不对")
                             }
-
-                        } else {
-                            JOptionPane.showMessageDialog(window, "词库的格式不对")
                         }
+                        mergeEnabled = selectedFileList.size > 1
+                        // 导入了新的词库，重置总计单词的数量。
+                        updateSize(0)
                     }
-                    mergeEnabled = selectedFileList.size > 1
-                    // 导入了新的词库，重置总计单词的数量。
-                    updateSize(0)
                 }
-            }
-        )
+            )
 
-        window.transferHandler = transferHandler
+            window.transferHandler = transferHandler
+        }
+
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
