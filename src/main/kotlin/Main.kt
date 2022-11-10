@@ -26,6 +26,7 @@ import components.TypingSubtitles
 import components.TypingText
 import components.TypingWord
 import components.flatlaf.UpdateFlatLaf
+import data.MutableVocabulary
 import data.VocabularyType
 import data.getHardVocabularyFile
 import dialog.*
@@ -33,11 +34,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
-import state.AppState
+import state.*
 import state.TypingType.*
-import state.computeFontSize
-import state.getResourcesFile
-import state.rememberAppState
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
@@ -80,7 +78,7 @@ fun main() = application {
 
 
         if (isOpen) {
-            val title = computeTitle(state)
+            var title by remember{mutableStateOf("")}
             Window(
                 title = title,
                 icon = painterResource("logo/logo.png"),
@@ -98,6 +96,7 @@ fun main() = application {
                     }
                     when (state.global.type) {
                         WORD -> {
+                            title = computeTitle(state.typingWord,vocabulary = state.vocabulary)
                             // 显示器缩放
                             val density = LocalDensity.current.density
                             // 视频播放器的位置，大小
@@ -111,10 +110,12 @@ fun main() = application {
                             )
                         }
                         SUBTITLES -> {
+                            val subtitlesState = rememberSubtitlesState()
+                            title = computeTitle(subtitlesState)
                             TypingSubtitles(
-                                subtitlesState = state.typingSubtitles,
+                                subtitlesState = subtitlesState,
                                 globalState = state.global,
-                                saveSubtitlesState = { state.saveTypingSubtitlesState() },
+                                saveSubtitlesState = { subtitlesState.saveTypingSubtitlesState() },
                                 saveGlobalState = { state.saveGlobalState() },
                                 setIsDarkTheme = { state.changeTheme(it) },
                                 backToHome = { state.backToHome() },
@@ -133,6 +134,7 @@ fun main() = application {
                         }
 
                         TEXT -> {
+                            title = computeTitle(state.typingText)
                             TypingText(
                                 title = title,
                                 window = window,
@@ -204,56 +206,49 @@ private fun onWindowPlacement(placement: WindowPlacement, state: AppState){
 }
 
 
-@OptIn(ExperimentalSerializationApi::class)
-private fun computeTitle(state: AppState): String {
-    when (state.global.type) {
-        WORD -> {
-            return if (state.vocabulary.wordList.isNotEmpty()) {
-                when (state.typingWord.vocabularyName) {
-                    "FamiliarVocabulary" -> {
-                        "熟悉词库"
-                    }
-                    "HardVocabulary" -> {
-                        "困难词库"
-                    }
-                    else -> state.typingWord.vocabularyName
-                }
-            } else {
-                "请选择词库"
+private fun computeTitle(typingWord: WordState,vocabulary: MutableVocabulary) :String{
+    return if (vocabulary.wordList.isNotEmpty()) {
+        when (typingWord.vocabularyName) {
+            "FamiliarVocabulary" -> {
+                "熟悉词库"
             }
-        }
-        SUBTITLES -> {
-            val mediaPath = state.typingSubtitles.mediaPath
-           return if(mediaPath.isNotEmpty()){
-               try{
-                   val fileName = File(mediaPath).nameWithoutExtension
-                   fileName + " - " + state.typingSubtitles.trackDescription
-               }catch (exception:Exception){
-                   "抄写字幕"
-               }
-
-            }else{
-                "抄写字幕"
+            "HardVocabulary" -> {
+                "困难词库"
             }
-
+            else -> typingWord.vocabularyName
         }
-        else -> {
-            val textPath = state.typingText.textPath
-            return if(textPath.isNotEmpty()){
-                try{
-                    val fileName = File(textPath).nameWithoutExtension
-                    fileName
-                }catch (exception :Exception){
-                    "抄写文本"
-                }
-
-            }else {
-                "抄写文本"
-            }
-
-        }
+    } else {
+        "请选择词库"
     }
+}
+private fun computeTitle(subtitlesState:SubtitlesState) :String{
+    val mediaPath = subtitlesState.mediaPath
+    return if(mediaPath.isNotEmpty()){
+        try{
+            val fileName = File(mediaPath).nameWithoutExtension
+            fileName + " - " + subtitlesState.trackDescription
+        }catch (exception:Exception){
+            "抄写字幕"
+        }
 
+    }else{
+        "抄写字幕"
+    }
+}
+
+private fun computeTitle(textState: TextState) :String{
+    val textPath = textState.textPath
+    return if(textPath.isNotEmpty()){
+        try{
+            val fileName = File(textPath).nameWithoutExtension
+            fileName
+        }catch (exception :Exception){
+            "抄写文本"
+        }
+
+    }else {
+        "抄写文本"
+    }
 }
 
 /**

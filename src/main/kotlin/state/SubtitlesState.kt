@@ -1,10 +1,16 @@
 package state
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import com.formdev.flatlaf.FlatLightLaf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+import javax.swing.JOptionPane
 
 /** 抄写单词的数据类 */
 @ExperimentalSerializationApi
@@ -66,4 +72,64 @@ class SubtitlesState(dataSubtitlesState: DataSubtitlesState) {
     /** 外部字幕的可见性 */
     var externalSubtitlesVisible by mutableStateOf(dataSubtitlesState.externalSubtitlesVisible)
 
+    /** 保存抄写字幕的配置信息 */
+    fun saveTypingSubtitlesState() {
+        val encodeBuilder = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+
+        runBlocking {
+            launch {
+                val dataSubtitlesState = DataSubtitlesState(
+                    mediaPath,
+                    subtitlesPath,
+                    trackID,
+                    trackDescription,
+                    trackSize,
+                    currentIndex,
+                    firstVisibleItemIndex,
+                    sentenceMaxLength,
+                    currentCaptionVisible,
+                    notWroteCaptionVisible,
+                    externalSubtitlesVisible,
+                )
+
+                val json = encodeBuilder.encodeToString(dataSubtitlesState)
+                val typingSubtitlesSetting = getSubtitlesSettingsFile()
+                typingSubtitlesSetting.writeText(json)
+            }
+        }
+    }
+
+}
+
+
+@Composable
+fun rememberSubtitlesState():SubtitlesState = remember{
+    loadSubtitlesState()
+}
+
+/** 加载抄写字幕的配置信息 */
+private fun loadSubtitlesState(): SubtitlesState {
+    val typingSubtitlesSetting = getSubtitlesSettingsFile()
+    return if (typingSubtitlesSetting.exists()) {
+        try {
+            val decodeFormat = Json { ignoreUnknownKeys = true }
+            val dataSubtitlesState = decodeFormat.decodeFromString<DataSubtitlesState>(typingSubtitlesSetting.readText())
+            SubtitlesState(dataSubtitlesState)
+        } catch (exception: Exception) {
+            FlatLightLaf.setup()
+            JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
+            SubtitlesState(DataSubtitlesState())
+        }
+    } else {
+        SubtitlesState(DataSubtitlesState())
+    }
+}
+
+/** 获取抄写字幕的配置文件 */
+private fun getSubtitlesSettingsFile(): File {
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "TypingSubtitlesSettings.json")
 }

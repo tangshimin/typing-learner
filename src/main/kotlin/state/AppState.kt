@@ -43,9 +43,6 @@ class AppState {
     /** 记忆单词的配置文件保存的状态 */
     var typingWord: WordState = loadWordState()
 
-    /** 抄写字幕的可观察的状态 */
-    var typingSubtitles: SubtitlesState = loadSubtitlesState()
-
     /** 抄写文本的可观察状态 */
     var typingText: TextState = loadTextState()
 
@@ -161,23 +158,6 @@ class AppState {
         }
     }
 
-    /** 加载抄写字幕的配置信息 */
-    private fun loadSubtitlesState(): SubtitlesState {
-        val typingSubtitlesSetting = getSubtitlesSettingsFile()
-        return if (typingSubtitlesSetting.exists()) {
-            try {
-                val decodeFormat = Json { ignoreUnknownKeys = true }
-                val dataSubtitlesState = decodeFormat.decodeFromString<DataSubtitlesState>(typingSubtitlesSetting.readText())
-                SubtitlesState(dataSubtitlesState)
-            } catch (exception: Exception) {
-                FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingSubtitlesSetting")
-                SubtitlesState(DataSubtitlesState())
-            }
-        } else {
-            SubtitlesState(DataSubtitlesState())
-        }
-    }
 
     /** 加载抄写文本的配置信息 */
     private fun loadTextState():TextState{
@@ -279,30 +259,6 @@ class AppState {
 
     }
 
-    /** 保存抄写字幕的配置信息 */
-    fun saveTypingSubtitlesState() {
-        runBlocking {
-            launch {
-                val dataSubtitlesState = DataSubtitlesState(
-                    typingSubtitles.mediaPath,
-                    typingSubtitles.subtitlesPath,
-                    typingSubtitles.trackID,
-                    typingSubtitles.trackDescription,
-                    typingSubtitles.trackSize,
-                    typingSubtitles.currentIndex,
-                    typingSubtitles.firstVisibleItemIndex,
-                    typingSubtitles.sentenceMaxLength,
-                    typingSubtitles.currentCaptionVisible,
-                    typingSubtitles.notWroteCaptionVisible,
-                    typingSubtitles.externalSubtitlesVisible,
-                )
-
-                val json = encodeBuilder.encodeToString(dataSubtitlesState)
-                val typingSubtitlesSetting = getSubtitlesSettingsFile()
-                typingSubtitlesSetting.writeText(json)
-            }
-        }
-    }
 
     /** 保持抄写文本的配置信息 */
     fun saveTypingTextState(){
@@ -646,11 +602,6 @@ private fun getWordSettingsFile(): File {
     return File(settingsDir, "TypingWordSettings.json")
 }
 
-/** 获取抄写字幕的配置文件 */
-private fun getSubtitlesSettingsFile(): File {
-    val settingsDir = getSettingsDirectory()
-    return File(settingsDir, "TypingSubtitlesSettings.json")
-}
 
 /** 获取抄写文本的配置文件 */
 private fun getTextSettingsFile():File{
