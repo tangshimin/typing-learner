@@ -35,6 +35,7 @@ import androidx.compose.ui.window.rememberDialogState
 import components.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
+import state.WordState
 import theme.createColors
 import java.awt.Dimension
 import javax.swing.JColorChooser
@@ -43,7 +44,8 @@ import javax.swing.JColorChooser
 @Composable
 fun SettingsDialog(
     close: () -> Unit,
-    state: AppState
+    state: AppState,
+    typingWordState: WordState,
 ) {
     Dialog(
         title = "设置",
@@ -99,7 +101,7 @@ fun SettingsDialog(
                             )
                         }
                         "TextStyle" -> {
-                            SettingTestStyle(state)
+                            SettingTestStyle(state,typingWordState)
                         }
                     }
                 }
@@ -292,7 +294,8 @@ fun PrimaryColorChooser(
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun SettingTestStyle(
-    state: AppState
+    state: AppState,
+    typingState: WordState,
 ) {
     val fontFamily by remember {
         mutableStateOf(
@@ -380,7 +383,7 @@ fun SettingTestStyle(
                 val smallStyleList =
                     listOf("H5", "H6", "Subtitle1", "Subtitle2", "Body1", "Body2", "Button", "Caption", "Overline")
                 val bottom = computeBottom(textStyle = state.global.wordTextStyle, textHeight = textHeight,)
-                var previewWord = state.getCurrentWord().value
+                var previewWord = typingState.getCurrentWord().value
                 if (previewWord.isEmpty()) {
                     previewWord = "Typing"
                 }
@@ -454,7 +457,7 @@ fun SettingTestStyle(
                     }
                 )
             }
-            val currentWord = state.getCurrentWord()
+            val currentWord = typingState.getCurrentWord()
             Morphology(
                 word = currentWord,
                 isPlaying = false,

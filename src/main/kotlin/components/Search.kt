@@ -34,18 +34,22 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
 import kotlinx.serialization.ExperimentalSerializationApi
+import state.WordState
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
-fun Search(state: AppState){
+fun Search(
+    appState: AppState,
+    typingWordState: WordState,
+){
 
-    val vocabulary = state.vocabulary
+    val vocabulary = typingWordState.vocabulary
     var searchResult by remember{ mutableStateOf<Word?>(null) }
     var isPlayingAudio by remember { mutableStateOf(false) }
     /** 等宽字体*/
     val monospace by remember { mutableStateOf(FontFamily(Font("font/Inconsolata-Regular.ttf", FontWeight.Normal, FontStyle.Normal))) }
     val onDismissRequest :() -> Unit = {
-        state.searching = false
+        appState.searching = false
     }
     val audioPlayer = LocalAudioPlayerComponent.current
     val keyEvent: (KeyEvent) -> Boolean = {
@@ -57,13 +61,13 @@ fun Search(state: AppState){
             if (!isPlayingAudio && searchResult != null && searchResult!!.value.isNotEmpty()) {
                 val audioPath = getAudioPath(
                     word = searchResult!!.value,
-                    audioSet = state.audioSet,
-                    addToAudioSet = {state.audioSet.add(it)},
-                    pronunciation = state.typingWord.pronunciation
+                    audioSet = appState.audioSet,
+                    addToAudioSet = {appState.audioSet.add(it)},
+                    pronunciation = typingWordState.pronunciation
                 )
                 playAudio(
                     audioPath = audioPath,
-                    volume = state.global.audioVolume,
+                    volume = appState.global.audioVolume,
                     audioPlayerComponent = audioPlayer,
                     changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
                     setIsAutoPlay = {}
@@ -168,7 +172,8 @@ fun Search(state: AppState){
 
                         SearchResultInfo(
                             word = searchResult!!,
-                            state = state,
+                            appState = appState,
+                            typingState = typingWordState
                         )
 
                         if (searchResult!!.captions.isNotEmpty()) {
@@ -209,13 +214,13 @@ fun Search(state: AppState){
                                                     if (file.exists()) {
                                                         scope.launch {
                                                             play(
-                                                                window = state.videoPlayerWindow,
+                                                                window = appState.videoPlayerWindow,
                                                                 setIsPlaying = {
                                                                     isPlaying = it
                                                                 },
-                                                                volume = state.global.videoVolume,
+                                                                volume = appState.global.videoVolume,
                                                                 playTriple = playTriple,
-                                                                videoPlayerComponent = state.videoPlayerComponent,
+                                                                videoPlayerComponent = appState.videoPlayerComponent,
                                                                 bounds = playerBounds
                                                             )
                                                         }
@@ -277,13 +282,13 @@ fun Search(state: AppState){
                                                     if (file.exists()) {
                                                         scope.launch {
                                                             play(
-                                                                window = state.videoPlayerWindow,
+                                                                window = appState.videoPlayerWindow,
                                                                 setIsPlaying = {
                                                                     isPlaying = it
                                                                 },
-                                                                volume = state.global.videoVolume,
+                                                                volume = appState.global.videoVolume,
                                                                 playTriple = playTriple,
-                                                                videoPlayerComponent = state.videoPlayerComponent,
+                                                                videoPlayerComponent = appState.videoPlayerComponent,
                                                                 bounds = playerBounds
                                                             )
                                                         }

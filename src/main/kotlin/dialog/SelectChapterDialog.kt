@@ -1,8 +1,8 @@
 package dialog
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -23,21 +23,17 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import data.Word
-import kotlinx.serialization.ExperimentalSerializationApi
-import state.AppState
 import state.MemoryStrategy
+import state.WordState
 
 /**
  * 选择章节
  */
-@OptIn(
-    ExperimentalSerializationApi::class
-)
 @ExperimentalComposeUiApi
 @Composable
 fun SelectChapterDialog(
     close:() -> Unit,
-    state: AppState,
+    typingWordState: WordState,
     isMultiple:Boolean
 ) {
     Dialog(
@@ -63,7 +59,7 @@ fun SelectChapterDialog(
                     if(isMultiple){
                         mutableStateListOf()
                     }else{
-                        mutableStateListOf(state.typingWord.chapter)
+                        mutableStateListOf(typingWordState.chapter)
                     }
                 }
 
@@ -73,10 +69,10 @@ fun SelectChapterDialog(
                         checkedChapters.forEach { chapter ->
                             val start = chapter * 20 - 20
                             var end = chapter * 20
-                            if(end > state.vocabulary.wordList.size){
-                                end = state.vocabulary.wordList.size
+                            if(end > typingWordState.vocabulary.wordList.size){
+                                end = typingWordState.vocabulary.wordList.size
                             }
-                            val subList = state.vocabulary.wordList.subList(start, end)
+                            val subList = typingWordState.vocabulary.wordList.subList(start, end)
                             list.addAll(subList)
                         }
                         list
@@ -102,7 +98,7 @@ fun SelectChapterDialog(
                 Row(modifier = Modifier.align(Alignment.Center).padding(top = 33.dp, bottom = 55.dp)) {
                     Chapters(
                         checkedChapters = checkedChapters,
-                        size = state.vocabulary.size,
+                        size = typingWordState.vocabulary.size,
                         isMultiple = isMultiple,
                         onChapterSelected = {
                             if(!isMultiple){
@@ -122,22 +118,22 @@ fun SelectChapterDialog(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     confirm = {
                         if(isMultiple){
-                            if(state.memoryStrategy != MemoryStrategy.Review && state.memoryStrategy != MemoryStrategy.Dictation){
-                                state.hiddenInfo()
+                            if(typingWordState.memoryStrategy != MemoryStrategy.Review && typingWordState.memoryStrategy != MemoryStrategy.Dictation){
+                                typingWordState.hiddenInfo()
                             }
 
-                            state.memoryStrategy = MemoryStrategy.Review
-                            state.wrongWords.clear()
-                            state.reviewWords.clear()
-                            state.reviewWords.addAll(selectedWords.value.shuffled())
-                            state.dictationIndex = 0
+                            typingWordState.memoryStrategy = MemoryStrategy.Review
+                            typingWordState.wrongWords.clear()
+                            typingWordState.reviewWords.clear()
+                            typingWordState.reviewWords.addAll(selectedWords.value.shuffled())
+                            typingWordState.dictationIndex = 0
 
                         }else{
                             val chapter = checkedChapters.first()
-                            if (chapter == 0) state.typingWord.chapter = 1
-                            state.typingWord.chapter = chapter
-                            state.typingWord.index = (chapter - 1) * 20
-                            state.saveTypingWordState()
+                            if (chapter == 0) typingWordState.chapter = 1
+                            typingWordState.chapter = chapter
+                            typingWordState.index = (chapter - 1) * 20
+                            typingWordState.saveTypingWordState()
                         }
                             close()
 

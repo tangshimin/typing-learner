@@ -33,6 +33,7 @@ import player.play
 import data.*
 import kotlinx.coroutines.launch
 import state.AppState
+import state.WordState
 import state.getResourcesFile
 import java.awt.Rectangle
 import java.io.File
@@ -51,6 +52,7 @@ import javax.swing.filechooser.FileSystemView
 fun LinkCaptionDialog(
     word: Word,
     state: AppState,
+    typingWordState: WordState,
     setLinkSize: (Int) -> Unit,
     close: () -> Unit
 ) {
@@ -81,6 +83,7 @@ fun LinkCaptionDialog(
                 Column(Modifier.width(IntrinsicSize.Max).align(Alignment.Center)) {
                     EditingCaptions(
                         state = state,
+                        typingWordState = typingWordState,
                         setLinkSize = { setLinkSize(it) },
                         word = word
                     )
@@ -270,8 +273,8 @@ fun LinkCaptionDialog(
                                                 }
                                             }
                                             setLinkSize(word.externalCaptions.size)
-                                            state.vocabulary.wordList.removeAt(index)
-                                            state.vocabulary.wordList.add(index, word)
+                                            typingWordState.vocabulary.wordList.removeAt(index)
+                                            typingWordState.vocabulary.wordList.add(index, word)
                                         }
                                     }, modifier = Modifier.padding(start = 10.dp)) {
                                         Text("添加")

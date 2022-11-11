@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import data.Word
 import kotlinx.coroutines.launch
 import state.AppState
+import state.WordState
 import state.getAudioDirectory
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -140,6 +141,7 @@ fun AudioButton(
 fun AudioButton(
     word: Word,
     state:AppState,
+    typingState: WordState,
     volume: Float,
     pronunciation: String,
 ) {
@@ -153,7 +155,7 @@ fun AudioButton(
                 word = word.value,
                 audioSet = state.audioSet,
                 addToAudioSet = {state.audioSet.add(it)},
-                pronunciation = state.typingWord.pronunciation
+                pronunciation = typingState.pronunciation
             )
             playAudio(audioPath, volume,  audioPlayerComponent,
                 changePlayerState = { isPlaying = it },

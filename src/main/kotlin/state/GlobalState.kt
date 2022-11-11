@@ -37,7 +37,7 @@ data class GlobalData(
     val frq:Int = 1000
 )
 
-/** 全局的可观察状态 */
+/** 全局状态的需要持久化的部分 */
 @OptIn(ExperimentalSerializationApi::class)
 class GlobalState(globalData: GlobalData) {
     /**

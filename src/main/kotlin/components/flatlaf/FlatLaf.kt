@@ -1,11 +1,8 @@
 package components.flatlaf
 
-import androidx.compose.runtime.Composable
 import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.FlatLightLaf
-import kotlinx.serialization.ExperimentalSerializationApi
-import state.AppState
 import java.awt.Color
 import java.awt.Font
 import java.awt.Insets
@@ -19,8 +16,8 @@ import javax.swing.border.LineBorder
 /**
  * 初始化 FlatLaf 和文件选择器
  */
-fun InitializeFileChooser(darkTheme: Boolean): FutureTask<JFileChooser> {
-    InitializeFlatLaf(darkTheme)
+fun initializeFileChooser(darkTheme: Boolean): FutureTask<JFileChooser> {
+    initializeFlatLaf(darkTheme)
     return setupFileChooser()
 }
 
@@ -38,7 +35,7 @@ fun setupFileChooser(): FutureTask<JFileChooser> {
 /**
  * 初始化 FlatLaf
  */
-fun InitializeFlatLaf(darkTheme: Boolean) {
+fun initializeFlatLaf(darkTheme: Boolean) {
     if (darkTheme) FlatDarkLaf.setup()
     else FlatLightLaf.setup()
     UIManager.put("TitlePane.showIcon", false)
@@ -54,9 +51,7 @@ fun InitializeFlatLaf(darkTheme: Boolean) {
 /**
  * 更新 FlatLaf
  */
-@OptIn(ExperimentalSerializationApi::class)
-@Composable
-fun UpdateFlatLaf(darkTheme: Boolean, state: AppState) {
+fun updateFlatLaf(darkTheme: Boolean) {
     if (darkTheme) {
         FlatDarkLaf.setup()
         UIManager.put("TitlePane.unifiedBackground", false)
@@ -105,7 +100,7 @@ fun UpdateFlatLaf(darkTheme: Boolean, state: AppState) {
         // Panel
 //        UIManager.put("Panel.background", Color.WHITE)
     }
-    state.futureFileChooser = setupFileChooser()
+
     FlatLaf.updateUI()
 }
 

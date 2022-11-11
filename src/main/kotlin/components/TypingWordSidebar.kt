@@ -22,6 +22,7 @@ import player.isMacOS
 import player.isWindows
 import state.AppState
 import state.TypingType
+import state.WordState
 import theme.createColors
 
 /**
@@ -31,7 +32,10 @@ import theme.createColors
     kotlinx.serialization.ExperimentalSerializationApi::class, androidx.compose.ui.ExperimentalComposeUiApi::class
 )
 @Composable
-fun TypingWordSidebar(state: AppState) {
+fun TypingWordSidebar(
+    state: AppState,
+    typingWordState: WordState,
+) {
 
     if (state.openSettings) {
         val scope = rememberCoroutineScope()
@@ -122,11 +126,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.wordVisible,
+                        checked = typingWordState.wordVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.wordVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.wordVisible = it
+                                typingWordState.saveTypingWordState()
                             }
                         },
                     )
@@ -148,11 +152,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.phoneticVisible,
+                        checked = typingWordState.phoneticVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.phoneticVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.phoneticVisible = it
+                                typingWordState.saveTypingWordState()
                             }
                         },
 
@@ -175,11 +179,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.morphologyVisible,
+                        checked = typingWordState.morphologyVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.morphologyVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.morphologyVisible = it
+                                typingWordState.saveTypingWordState()
                             }
 
                         },
@@ -202,11 +206,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.definitionVisible,
+                        checked = typingWordState.definitionVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.definitionVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.definitionVisible = it
+                                typingWordState.saveTypingWordState()
                             }
                         },
                     )
@@ -228,11 +232,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.translationVisible,
+                        checked = typingWordState.translationVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.translationVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.translationVisible = it
+                                typingWordState.saveTypingWordState()
                             }
 
                         },
@@ -255,11 +259,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.subtitlesVisible,
+                        checked = typingWordState.subtitlesVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.subtitlesVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.subtitlesVisible = it
+                                typingWordState.saveTypingWordState()
                             }
 
                         },
@@ -341,11 +345,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.isPlaySoundTips,
+                        checked = typingWordState.isPlaySoundTips,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.isPlaySoundTips = it
-                                state.saveTypingWordState()
+                                typingWordState.isPlaySoundTips = it
+                                typingWordState.saveTypingWordState()
                             }
                         },
 
@@ -361,11 +365,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.isAuto,
+                        checked = typingWordState.isAuto,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.isAuto = it
-                                state.saveTypingWordState()
+                                typingWordState.isAuto = it
+                                typingWordState.saveTypingWordState()
                             }
 
                         },
@@ -381,11 +385,11 @@ fun TypingWordSidebar(state: AppState) {
                     Spacer(Modifier.width(15.dp))
                     Switch(
                         colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colors.primary),
-                        checked = state.typingWord.externalSubtitlesVisible,
+                        checked = typingWordState.externalSubtitlesVisible,
                         onCheckedChange = {
                             scope.launch {
-                                state.typingWord.externalSubtitlesVisible = it
-                                state.saveTypingWordState()
+                                typingWordState.externalSubtitlesVisible = it
+                                typingWordState.saveTypingWordState()
                             }
                         },
                     )
@@ -421,9 +425,10 @@ fun TypingWordSidebar(state: AppState) {
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("提示音效")
-                                    Slider(value = state.typingWord.soundTipsVolume, onValueChange = {
+                                    Slider(value = typingWordState.soundTipsVolume, onValueChange = {
                                         Thread(Runnable {
-                                            state.typingWord.soundTipsVolume = it
+                                            typingWordState.soundTipsVolume = it
+                                            typingWordState.saveTypingWordState()
                                         }).start()
                                     })
                                 }
@@ -462,8 +467,8 @@ fun TypingWordSidebar(state: AppState) {
                 ) {
                     Text("自动发音", color = MaterialTheme.colors.onBackground)
                     Spacer(Modifier.width(35.dp))
-                    var expanded by remember { mutableStateOf(false) }
-                    val selectedText = when (state.typingWord.pronunciation) {
+                    var expand by remember { mutableStateOf(false) }
+                    val selectedText = when (typingWordState.pronunciation) {
                         "us" -> "美音"
                         "uk" -> "英音"
                         "jp" -> "日语"
@@ -471,7 +476,7 @@ fun TypingWordSidebar(state: AppState) {
                     }
                     Box {
                         OutlinedButton(
-                            onClick = { expanded = true },
+                            onClick = { expand = true },
                             modifier = Modifier
                                 .width(87.dp)
                                 .background(Color.Transparent)
@@ -481,18 +486,18 @@ fun TypingWordSidebar(state: AppState) {
                             Icon(Icons.Default.ExpandMore, contentDescription = "Localized description")
                         }
                         DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                            expanded = expand,
+                            onDismissRequest = { expand = false },
                             modifier = Modifier.width(87.dp)
                                 .height(140.dp)
                         ) {
-                            if (state.vocabulary.language == "english") {
+                            if (typingWordState.vocabulary.language == "english") {
                                 DropdownMenuItem(
                                     onClick = {
                                         scope.launch {
-                                            state.typingWord.pronunciation = "uk"
-                                            state.saveTypingWordState()
-                                            expanded = false
+                                            typingWordState.pronunciation = "uk"
+                                            typingWordState.saveTypingWordState()
+                                            expand = false
                                         }
                                     },
                                     modifier = Modifier.width(87.dp).height(40.dp)
@@ -502,9 +507,9 @@ fun TypingWordSidebar(state: AppState) {
                                 DropdownMenuItem(
                                     onClick = {
                                         scope.launch {
-                                            state.typingWord.pronunciation = "us"
-                                            state.saveTypingWordState()
-                                            expanded = false
+                                            typingWordState.pronunciation = "us"
+                                            typingWordState.saveTypingWordState()
+                                            expand = false
                                         }
                                     },
                                     modifier = Modifier.width(87.dp).height(40.dp)
@@ -513,13 +518,13 @@ fun TypingWordSidebar(state: AppState) {
                                 }
                             }
 
-                            if (state.vocabulary.language == "japanese") {
+                            if (typingWordState.vocabulary.language == "japanese") {
                                 DropdownMenuItem(
                                     onClick = {
                                         scope.launch {
-                                            state.typingWord.pronunciation = "jp"
-                                            state.saveTypingWordState()
-                                            expanded = false
+                                            typingWordState.pronunciation = "jp"
+                                            typingWordState.saveTypingWordState()
+                                            expand = false
                                         }
                                     },
                                     modifier = Modifier.width(87.dp).height(40.dp)
@@ -531,9 +536,9 @@ fun TypingWordSidebar(state: AppState) {
                             DropdownMenuItem(
                                 onClick = {
                                     scope.launch {
-                                        state.typingWord.pronunciation = "false"
-                                        state.saveTypingWordState()
-                                        expanded = false
+                                        typingWordState.pronunciation = "false"
+                                        typingWordState.saveTypingWordState()
+                                        expand = false
                                     }
                                 },
                                 modifier = Modifier.width(87.dp).height(40.dp)

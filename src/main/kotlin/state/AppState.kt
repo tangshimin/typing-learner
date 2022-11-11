@@ -5,8 +5,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
-import components.flatlaf.InitializeFileChooser
-import data.Word
+import components.flatlaf.initializeFileChooser
 import data.getHardVocabularyFile
 import data.loadMutableVocabulary
 import data.loadMutableVocabularyByName
@@ -20,7 +19,6 @@ import kotlinx.serialization.json.Json
 import player.createMediaPlayerComponent
 import player.isMacOS
 import player.isWindows
-import state.MemoryStrategy.*
 import theme.createColors
 import java.io.File
 import java.time.LocalDateTime
@@ -30,18 +28,15 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
-/** 状态容器 */
+/** 所有界面共享的状态 */
 @ExperimentalSerializationApi
 class AppState {
 
-    /** 所有界面共享的状态 */
+    /** 全局状态里需要持久化的状态 */
     var global: GlobalState = loadGlobalState()
 
     /** Material 颜色 */
     var colors by mutableStateOf(createColors(global.isDarkTheme, global.primaryColor))
-
-    /** 记忆单词的配置文件保存的状态 */
-    var typingWord: WordState = loadWordState()
 
     /** 视频播放窗口 */
     var videoPlayerWindow = createVideoPlayerWindow()
@@ -50,34 +45,13 @@ class AppState {
     var videoPlayerComponent = createMediaPlayerComponent()
 
     /** 文件选择器，如果不提前加载反应会很慢 */
-    var futureFileChooser: FutureTask<JFileChooser> = InitializeFileChooser(global.isDarkTheme)
-
-    /** 当前正在学习的词库 */
-    var vocabulary = loadMutableVocabulary(typingWord.vocabularyPath)
+    var futureFileChooser: FutureTask<JFileChooser> = initializeFileChooser(global.isDarkTheme)
 
     /** 困难词库 */
     var hardVocabulary = loadMutableVocabularyByName("HardVocabulary")
 
     /** 最近生成的词库列表 */
     var recentList = readRecentList()
-
-    /** 记忆单词界面的记忆策略 */
-    var memoryStrategy by mutableStateOf(Normal)
-
-    /** 要听写的单词 */
-    val dictationWords = mutableStateListOf<Word>()
-
-    /** 听写单词时的索引 */
-    var dictationIndex by mutableStateOf(0)
-
-    /** 要听写复习的单词 */
-    val reviewWords = mutableStateListOf<Word>()
-
-    /** 听写错误的单词 */
-    val wrongWords = mutableStateListOf<Word>()
-
-    /** 进入听写模式之前需要保存变量 `typing` 的一些状态,退出听写模式后恢复 */
-    private val typingWordStateMap = mutableStateMapOf<String, Boolean>()
 
     /** 打开设置 */
     var openSettings by mutableStateOf(false)
@@ -136,25 +110,6 @@ class AppState {
     }
 
 
-    /** 加载应用记忆单词界面的设置信息 */
-    private fun loadWordState(): WordState {
-        val typingWordSettings = getWordSettingsFile()
-        return if (typingWordSettings.exists()) {
-            try {
-                val decodeFormat = Json { ignoreUnknownKeys = true }
-                val dataWordState = decodeFormat.decodeFromString<DataWordState>(typingWordSettings.readText())
-                WordState(dataWordState)
-            } catch (exception: Exception) {
-                FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingWordSettings")
-                WordState(DataWordState())
-            }
-
-        } else {
-            WordState(DataWordState())
-        }
-    }
-
     /** 初始化视频播放窗口 */
     @OptIn(ExperimentalComposeUiApi::class)
     private fun createVideoPlayerWindow(): JFrame {
@@ -201,156 +156,30 @@ class AppState {
         }
     }
 
-    /** 保存记忆单词的设置信息 */
-    fun saveTypingWordState() {
-        // 只有在正常记忆单词和复习错误单词时的状态改变才需要持久化
-        if (memoryStrategy != Dictation && memoryStrategy != Review) {
-            runBlocking {
-                launch {
-                    val dataWordState = DataWordState(
-                        typingWord.wordVisible,
-                        typingWord.phoneticVisible,
-                        typingWord.morphologyVisible,
-                        typingWord.definitionVisible,
-                        typingWord.translationVisible,
-                        typingWord.subtitlesVisible,
-                        typingWord.isPlaySoundTips,
-                        typingWord.soundTipsVolume,
-                        typingWord.pronunciation,
-                        typingWord.isAuto,
-                        typingWord.index,
-                        typingWord.hardVocabularyIndex,
-                        typingWord.vocabularyName,
-                        typingWord.vocabularyPath,
-                        typingWord.externalSubtitlesVisible,
-                    )
-
-                    val json = encodeBuilder.encodeToString(dataWordState)
-                    val settings = getWordSettingsFile()
-                    settings.writeText(json)
-                }
-            }
-        }
-
-
-    }
-
-    /** 获得当前单词 */
-    fun getCurrentWord(): Word {
-
-        return when (memoryStrategy){
-
-            Normal -> getWord(typingWord.index)
-
-            Dictation -> dictationWords[dictationIndex]
-
-            Review -> reviewWords[dictationIndex]
-
-            NormalReviewWrong -> wrongWords[dictationIndex]
-
-            DictationReviewWrong -> wrongWords[dictationIndex]
-        }
-
-    }
-
-    /** 根据索引返回单词 */
-    private fun getWord(index: Int): Word {
-        val size = vocabulary.wordList.size
-        return if (index in 0 until size) {
-            vocabulary.wordList[index]
-        } else {
-            // 如果用户使用编辑器修改了索引，并且不在单词列表的范围以内，就把索引改成0。
-            typingWord.index = 0
-            saveTypingWordState()
-            vocabulary.wordList[0]
-        }
-
-    }
-
-
-    /**
-     * 为听写模式创建一个随机词汇表
-    - 伪代码
-    - 1 -> 0,19
-    - 2 -> 20,39
-    - 3 -> 40,59
-    - if chapter == 2
-    - start = 2 * 20 -20, end = 2 * 20  -1
-    - if chapter == 3
-    - start = 3 * 20 -20, end = 3 * 20 - 1
-     */
-    fun generateDictationWords(currentWord: String): List<Word> {
-        val start = typingWord.chapter * 20 - 20
-        var end = typingWord.chapter * 20
-        if(end > vocabulary.wordList.size){
-            end = vocabulary.wordList.size
-        }
-        var list = vocabulary.wordList.subList(start, end).shuffled()
-        // 如果打乱顺序的列表的第一个单词，和当前章节的最后一个词相等，就不会触发重组
-        while (list[0].value == currentWord) {
-            list = vocabulary.wordList.subList(start, end).shuffled()
-        }
-        return list
-    }
-
-    /** 进入听写模式，进入听写模式要保存好当前的状态，退出听写模式后再恢复 */
-    fun hiddenInfo() {
-        // 先保存状态
-        typingWordStateMap["isAuto"] = typingWord.isAuto
-        typingWordStateMap["wordVisible"] = typingWord.wordVisible
-        typingWordStateMap["phoneticVisible"] = typingWord.phoneticVisible
-        typingWordStateMap["definitionVisible"] = typingWord.definitionVisible
-        typingWordStateMap["morphologyVisible"] = typingWord.morphologyVisible
-        typingWordStateMap["translationVisible"] = typingWord.translationVisible
-        typingWordStateMap["subtitlesVisible"] = typingWord.subtitlesVisible
-        // 再改变状态
-        typingWord.isAuto = true
-        typingWord.wordVisible = false
-        typingWord.phoneticVisible = false
-        typingWord.definitionVisible = false
-        typingWord.morphologyVisible = false
-        typingWord.translationVisible = false
-        typingWord.subtitlesVisible = false
-
-    }
-
-    /** 退出听写模式，恢复应用状态 */
-    fun showInfo(clear:Boolean = true) {
-        // 恢复状态
-        typingWord.isAuto = typingWordStateMap["isAuto"]!!
-        typingWord.wordVisible = typingWordStateMap["wordVisible"]!!
-        typingWord.phoneticVisible = typingWordStateMap["phoneticVisible"]!!
-        typingWord.definitionVisible = typingWordStateMap["definitionVisible"]!!
-        typingWord.morphologyVisible = typingWordStateMap["morphologyVisible"]!!
-        typingWord.translationVisible = typingWordStateMap["translationVisible"]!!
-        typingWord.subtitlesVisible = typingWordStateMap["subtitlesVisible"]!!
-
-        if(clear){
-            dictationWords.clear()
-        }
-
-    }
-
     /** 改变词库 */
-    fun changeVocabulary(file: File,index: Int) {
-        val newVocabulary = loadMutableVocabulary(file.absolutePath)
+    fun changeVocabulary(
+        vocabularyFile: File,
+        typingWord: WordState,
+        index: Int
+    ) {
+        val newVocabulary = loadMutableVocabulary(vocabularyFile.absolutePath)
         if(newVocabulary.wordList.size>0){
 
             // 把困难词库的索引保存在 typingWord.
-            if(vocabulary.name == "HardVocabulary"){
+            if(typingWord.vocabulary.name == "HardVocabulary"){
                 typingWord.hardVocabularyIndex = typingWord.index
             }else{
                 // 保存当前词库的索引到最近列表,
-                saveToRecentList(vocabulary.name, typingWord.vocabularyPath,typingWord.index)
+                saveToRecentList(typingWord.vocabulary.name, typingWord.vocabularyPath,typingWord.index)
             }
 
-            vocabulary = newVocabulary
-            typingWord.vocabularyName = file.nameWithoutExtension
-            typingWord.vocabularyPath = file.absolutePath
+            typingWord.vocabulary = newVocabulary
+            typingWord.vocabularyName = vocabularyFile.nameWithoutExtension
+            typingWord.vocabularyPath = vocabularyFile.absolutePath
             typingWord.chapter = (index / 20) + 1
             typingWord.index = index
             vocabularyChanged = true
-            saveTypingWordState()
+            typingWord.saveTypingWordState()
         }
     }
 
@@ -364,16 +193,6 @@ class AppState {
         return index
     }
 
-    /** 保存当前的词库 */
-    fun saveCurrentVocabulary() {
-        runBlocking {
-            launch {
-                val json = encodeBuilder.encodeToString(vocabulary.serializeVocabulary)
-                val file = getResourcesFile(typingWord.vocabularyPath)
-                file.writeText(json)
-            }
-        }
-    }
     /** 保存困难词库 */
     fun saveHardVocabulary(){
         runBlocking {
@@ -555,11 +374,6 @@ private fun getGlobalSettingsFile(): File {
     return File(settingsDir, "AppSettings.json")
 }
 
-/** 获取记忆单词的配置文件 */
-private fun getWordSettingsFile(): File {
-    val settingsDir = getSettingsDirectory()
-    return File(settingsDir, "TypingWordSettings.json")
-}
 
 /**
  * 获得资源文件

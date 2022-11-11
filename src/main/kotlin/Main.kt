@@ -25,8 +25,8 @@ import components.Search
 import components.TypingSubtitles
 import components.TypingText
 import components.TypingWord
-import components.flatlaf.UpdateFlatLaf
-import data.MutableVocabulary
+import components.flatlaf.updateFlatLaf
+import components.flatlaf.setupFileChooser
 import data.VocabularyType
 import data.getHardVocabularyFile
 import dialog.*
@@ -54,10 +54,15 @@ const val version = "v1.4.3"
 )
 fun main() = application {
     var isOpen by remember { mutableStateOf(true) }
-    /** 自动检查更新，只在启动时执行一次 */
-    var uptdated by remember { mutableStateOf(false) }
-    val state = rememberAppState()
-    UpdateFlatLaf(state.global.isDarkTheme, state)
+
+    val appState = rememberAppState()
+
+    // 改变主题后，更新菜单栏的样式
+    LaunchedEffect(appState.global.isDarkTheme){
+        updateFlatLaf(appState.global.isDarkTheme)
+        appState.futureFileChooser = setupFileChooser()
+    }
+
     CompositionLocalProvider(
         LocalAudioPlayerComponent provides rememberAudioPlayerComponent(),
         LocalCtrl provides rememberCtrl(),
@@ -67,13 +72,13 @@ fun main() = application {
         val close: () -> Unit = {
             isOpen = false
             audioPlayerComponent.mediaPlayer().release()
-            state.videoPlayerComponent.mediaPlayer().release()
+            appState.videoPlayerComponent.mediaPlayer().release()
         }
 
         val windowState = rememberWindowState(
-            position = state.global.position,
-            placement = state.global.placement,
-            size = state.global.size,
+            position = appState.global.position,
+            placement = appState.global.placement,
+            size = appState.global.size,
         )
 
 
@@ -85,27 +90,33 @@ fun main() = application {
                 state = windowState,
                 onCloseRequest = {close() },
             ) {
-                MaterialTheme(colors = state.colors) {
-                    state.global.wordFontSize = computeFontSize(state.global.wordTextStyle)
-                    state.global.detailFontSize = computeFontSize(state.global.detailTextStyle)
-                    WindowMenuBar(state = state, close = {close()})
-                    MenuDialogs(state)
+                MaterialTheme(colors = appState.colors) {
+                    appState.global.wordFontSize = computeFontSize(appState.global.wordTextStyle)
+                    appState.global.detailFontSize = computeFontSize(appState.global.detailTextStyle)
+                    val wordState = rememberWordState()
+                    WindowMenuBar(
+                        appState = appState,
+                        typingState = wordState,
+                        close = {close()}
+                    )
+                    MenuDialogs(appState)
 
-                    if(state.searching){
-                        Search(state = state)
+                    if(appState.searching){
+                        Search(appState = appState,typingWordState = wordState)
                     }
-                    when (state.global.type) {
+                    when (appState.global.type) {
                         WORD -> {
-                            title = computeTitle(state.typingWord,vocabulary = state.vocabulary)
+                            title = computeTitle(wordState)
                             // 显示器缩放
                             val density = LocalDensity.current.density
                             // 视频播放器的位置，大小
-                            val videoBounds = computeVideoBounds(windowState, state.openSettings,density)
+                            val videoBounds = computeVideoBounds(windowState, appState.openSettings,density)
 
                             TypingWord(
                                 window = window,
                                 title = title,
-                                state = state,
+                                appState = appState,
+                                typingWord = wordState,
                                 videoBounds = videoBounds,
                             )
                         }
@@ -114,22 +125,22 @@ fun main() = application {
                             title = computeTitle(subtitlesState)
                             TypingSubtitles(
                                 subtitlesState = subtitlesState,
-                                globalState = state.global,
+                                globalState = appState.global,
                                 saveSubtitlesState = { subtitlesState.saveTypingSubtitlesState() },
-                                saveGlobalState = { state.saveGlobalState() },
-                                setIsDarkTheme = { state.changeTheme(it) },
-                                backToHome = { state.backToHome() },
-                                isOpenSettings = state.openSettings,
-                                setIsOpenSettings = { state.openSettings = it },
+                                saveGlobalState = { appState.saveGlobalState() },
+                                setIsDarkTheme = { appState.changeTheme(it) },
+                                backToHome = { appState.backToHome() },
+                                isOpenSettings = appState.openSettings,
+                                setIsOpenSettings = { appState.openSettings = it },
                                 window = window,
                                 title = title,
-                                playerWindow = state.videoPlayerWindow,
-                                videoVolume = state.global.videoVolume,
-                                mediaPlayerComponent = state.videoPlayerComponent,
-                                futureFileChooser = state.futureFileChooser,
-                                openLoadingDialog = { state.openLoadingDialog()},
-                                closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                openSearch = {state.openSearch()},
+                                playerWindow = appState.videoPlayerWindow,
+                                videoVolume = appState.global.videoVolume,
+                                mediaPlayerComponent = appState.videoPlayerComponent,
+                                futureFileChooser = appState.futureFileChooser,
+                                openLoadingDialog = { appState.openLoadingDialog()},
+                                closeLoadingDialog = { appState.loadingFileChooserVisible = false },
+                                openSearch = {appState.openSearch()},
                             )
                         }
 
@@ -139,48 +150,50 @@ fun main() = application {
                             TypingText(
                                 title = title,
                                 window = window,
-                                globalState = state.global,
+                                globalState = appState.global,
                                 textState = textState,
                                 saveTextState = { textState.saveTypingTextState() },
-                                backToHome = { state.backToHome() },
-                                isOpenSettings = state.openSettings,
-                                setIsOpenSettings = {state.openSettings = it},
-                                setIsDarkTheme = { state.changeTheme(it) },
-                                futureFileChooser = state.futureFileChooser,
-                                openLoadingDialog = { state.openLoadingDialog()},
-                                closeLoadingDialog = { state.loadingFileChooserVisible = false },
-                                openSearch = {state.openSearch()},
+                                backToHome = { appState.backToHome() },
+                                isOpenSettings = appState.openSettings,
+                                setIsOpenSettings = {appState.openSettings = it},
+                                setIsDarkTheme = { appState.changeTheme(it) },
+                                futureFileChooser = appState.futureFileChooser,
+                                openLoadingDialog = { appState.openLoadingDialog()},
+                                closeLoadingDialog = { appState.loadingFileChooserVisible = false },
+                                openSearch = {appState.openSearch()},
                             )
                         }
                     }
                 }
+
+                //移动，或改变窗口后保存状态到磁盘
                 LaunchedEffect(windowState) {
                     snapshotFlow { windowState.size }
-                        .onEach{onWindowResize(windowState.size,state)}
+                        .onEach{onWindowResize(windowState.size,appState)}
                         .launchIn(this)
 
                     snapshotFlow { windowState.placement }
-                        .onEach {  onWindowPlacement(windowState.placement,state)}
+                        .onEach {  onWindowPlacement(windowState.placement,appState)}
                         .launchIn(this)
 
                     snapshotFlow { windowState.position }
-                        .onEach { onWindowRelocate(windowState.position,state) }
+                        .onEach { onWindowRelocate(windowState.position,appState) }
                         .launchIn(this)
                 }
 
+
                 /** 启动应用后，自动检查更新 */
                 LaunchedEffect(Unit){
-                    if(!uptdated && state.global.autoUpdate){
+                    if( appState.global.autoUpdate){
                         Timer("update",false).schedule(5000){
                             val result = autoDetectingUpdates(version)
-                            if(result.first && result.second != state.global.ignoreVersion){
-                                state.showUpdateDialog = true
-                                state.latestVersion = result.second
-                                state.releaseNote = result.third
+                            if(result.first && result.second != appState.global.ignoreVersion){
+                                appState.showUpdateDialog = true
+                                appState.latestVersion = result.second
+                                appState.releaseNote = result.third
                             }
                         }
                     }
-                    uptdated = true
                 }
             }
 
@@ -207,8 +220,8 @@ private fun onWindowPlacement(placement: WindowPlacement, state: AppState){
 }
 
 
-private fun computeTitle(typingWord: WordState,vocabulary: MutableVocabulary) :String{
-    return if (vocabulary.wordList.isNotEmpty()) {
+private fun computeTitle(typingWord: WordState) :String{
+    return if (typingWord.vocabulary.wordList.isNotEmpty()) {
         when (typingWord.vocabularyName) {
             "FamiliarVocabulary" -> {
                 "熟悉词库"
@@ -258,16 +271,17 @@ private fun computeTitle(textState: TextState) :String{
 @OptIn(ExperimentalSerializationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 private fun FrameWindowScope.WindowMenuBar(
-    state: AppState,
+    appState: AppState,
+    typingState:WordState,
     close: () -> Unit,
 ) = MenuBar {
     Menu("词库(V)", mnemonic = 'V') {
         Item("打开词库(O)", mnemonic = 'O', onClick = {
             if(isWindows()) {
-                state.loadingFileChooserVisible = true
+                appState.loadingFileChooserVisible = true
             }
             Thread(Runnable {
-                val fileChooser = state.futureFileChooser.get()
+                val fileChooser = appState.futureFileChooser.get()
                 fileChooser.dialogTitle = "选择词库"
                 fileChooser.fileSystemView = FileSystemView.getFileSystemView()
                 fileChooser.currentDirectory = getResourcesFile("vocabulary")
@@ -275,37 +289,41 @@ private fun FrameWindowScope.WindowMenuBar(
                 fileChooser.selectedFile = null
                 if (fileChooser.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     val file = fileChooser.selectedFile
-                    val index = state.findVocabularyIndex(file)
-                    state.changeVocabulary(file,index)
-                    state.global.type = WORD
-                    state.saveGlobalState()
-                    state.loadingFileChooserVisible = false
+                    val index = appState.findVocabularyIndex(file)
+                    appState.changeVocabulary(
+                        vocabularyFile = file,
+                        typingState,
+                        index
+                    )
+                    appState.global.type = WORD
+                    appState.saveGlobalState()
+                    appState.loadingFileChooserVisible = false
                 } else {
-                    state.loadingFileChooserVisible = false
+                    appState.loadingFileChooserVisible = false
                 }
             }).start()
         })
 
-        Item("困难词库(K)", enabled = state.hardVocabulary.wordList.isNotEmpty(), mnemonic = 'K',onClick = {
+        Item("困难词库(K)", enabled = appState.hardVocabulary.wordList.isNotEmpty(), mnemonic = 'K',onClick = {
             val file = getHardVocabularyFile()
-            state.changeVocabulary(file, state.typingWord.hardVocabularyIndex)
-            state.global.type = WORD
-            state.saveGlobalState()
+            appState.changeVocabulary(file, typingState,typingState.hardVocabularyIndex)
+            appState.global.type = WORD
+            appState.saveGlobalState()
         })
 
-        Menu("打开最近词库(R)",enabled = state.recentList.isNotEmpty(), mnemonic = 'R') {
-            for (i in 0 until state.recentList.size){
-                val recentItem = state.recentList.getOrNull(i)
+        Menu("打开最近词库(R)",enabled = appState.recentList.isNotEmpty(), mnemonic = 'R') {
+            for (i in 0 until appState.recentList.size){
+                val recentItem = appState.recentList.getOrNull(i)
                 if(recentItem!= null){
                     Item(text = recentItem.name, onClick = {
                         val recentFile = File(recentItem.path)
                         if (recentFile.exists()) {
-                            state.changeVocabulary(recentFile,recentItem.index)
-                            state.global.type = WORD
-                            state.saveGlobalState()
-                            state.loadingFileChooserVisible = false
+                            appState.changeVocabulary(recentFile,typingState, recentItem.index)
+                            appState.global.type = WORD
+                            appState.saveGlobalState()
+                            appState.loadingFileChooserVisible = false
                         } else {
-                            state.removeRecentItem(recentItem)
+                            appState.removeRecentItem(recentItem)
                             JOptionPane.showMessageDialog(null, "文件地址错误：\n${recentItem.path}")
                         }
 
@@ -317,34 +335,34 @@ private fun FrameWindowScope.WindowMenuBar(
 
         Separator()
         Item("合并词库(M)", mnemonic = 'M', onClick = {
-            state.mergeVocabulary = true
+            appState.mergeVocabulary = true
         })
         Item("过滤词库(F)", mnemonic = 'F', onClick = {
-            state.filterVocabulary = true
+            appState.filterVocabulary = true
         })
         Item("导入词库到熟悉词库(I)", mnemonic = 'F', onClick = {
-            state.importFamiliarVocabulary = true
+            appState.importFamiliarVocabulary = true
         })
         Separator()
         var showWordFrequency by remember { mutableStateOf(false) }
         Item("根据词频生成词库(C)", mnemonic = 'C', onClick = {showWordFrequency = true })
         if(showWordFrequency){
             WordFrequencyDialog(
-                futureFileChooser = state.futureFileChooser,
+                futureFileChooser = appState.futureFileChooser,
                 saveToRecentList = { name, path ->
-                    state.saveToRecentList(name, path,0)
+                    appState.saveToRecentList(name, path,0)
                 },
                 close = {showWordFrequency = false}
             )
         }
         Item("从文档生成词库(D)", mnemonic = 'D', onClick = {
-            state.generateVocabularyFromDocument = true
+            appState.generateVocabularyFromDocument = true
         })
         Item("从字幕生成词库(Z)", mnemonic = 'Z', onClick = {
-            state.generateVocabularyFromSubtitles = true
+            appState.generateVocabularyFromSubtitles = true
         })
         Item("从 MKV 视频生成词库(V)", mnemonic = 'V', onClick = {
-            state.generateVocabularyFromMKV = true
+            appState.generateVocabularyFromMKV = true
         })
         Separator()
         var showSettingsDialog by remember { mutableStateOf(false) }
@@ -352,14 +370,15 @@ private fun FrameWindowScope.WindowMenuBar(
         if(showSettingsDialog){
             SettingsDialog(
                 close = {showSettingsDialog = false},
-                state = state
+                state = appState,
+                typingWordState = typingState
             )
         }
         Separator()
         Item("退出(X)", mnemonic = 'X', onClick = { close() })
     }
     Menu("章节(C)", mnemonic = 'C') {
-        val enable = state.global.type == WORD
+        val enable = appState.global.type == WORD
         var showChapterDialog by remember { mutableStateOf(false) }
         Item(
             "选择章节(C)", mnemonic = 'C',
@@ -369,32 +388,32 @@ private fun FrameWindowScope.WindowMenuBar(
         if(showChapterDialog){
             SelectChapterDialog(
                 close = {showChapterDialog = false},
-                state = state,
+                typingWordState = typingState,
                 isMultiple = false
             )
         }
     }
     Menu("字幕(S)", mnemonic = 'S') {
-        val enableTypingSubtitles = (state.global.type != SUBTITLES)
+        val enableTypingSubtitles = (appState.global.type != SUBTITLES)
         Item(
             "抄写字幕(T)", mnemonic = 'T',
             enabled = enableTypingSubtitles,
             onClick = {
-                state.global.type = SUBTITLES
-                state.saveGlobalState()
+                appState.global.type = SUBTITLES
+                appState.saveGlobalState()
             },
         )
         var showLinkVocabulary by remember { mutableStateOf(false) }
         if (showLinkVocabulary) {
             LinkVocabularyDialog(
-                state = state,
+                state = appState,
                 close = {
                     showLinkVocabulary = false
                 }
             )
         }
         //如果当前词库类型为文档就启用
-        val enableLinkVocabulary = (state.vocabulary.type == VocabularyType.DOCUMENT && state.global.type == WORD)
+        val enableLinkVocabulary = (typingState.vocabulary.type == VocabularyType.DOCUMENT && appState.global.type == WORD)
         Item(
             "链接字幕词库(L)", mnemonic = 'L',
             enabled = enableLinkVocabulary,
@@ -404,9 +423,9 @@ private fun FrameWindowScope.WindowMenuBar(
         if(showLyricDialog){
             LyricToSubtitlesDialog(
                 close = {showLyricDialog = false},
-                futureFileChooser = state.futureFileChooser,
-                openLoadingDialog = {state.loadingFileChooserVisible = true},
-                closeLoadingDialog = {state.loadingFileChooserVisible = false}
+                futureFileChooser = appState.futureFileChooser,
+                openLoadingDialog = {appState.loadingFileChooserVisible = true},
+                closeLoadingDialog = {appState.loadingFileChooserVisible = false}
             )
         }
         Item(
@@ -416,22 +435,22 @@ private fun FrameWindowScope.WindowMenuBar(
         )
     }
     Menu("文本(T)", mnemonic = 'T') {
-        val enable = state.global.type != TEXT
+        val enable = appState.global.type != TEXT
         Item(
             "抄写文本(T)", mnemonic = 'T',
             enabled = enable,
             onClick = {
-                state.global.type = TEXT
-                state.saveGlobalState()
+                appState.global.type = TEXT
+                appState.saveGlobalState()
             },
         )
         var showTextFormatDialog by remember { mutableStateOf(false) }
         if(showTextFormatDialog){
             TextFormatDialog(
                 close = {showTextFormatDialog = false},
-            futureFileChooser= state.futureFileChooser,
-            openLoadingDialog = {state.loadingFileChooserVisible = true},
-            closeLoadingDialog = {state.loadingFileChooserVisible = false},
+            futureFileChooser= appState.futureFileChooser,
+            openLoadingDialog = {appState.loadingFileChooserVisible = true},
+            closeLoadingDialog = {appState.loadingFileChooserVisible = false},
             )
         }
         Item(
@@ -450,7 +469,7 @@ private fun FrameWindowScope.WindowMenuBar(
         if(showChapterDialog){
             SelectChapterDialog(
                 close = {showChapterDialog = false},
-                state = state,
+                typingWordState = typingState,
                 isMultiple = true
             )
         }
@@ -468,8 +487,8 @@ private fun FrameWindowScope.WindowMenuBar(
             )
         }
         Item("检查更新(U)", mnemonic = 'U', onClick = {
-            state.showUpdateDialog = true
-            state.latestVersion = ""
+            appState.showUpdateDialog = true
+            appState.latestVersion = ""
         })
         Item("捐赠", onClick = { donateDialogVisible = true })
         if(donateDialogVisible){

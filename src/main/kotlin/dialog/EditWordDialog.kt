@@ -38,6 +38,7 @@ import data.Word
 import kotlinx.coroutines.launch
 import player.isWindows
 import state.AppState
+import state.WordState
 import java.awt.Component
 import java.awt.Rectangle
 import java.io.File
@@ -58,6 +59,7 @@ import java.time.format.DateTimeFormatter
 fun EditWordDialog(
     word: Word,
     state: AppState,
+    wordState: WordState,
     save: (Word) -> Unit,
     close: () -> Unit
 ) {
@@ -185,16 +187,18 @@ fun EditWordDialog(
                     var linkSize by remember { mutableStateOf(word.externalCaptions.size) }
                     EditingCaptions(
                         state = state,
+                        typingWordState = wordState,
                         setLinkSize = { linkSize = it },
                         word = word
                     )
 
-                    if (state.vocabulary.type == VocabularyType.DOCUMENT && linkSize <= 3) {
+                    if (wordState.vocabulary.type == VocabularyType.DOCUMENT && linkSize <= 3) {
                         var isLink by remember { mutableStateOf(false) }
                         if (isLink && linkSize <= 3) {
                             LinkCaptionDialog(
                                 word = word,
                                 state = state,
+                                typingWordState = wordState,
                                 setLinkSize = { linkSize = it },
                                 close = { isLink = false }
                             )
@@ -276,11 +280,12 @@ fun EditWordDialog(
 @Composable
 fun EditingCaptions(
     state: AppState,
+    typingWordState: WordState,
     setLinkSize: (Int) -> Unit,
     word: Word
 ) {
     val scope = rememberCoroutineScope()
-    val playTripleMap = getPlayTripleMap(state, word)
+    val playTripleMap = getPlayTripleMap(typingWordState, word)
     playTripleMap.forEach { (index, playTriple) ->
         var captionContent = playTriple.first.content
         val relativeVideoPath = playTriple.second
@@ -347,14 +352,14 @@ fun EditingCaptions(
                         mediaPlayerComponent = state.videoPlayerComponent,
                         confirm = { (index, start, end) ->
                             scope.launch {
-                                if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                if (typingWordState.vocabulary.type == VocabularyType.DOCUMENT) {
                                     word.externalCaptions[index].start = secondsToString(start)
                                     word.externalCaptions[index].end = secondsToString(end)
                                 } else {
                                     word.captions[index].start = secondsToString(start)
                                     word.captions[index].end = secondsToString(end)
                                 }
-                                state.saveCurrentVocabulary()
+                                typingWordState.saveCurrentVocabulary()
                             }
                         },
                         close = { showSettingTimeLineDialog = false }
@@ -394,7 +399,7 @@ fun EditingCaptions(
                         confirm = {
                             scope.launch {
                                 // 在 EditDialog 界面中点击保存，会保存整个词库
-                                if (state.vocabulary.type == VocabularyType.DOCUMENT) {
+                                if (typingWordState.vocabulary.type == VocabularyType.DOCUMENT) {
                                     word.externalCaptions.removeAt(index)
                                 } else {
                                     word.captions.removeAt(index)
@@ -449,7 +454,7 @@ fun EditingCaptions(
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
  */
 @OptIn(
-    ExperimentalMaterialApi::class, kotlinx.serialization.ExperimentalSerializationApi::class,
+    kotlinx.serialization.ExperimentalSerializationApi::class,
     kotlinx.serialization.ExperimentalSerializationApi::class
 )
 @ExperimentalComposeUiApi
