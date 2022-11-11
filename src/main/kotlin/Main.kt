@@ -134,13 +134,14 @@ fun main() = application {
                         }
 
                         TEXT -> {
-                            title = computeTitle(state.typingText)
+                            val textState = rememberTextState()
+                            title = computeTitle(textState)
                             TypingText(
                                 title = title,
                                 window = window,
                                 globalState = state.global,
-                                textState = state.typingText,
-                                saveTextState = { state.saveTypingTextState() },
+                                textState = textState,
+                                saveTextState = { textState.saveTypingTextState() },
                                 backToHome = { state.backToHome() },
                                 isOpenSettings = state.openSettings,
                                 setIsOpenSettings = {state.openSettings = it},

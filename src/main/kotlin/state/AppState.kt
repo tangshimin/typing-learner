@@ -43,9 +43,6 @@ class AppState {
     /** 记忆单词的配置文件保存的状态 */
     var typingWord: WordState = loadWordState()
 
-    /** 抄写文本的可观察状态 */
-    var typingText: TextState = loadTextState()
-
     /** 视频播放窗口 */
     var videoPlayerWindow = createVideoPlayerWindow()
 
@@ -158,27 +155,6 @@ class AppState {
         }
     }
 
-
-    /** 加载抄写文本的配置信息 */
-    private fun loadTextState():TextState{
-        val typingTextSetting = getTextSettingsFile()
-        return if(typingTextSetting.exists()){
-            try{
-                val decodeFormat = Json { ignoreUnknownKeys = true }
-                val dataTextState = decodeFormat.decodeFromString<DataTextState>(typingTextSetting.readText())
-                TextState(dataTextState)
-            }catch (exception:Exception){
-                FlatLightLaf.setup()
-                JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingTextSetting")
-                TextState(DataTextState())
-            }
-
-        }else{
-            TextState(DataTextState())
-        }
-    }
-
-
     /** 初始化视频播放窗口 */
     @OptIn(ExperimentalComposeUiApi::class)
     private fun createVideoPlayerWindow(): JFrame {
@@ -257,23 +233,6 @@ class AppState {
         }
 
 
-    }
-
-
-    /** 保持抄写文本的配置信息 */
-    fun saveTypingTextState(){
-        runBlocking {
-            launch {
-                val dataTextState = DataTextState(
-                    typingText.textPath,
-                    typingText.currentIndex,
-                    typingText.firstVisibleItemIndex,
-                )
-                val json = encodeBuilder.encodeToString(dataTextState)
-                val typingTextSetting = getTextSettingsFile()
-                typingTextSetting.writeText(json)
-            }
-        }
     }
 
     /** 获得当前单词 */
@@ -600,13 +559,6 @@ private fun getGlobalSettingsFile(): File {
 private fun getWordSettingsFile(): File {
     val settingsDir = getSettingsDirectory()
     return File(settingsDir, "TypingWordSettings.json")
-}
-
-
-/** 获取抄写文本的配置文件 */
-private fun getTextSettingsFile():File{
-    val settingsDir = getSettingsDirectory()
-    return File(settingsDir, "TypingTextSettings.json")
 }
 
 /**

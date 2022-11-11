@@ -1,10 +1,16 @@
 package state
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import com.formdev.flatlaf.FlatLightLaf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+import javax.swing.JOptionPane
 
 /** 抄写文本界面的数据类 */
 @ExperimentalSerializationApi
@@ -27,4 +33,55 @@ class TextState(dataTextState: DataTextState){
 
     /** 正在抄写的那一页的第一行行数 */
     var firstVisibleItemIndex by mutableStateOf(dataTextState.firstVisibleItemIndex)
+
+    /** 保持抄写文本的配置信息 */
+    fun saveTypingTextState() {
+        val encodeBuilder = Json {
+            prettyPrint = true
+            encodeDefaults = true
+        }
+        runBlocking {
+            launch {
+                val dataTextState = DataTextState(
+                    textPath,
+                    currentIndex,
+                    firstVisibleItemIndex,
+                )
+                val json = encodeBuilder.encodeToString(dataTextState)
+                val typingTextSetting = getTextSettingsFile()
+                typingTextSetting.writeText(json)
+            }
+        }
+    }
+
+}
+
+@Composable
+fun rememberTextState():TextState = remember{
+    loadTextState()
+}
+
+/** 加载抄写文本的配置信息 */
+private fun loadTextState():TextState{
+    val typingTextSetting = getTextSettingsFile()
+    return if(typingTextSetting.exists()){
+        try{
+            val decodeFormat = Json { ignoreUnknownKeys = true }
+            val dataTextState = decodeFormat.decodeFromString<DataTextState>(typingTextSetting.readText())
+            TextState(dataTextState)
+        }catch (exception:Exception){
+            FlatLightLaf.setup()
+            JOptionPane.showMessageDialog(null, "设置信息解析错误，将使用默认设置。\n地址：$typingTextSetting")
+            TextState(DataTextState())
+        }
+
+    }else{
+        TextState(DataTextState())
+    }
+}
+
+/** 获取抄写文本的配置文件 */
+private fun getTextSettingsFile(): File {
+    val settingsDir = getSettingsDirectory()
+    return File(settingsDir, "TypingTextSettings.json")
 }
