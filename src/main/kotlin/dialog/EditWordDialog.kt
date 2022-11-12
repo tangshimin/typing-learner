@@ -691,7 +691,7 @@ fun SettingTimeLine(
                                     }
                                 }
                         ) {
-                            Text("播放")
+                            Text("预览")
                         }
 
 
