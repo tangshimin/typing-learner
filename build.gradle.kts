@@ -35,7 +35,9 @@ dependencies {
     implementation("org.apache.maven:maven-artifact:3.8.6")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.2")
     implementation("com.github.albfernandez:juniversalchardet:2.4.0")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    implementation("junit:junit:4.13.2")
+    implementation("org.junit.vintage:junit-vintage-engine:5.9.0")
+
     testImplementation(compose("org.jetbrains.compose.ui:ui-test-junit4"))
 }
 
