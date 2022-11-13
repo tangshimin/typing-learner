@@ -7,9 +7,9 @@ import com.matthewn4444.ebml.subtitles.SRTSubtitles
 import com.matthewn4444.ebml.subtitles.SSASubtitles
 import com.sun.jna.NativeLibrary
 import data.Caption
-import dialog.removeItalicSymbol
-import dialog.removeLocationInfo
-import dialog.replaceNewLine
+import ui.dialog.removeItalicSymbol
+import ui.dialog.removeLocationInfo
+import ui.dialog.replaceNewLine
 import org.mozilla.universalchardet.UniversalDetector
 import state.getResourcesFile
 import state.getSettingsDirectory

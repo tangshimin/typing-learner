@@ -1,4 +1,4 @@
-package dialog
+package ui.dialog
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme

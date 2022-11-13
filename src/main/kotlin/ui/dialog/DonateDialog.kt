@@ -1,4 +1,4 @@
-package dialog
+package ui.dialog
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

@@ -1,4 +1,4 @@
-package dialog
+package ui.dialog
 
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar

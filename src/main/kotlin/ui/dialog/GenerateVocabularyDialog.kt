@@ -1,4 +1,4 @@
-package dialog
+package ui.dialog
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.*
@@ -54,7 +54,7 @@ import player.parseTrackList
 import data.*
 import data.Dictionary
 import data.VocabularyType.*
-import dialog.FilterState.*
+import ui.dialog.FilterState.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable

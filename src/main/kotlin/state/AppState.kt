@@ -9,7 +9,7 @@ import ui.flatlaf.initializeFileChooser
 import data.getHardVocabularyFile
 import data.loadMutableVocabulary
 import data.loadMutableVocabularyByName
-import dialog.RecentItem
+import ui.dialog.RecentItem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi

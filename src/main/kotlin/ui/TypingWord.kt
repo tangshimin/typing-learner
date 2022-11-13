@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import data.*
-import dialog.ChapterFinishedDialog
-import dialog.ConfirmDialog
-import dialog.EditWordDialog
-import dialog.SelectChapterDialog
+import ui.dialog.ChapterFinishedDialog
+import ui.dialog.ConfirmDialog
+import ui.dialog.EditWordDialog
+import ui.dialog.SelectChapterDialog
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*

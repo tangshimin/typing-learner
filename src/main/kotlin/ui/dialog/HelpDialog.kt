@@ -1,4 +1,4 @@
-package dialog
+package ui.dialog
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -150,13 +150,27 @@ fun HelpDialog(close: () -> Unit) {
                     Divider(Modifier.width(1.dp).fillMaxHeight())
 
                     when(currentPage){
-                        "document" -> {DocumentPage()}
-                        "subtitles" -> {SubtitlesPage()}
-                        "matroska" -> {MatroskaPage()}
-                        "youtube" -> {YouTubeDownloadPage()}
-                        "linkVocabulary" -> {LinkVocabularyPage()}
-                        "shortcutKey" -> {ShortcutKeyPage()}
-                        "specialDirectory" -> {SpecialDirectory()}
+                        "document" -> {
+                            DocumentPage()
+                        }
+                        "subtitles" -> {
+                            SubtitlesPage()
+                        }
+                        "matroska" -> {
+                            MatroskaPage()
+                        }
+                        "youtube" -> {
+                            YouTubeDownloadPage()
+                        }
+                        "linkVocabulary" -> {
+                            LinkVocabularyPage()
+                        }
+                        "shortcutKey" -> {
+                            ShortcutKeyPage()
+                        }
+                        "specialDirectory" -> {
+                            SpecialDirectory()
+                        }
                     }
                 }
             }

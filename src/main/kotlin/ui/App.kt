@@ -27,12 +27,12 @@ import ui.flatlaf.setupFileChooser
 import ui.flatlaf.updateFlatLaf
 import data.VocabularyType
 import data.getHardVocabularyFile
-import dialog.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.*
+import ui.dialog.*
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
