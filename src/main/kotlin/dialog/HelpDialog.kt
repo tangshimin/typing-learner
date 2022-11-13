@@ -1,6 +1,6 @@
 package dialog
 
-import LocalCtrl
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import components.LocalCtrl
 import player.isMacOS
 import player.isWindows
 import state.getAudioDirectory

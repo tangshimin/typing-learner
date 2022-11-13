@@ -1,7 +1,6 @@
 package components
 
-import LocalCtrl
-import Settings
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

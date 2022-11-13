@@ -1,7 +1,6 @@
 package components
 
-import LocalCtrl
-import Settings
+
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*

@@ -1,7 +1,7 @@
 package player
 
 
-import LocalCtrl
+
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import components.LocalCtrl
 import data.Word
 import kotlinx.coroutines.launch
 import state.AppState
