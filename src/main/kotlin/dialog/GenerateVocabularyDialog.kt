@@ -49,7 +49,7 @@ import androidx.compose.ui.window.rememberDialogState
 import com.matthewn4444.ebml.EBMLReader
 import com.matthewn4444.ebml.UnSupportSubtitlesException
 import com.matthewn4444.ebml.subtitles.SSASubtitles
-import components.createTransferHandler
+import ui.createTransferHandler
 import player.parseTrackList
 import data.*
 import data.Dictionary

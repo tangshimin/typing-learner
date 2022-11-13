@@ -1,4 +1,4 @@
-package components
+package ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.*

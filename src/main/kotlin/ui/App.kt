@@ -1,4 +1,4 @@
-package components
+package ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import components.flatlaf.setupFileChooser
-import components.flatlaf.updateFlatLaf
+import ui.flatlaf.setupFileChooser
+import ui.flatlaf.updateFlatLaf
 import data.VocabularyType
 import data.getHardVocabularyFile
 import dialog.*

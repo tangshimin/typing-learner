@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import components.getPlayTripleMap
+import ui.getPlayTripleMap
 import player.play
-import components.secondsToString
+import ui.secondsToString
 import data.Caption
 import data.Dictionary
 import data.VocabularyType

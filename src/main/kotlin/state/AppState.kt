@@ -5,7 +5,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.ResourceLoader
 import com.formdev.flatlaf.FlatLightLaf
-import components.flatlaf.initializeFileChooser
+import ui.flatlaf.initializeFileChooser
 import data.getHardVocabularyFile
 import data.loadMutableVocabulary
 import data.loadMutableVocabularyByName

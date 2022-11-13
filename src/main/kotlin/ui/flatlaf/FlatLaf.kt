@@ -1,4 +1,4 @@
-package components.flatlaf
+package ui.flatlaf
 
 import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLaf

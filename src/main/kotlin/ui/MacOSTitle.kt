@@ -1,4 +1,4 @@
-package components
+package ui
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text

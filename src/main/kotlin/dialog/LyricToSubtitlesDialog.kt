@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import components.createTransferHandler
+import ui.createTransferHandler
 import kotlinx.coroutines.launch
 import lyric.FileManager
 import lyric.SongLyric
