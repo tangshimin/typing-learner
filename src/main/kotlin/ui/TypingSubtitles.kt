@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -23,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -524,21 +527,23 @@ fun TypingSubtitles(
                         }
                     }
 
-                    val startPadding = 30.dp
+                    val startPadding = 20.dp
                     val endPadding = 10.dp
-                    val indexWidth = (captionList.size.toString().length * 14).dp
+                    val indexWidth = (captionList.size.toString().length * 14).dp + 96.dp
                     val buttonWidth = 48.dp
                     var rowWidth = indexWidth + startPadding + (subtitlesState.sentenceMaxLength * charWidth).dp +  endPadding + buttonWidth
 
                     if(subtitlesState.sentenceMaxLength < 50) rowWidth += 120.dp
-
-
+                    // 一次播放多条字幕
+                    val multipleLines = rememberMultipleLines()
+                    // 启动播放多行字幕后，在这一行显示播放按钮
+                    var playIconIndex  by remember{mutableStateOf(0)}
                     LazyColumn(
                         state = listState,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .width(1050.dp)
+                            .width(1100.dp)
                             .fillMaxHeight()
                             .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 10.dp)
                             .horizontalScroll(stateHorizontal),
@@ -652,14 +657,35 @@ fun TypingSubtitles(
                                 }
 
                             }
+
+                            // alpha 越小颜色越透明，越大颜色越深。
+                            var alpha by remember{
+                                if(subtitlesState.currentIndex == index){
+                                    mutableStateOf(1.0f)
+                                }else{
+                                    mutableStateOf(0.74f)
+                                }
+                            }
+                            var rowBackgroundColor by remember{ mutableStateOf(Color.Transparent) }
+                            LaunchedEffect(multipleLines.enabled,multipleLines.startIndex,multipleLines.endIndex){
+                                if(multipleLines.enabled && index in multipleLines.startIndex .. multipleLines.endIndex){
+                                    rowBackgroundColor =     if(globalState.isDarkTheme) Color(38,38,38) else Color(204,204,204)
+                                    alpha = 1.0f
+                                }else{
+                                    rowBackgroundColor = Color.Transparent
+                                    alpha = if(subtitlesState.currentIndex == index) 1.0f else 0.74f
+                                }
+                            }
+
                             Row(
                                 horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .width(rowWidth)
                                     .padding(start = 150.dp)
+                                    .background(rowBackgroundColor)
                             ) {
-                                val alpha = if(subtitlesState.currentIndex == index) ContentAlpha.high else ContentAlpha.medium
+
                                 val lineColor =  if(index <  subtitlesState.currentIndex){
                                     MaterialTheme.colors.primary.copy(alpha = if(MaterialTheme.colors.isLight) ContentAlpha.high else ContentAlpha.medium)
                                 }else if(subtitlesState.currentIndex == index){
@@ -685,8 +711,85 @@ fun TypingSubtitles(
                                     }
                                 }
 
-                                Row(modifier = Modifier.width(indexWidth)){
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.width(indexWidth)
+                                ){
+                                    Row(Modifier.width(96.dp)){
+                                        if(multipleLines.enabled && playIconIndex == index){
+                                            IconButton(onClick = {
+                                                multipleLines.enabled = false
+                                                playIconIndex = 0
+                                            }) {
+                                                Icon(
+                                                    Icons.Filled.Close,
+                                                    contentDescription = "Localized description",
+                                                    tint = MaterialTheme.colors.primary
+                                                )
+                                            }
+                                            val density = LocalDensity.current.density
+
+                                            IconButton(onClick = {},
+                                                modifier = Modifier
+                                                    .onPointerEvent(PointerEventType.Press){ pointerEvent ->
+                                                        val location = pointerEvent.awtEventOrNull?.locationOnScreen
+                                                        if (location != null) {
+                                                            if (multipleLines.isUp) {
+                                                                videoPlayerBounds.y = ((location.y - (303 + 24)) * density).toInt()
+                                                            }else{
+                                                                videoPlayerBounds.y =  ((location.y +24) * density).toInt()
+                                                            }
+                                                            videoPlayerBounds.x = ((location.x - 270) * density).toInt()
+                                                            // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
+                                                            adjustPosition(density, videoPlayerBounds)
+                                                            val playItem = Caption(multipleLines.startTime ,multipleLines.endTime ,"")
+                                                            playCurrentCaption(playItem)
+                                                        }
+                                                    }
+                                                ) {
+                                                val icon = if(mediaType=="audio" && !isPlaying) {
+                                                    Icons.Filled.VolumeDown
+                                                } else if(mediaType=="audio" && isPlaying){
+                                                    Icons.Filled.VolumeUp
+                                                }else Icons.Filled.PlayArrow
+
+                                                Icon(
+                                                    icon,
+                                                    contentDescription = "Localized description",
+                                                    tint = MaterialTheme.colors.primary
+                                                )
+                                            }
+
+                                        }
+                                    }
+
                                     Text(
+                                        modifier = Modifier.clickable {
+                                            if(!multipleLines.enabled){
+                                                multipleLines.enabled = true
+                                                multipleLines.startIndex = index
+                                                multipleLines.endIndex = index
+                                                playIconIndex = index
+
+                                                multipleLines.startTime = caption.start
+                                                multipleLines.endTime = caption.end
+                                            }else if(multipleLines.startIndex > index){
+                                                multipleLines.startIndex = index
+                                                playIconIndex = index
+
+                                                multipleLines.startTime = caption.start
+                                                // 播放器的位置向上偏移
+                                                multipleLines.isUp = true
+                                            }else if(multipleLines.startIndex < index){
+                                                multipleLines.endIndex = index
+                                                playIconIndex = index
+
+                                                multipleLines.endTime = caption.end
+                                                // 播放器的位置向下偏移
+                                                multipleLines.isUp = false
+                                            }
+
+                                        },
                                         text = buildAnnotatedString {
                                             withStyle(
                                                 style = SpanStyle(
@@ -901,30 +1004,8 @@ fun TypingSubtitles(
                                                             videoPlayerBounds.x = window.x + textRect.right.toInt()
                                                             videoPlayerBounds.y = window.y + textRect.top.toInt() - (100 * density).toInt()
                                                         }
-
-                                                        val graphicsDevice =
-                                                            GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
-                                                        // 只要一个显示器时，才判断屏幕边界
-                                                        if(GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.size == 1){
-                                                            val width = graphicsDevice.displayMode.width
-                                                            val height = graphicsDevice.displayMode.height
-                                                            val actualWidth = (540 * density).toInt()
-                                                            if (videoPlayerBounds.x + actualWidth > width) {
-                                                                videoPlayerBounds.x = width - actualWidth
-                                                            }
-                                                            val actualHeight = (330 * density).toInt()
-                                                            if (videoPlayerBounds.y < 0) videoPlayerBounds.y = 0
-                                                            if (videoPlayerBounds.y + actualHeight > height) {
-                                                                videoPlayerBounds.y = height - actualHeight
-                                                            }
-                                                        }
-
-
-                                                        // 显示器缩放
-                                                        if(density != 1f){
-                                                            videoPlayerBounds.x = videoPlayerBounds.x.div(density).toInt()
-                                                            videoPlayerBounds.y =  videoPlayerBounds.y.div(density).toInt()
-                                                        }
+                                                        // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
+                                                        adjustPosition(density, videoPlayerBounds)
                                                     }
                                             ) {
                                                 val icon = if(mediaType=="audio" && !isPlaying) {
@@ -1056,6 +1137,35 @@ fun TypingSubtitles(
 
     }
 
+}
+
+/**
+ *  根据一些特殊情况调整播放器的位置，
+ * 比如显示器缩放，播放器的位置超出屏幕边界。
+ * */
+private fun adjustPosition(density: Float, videoPlayerBounds: Rectangle) {
+    val graphicsDevice =
+        GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
+    // 只要一个显示器时，才判断屏幕边界
+    if (GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.size == 1) {
+        val width = graphicsDevice.displayMode.width
+        val height = graphicsDevice.displayMode.height
+        val actualWidth = (540 * density).toInt()
+        if (videoPlayerBounds.x + actualWidth > width) {
+            videoPlayerBounds.x = width - actualWidth
+        }
+        val actualHeight = (330 * density).toInt()
+        if (videoPlayerBounds.y < 0) videoPlayerBounds.y = 0
+        if (videoPlayerBounds.y + actualHeight > height) {
+            videoPlayerBounds.y = height - actualHeight
+        }
+    }
+
+    // 显示器缩放
+    if (density != 1f) {
+        videoPlayerBounds.x = videoPlayerBounds.x.div(density).toInt()
+        videoPlayerBounds.y = videoPlayerBounds.y.div(density).toInt()
+    }
 }
 
 enum class OpenMode {
@@ -1486,4 +1596,36 @@ fun createTransferHandler(
     val pattern = Pattern.compile(regex,Pattern.CASE_INSENSITIVE)
     val matcher = pattern.matcher(description)
     return if(matcher.find()) 24 else 12
+}
+
+/**
+ * 跟读的时候，播放多条字幕
+ */
+class MultipleLines{
+
+    /** 启动 */
+    var enabled by mutableStateOf(false)
+
+    /** 开始索引 */
+    var startIndex by mutableStateOf(0)
+
+    /** 结束索引 */
+    var endIndex by mutableStateOf(0)
+
+    /** 开始时间 */
+    var startTime by mutableStateOf("")
+
+    /** 结束时间 */
+    var endTime by mutableStateOf("")
+
+    /** 播放器的位置是否向上偏移,
+     * 播放多条字幕要选择两个索引
+     * 如果后选择的是开始索引，就向上偏移
+     * 如果后现在的是结束索引，就向下偏移 */
+    var isUp by mutableStateOf(false)
+}
+
+@Composable
+fun rememberMultipleLines():MultipleLines = remember{
+    MultipleLines()
 }
