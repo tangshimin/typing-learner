@@ -86,7 +86,6 @@ compose.desktop {
             windows{
 //                console = true
                 dirChooser = true
-                perUserInstall = true
                 menuGroup = "Typing Learner"
                 iconFile.set(project.file("src/main/resources/logo/logo.ico"))
             }
