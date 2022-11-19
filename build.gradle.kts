@@ -32,6 +32,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation(files("lib/ebml-reader-0.1.1.jar"))
     implementation(files("lib/subtitleConvert-1.0.2.jar"))
+    implementation(files("lib/jacob-1.20.jar"))
     implementation("org.apache.maven:maven-artifact:3.8.6")
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.2")
     implementation("com.github.albfernandez:juniversalchardet:2.4.0")

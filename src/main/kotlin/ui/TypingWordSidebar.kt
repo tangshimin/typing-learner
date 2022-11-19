@@ -464,19 +464,20 @@ fun TypingWordSidebar(
                     modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp)
                 ) {
                     Text("自动发音", color = MaterialTheme.colors.onBackground)
-                    Spacer(Modifier.width(35.dp))
+                    Spacer(Modifier.width(5.dp))
                     var expand by remember { mutableStateOf(false) }
                     val selectedText = when (typingWordState.pronunciation) {
-                        "us" -> "美音"
-                        "uk" -> "英音"
+                        "us" -> "真人美音"
+                        "uk" -> "真人英音"
                         "jp" -> "日语"
+                        "local TTS" -> "语音合成"
                         else -> "关闭"
                     }
                     Box {
                         OutlinedButton(
                             onClick = { expand = true },
                             modifier = Modifier
-                                .width(87.dp)
+                                .width(120.dp)
                                 .background(Color.Transparent)
                                 .border(1.dp, Color.Transparent)
                         ) {
@@ -486,8 +487,8 @@ fun TypingWordSidebar(
                         DropdownMenu(
                             expanded = expand,
                             onDismissRequest = { expand = false },
-                            modifier = Modifier.width(87.dp)
-                                .height(140.dp)
+                            modifier = Modifier.width(120.dp)
+                                .height(180.dp)
                         ) {
                             if (typingWordState.vocabulary.language == "english") {
                                 DropdownMenuItem(
@@ -498,9 +499,9 @@ fun TypingWordSidebar(
                                             expand = false
                                         }
                                     },
-                                    modifier = Modifier.width(87.dp).height(40.dp)
+                                    modifier = Modifier.width(120.dp).height(40.dp)
                                 ) {
-                                    Text("英音")
+                                    Text("真人英音")
                                 }
                                 DropdownMenuItem(
                                     onClick = {
@@ -510,9 +511,9 @@ fun TypingWordSidebar(
                                             expand = false
                                         }
                                     },
-                                    modifier = Modifier.width(87.dp).height(40.dp)
+                                    modifier = Modifier.width(120.dp).height(40.dp)
                                 ) {
-                                    Text("美音")
+                                    Text("真人美音")
                                 }
                             }
 
@@ -525,10 +526,23 @@ fun TypingWordSidebar(
                                             expand = false
                                         }
                                     },
-                                    modifier = Modifier.width(87.dp).height(40.dp)
+                                    modifier = Modifier.width(120.dp).height(40.dp)
                                 ) {
                                     Text("日语")
                                 }
+                            }
+
+                            DropdownMenuItem(
+                                onClick = {
+                                    scope.launch {
+                                        typingWordState.pronunciation = "local TTS"
+                                        typingWordState.saveTypingWordState()
+                                        expand = false
+                                    }
+                                },
+                                modifier = Modifier.width(120.dp).height(40.dp)
+                            ) {
+                                Text("语音合成")
                             }
 
                             DropdownMenuItem(
@@ -539,7 +553,7 @@ fun TypingWordSidebar(
                                         expand = false
                                     }
                                 },
-                                modifier = Modifier.width(87.dp).height(40.dp)
+                                modifier = Modifier.width(120.dp).height(40.dp)
                             ) {
                                 Text("关闭")
                             }

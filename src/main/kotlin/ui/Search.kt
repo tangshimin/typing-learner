@@ -67,6 +67,7 @@ fun Search(
                 )
                 playAudio(
                     audioPath = audioPath,
+                    pronunciation =  typingWordState.pronunciation,
                     volume = appState.global.audioVolume,
                     audioPlayerComponent = audioPlayer,
                     changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },

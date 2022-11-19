@@ -17,12 +17,13 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import ui.LocalCtrl
 import data.Word
 import kotlinx.coroutines.launch
 import state.AppState
 import state.WordState
 import state.getAudioDirectory
+import tts.MSTTSpeech
+import ui.LocalCtrl
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
@@ -63,7 +64,11 @@ fun AudioButton(
         var isAutoPlay by remember { mutableStateOf(true) }
 
         val playAudio = {
-            playAudio(audioPath, volume,  audioPlayerComponent,
+            playAudio(
+                audioPath,
+                pronunciation = pronunciation,
+                volume,
+                audioPlayerComponent,
                 changePlayerState = { isPlaying = it },
                 setIsAutoPlay = { isAutoPlay = it })
         }
@@ -156,7 +161,11 @@ fun AudioButton(
                 addToAudioSet = {state.audioSet.add(it)},
                 pronunciation = typingState.pronunciation
             )
-            playAudio(audioPath, volume,  audioPlayerComponent,
+            playAudio(
+                audioPath,
+                pronunciation = pronunciation,
+                volume,
+                audioPlayerComponent,
                 changePlayerState = { isPlaying = it },
                 setIsAutoPlay = { })
         }
@@ -220,12 +229,28 @@ fun AudioButton(
 }
 fun playAudio(
     audioPath: String,
+    pronunciation:String,
     volume: Float,
     audioPlayerComponent: AudioPlayerComponent,
     changePlayerState: (Boolean) -> Unit,
     setIsAutoPlay: (Boolean) -> Unit,
 ) {
-    if (audioPath.isNotEmpty()) {
+    // 如果单词发音为 local TTS 或者由于网络问题，没有获取到发音
+    // 就自动使用本地的 TTS
+    if (pronunciation == "local TTS" || audioPath.isEmpty()) {
+        Thread(Runnable {
+
+            if (isWindows()) {
+                val speech = MSTTSpeech()
+                speech.speak(audioPath)
+            }
+
+
+        }).start()
+
+
+    }else if (audioPath.isNotEmpty()) {
+
         changePlayerState(true)
         setIsAutoPlay(false)
         audioPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
@@ -250,13 +275,17 @@ fun getAudioPath(
     addToAudioSet:(String) -> Unit,
     pronunciation: String
 ): String {
+    if(pronunciation == "local TTS") return word
     val audioDir = getAudioDirectory()
     var path = ""
     val type: Any = when (pronunciation) {
         "us" -> "type=2"
         "uk" -> "type=1"
         "jp" -> "le=jap"
-        else -> println(pronunciation)
+        else -> {
+            println("未知类型$pronunciation")
+            ""
+        }
     }
     val fileName = word + "_" + pronunciation + ".mp3"
     // 先查询本地有没有

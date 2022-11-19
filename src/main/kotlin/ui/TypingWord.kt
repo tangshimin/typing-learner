@@ -482,6 +482,7 @@ fun MainContent(
                     if (!isPlayingAudio) {
                         playAudio(
                             audioPath = audioPath,
+                            pronunciation =  typingWord.pronunciation,
                             volume = appState.global.audioVolume,
                             audioPlayerComponent = audioPlayerComponent,
                             changePlayerState = { isPlaying -> isPlayingAudio = isPlaying },
