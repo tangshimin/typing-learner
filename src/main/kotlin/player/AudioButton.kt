@@ -3,6 +3,7 @@ package player
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.TooltipPlacement
 import androidx.compose.foundation.layout.*
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import data.Word
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import state.AppState
 import state.WordState
 import state.getAudioDirectory
@@ -143,7 +145,7 @@ fun AudioButton(
 /**
  * 搜索界面的播放按钮
  */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalSerializationApi::class)
 @Composable
 fun AudioButton(
     word: Word,

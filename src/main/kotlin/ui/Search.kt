@@ -252,7 +252,7 @@ fun Search(
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     val caption =
-                                        data.Caption(externalCaption.start, externalCaption.end, externalCaption.content)
+                                        Caption(externalCaption.start, externalCaption.end, externalCaption.content)
                                     val playTriple =
                                         Triple(
                                             caption,
