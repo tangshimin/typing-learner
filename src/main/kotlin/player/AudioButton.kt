@@ -23,6 +23,7 @@ import state.AppState
 import state.WordState
 import state.getAudioDirectory
 import tts.MSTTSpeech
+import tts.MacTTS
 import ui.LocalCtrl
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -243,8 +244,9 @@ fun playAudio(
             if (isWindows()) {
                 val speech = MSTTSpeech()
                 speech.speak(audioPath)
+            }else if (isMacOS()) {
+                MacTTS().speakAndWait(audioPath)
             }
-
 
         }).start()
 
