@@ -100,14 +100,6 @@ fun TypingWord(
                 Divider(Modifier.fillMaxHeight().width(1.dp).padding(top = topPadding))
             }
             Box(Modifier.fillMaxSize()) {
-
-                Header(
-                    wordState = typingWord,
-                    title = title,
-                    window = window,
-                    modifier = Modifier.align(Alignment.TopCenter)
-                )
-
                 /** 当前正在记忆的单词 */
                 val currentWord = if(typingWord.vocabulary.wordList.isNotEmpty()){
                     typingWord.getCurrentWord()
@@ -127,6 +119,12 @@ fun TypingWord(
                     VocabularyEmpty()
                 }
 
+                Header(
+                    wordState = typingWord,
+                    title = title,
+                    window = window,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
             }
         }
         Settings(
