@@ -66,6 +66,7 @@ fun Search(
                     pronunciation = typingWordState.pronunciation
                 )
                 playAudio(
+                    word = searchResult!!.value,
                     audioPath = audioPath,
                     pronunciation =  typingWordState.pronunciation,
                     volume = appState.global.audioVolume,

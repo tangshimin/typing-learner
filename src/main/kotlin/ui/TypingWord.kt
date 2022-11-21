@@ -481,6 +481,7 @@ fun MainContent(
                 (it.isCtrlPressed && it.key == Key.J && it.type == KeyEventType.KeyUp) -> {
                     if (!isPlayingAudio) {
                         playAudio(
+                            word = currentWord.value,
                             audioPath = audioPath,
                             pronunciation =  typingWord.pronunciation,
                             volume = appState.global.audioVolume,

@@ -226,6 +226,7 @@ fun Word(
 
             AudioButton(
                 audioPath = audioPath,
+                word = wordValue,
                 volume = global.audioVolume,
                 pronunciation = pronunciation,
                 paddingTop = paddingTop,

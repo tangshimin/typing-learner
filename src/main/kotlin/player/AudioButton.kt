@@ -50,6 +50,7 @@ fun rememberAudioPlayerComponent(): AudioPlayerComponent = remember {
 @Composable
 fun AudioButton(
     audioPath: String,
+    word:String,
     volume: Float,
     pronunciation: String,
     paddingTop: Dp,
@@ -66,6 +67,7 @@ fun AudioButton(
 
         val playAudio = {
             playAudio(
+                word,
                 audioPath,
                 pronunciation = pronunciation,
                 volume,
@@ -163,6 +165,7 @@ fun AudioButton(
                 pronunciation = typingState.pronunciation
             )
             playAudio(
+                word.value,
                 audioPath,
                 pronunciation = pronunciation,
                 volume,
@@ -229,6 +232,7 @@ fun AudioButton(
 
 }
 fun playAudio(
+    word: String,
     audioPath: String,
     pronunciation:String,
     volume: Float,
@@ -243,9 +247,9 @@ fun playAudio(
 
             if (isWindows()) {
                 val speech = MSTTSpeech()
-                speech.speak(audioPath)
+                speech.speak(word)
             }else if (isMacOS()) {
-                MacTTS().speakAndWait(audioPath)
+                MacTTS().speakAndWait(word)
             }
 
         }).start()
@@ -277,7 +281,6 @@ fun getAudioPath(
     addToAudioSet:(String) -> Unit,
     pronunciation: String
 ): String {
-    if(pronunciation == "local TTS") return word
     val audioDir = getAudioDirectory()
     var path = ""
     val type: Any = when (pronunciation) {
