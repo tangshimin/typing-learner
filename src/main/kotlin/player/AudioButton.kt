@@ -283,6 +283,7 @@ fun getAudioPath(
     addToAudioSet:(String) -> Unit,
     pronunciation: String
 ): String {
+    if(pronunciation == "local TTS") return ""
     val audioDir = getAudioDirectory()
     var path = ""
     val type: Any = when (pronunciation) {
