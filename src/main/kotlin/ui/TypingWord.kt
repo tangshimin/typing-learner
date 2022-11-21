@@ -152,10 +152,10 @@ fun Header(
     ){
         // macOS 的标题栏和 windows 不一样，需要特殊处理
         if (isMacOS()) {
-            Spacer(Modifier.height(10.dp))
             MacOSTitle(
                 title = title,
                 window = window,
+                modifier = Modifier.padding(top = 5.dp)
             )
         }
 

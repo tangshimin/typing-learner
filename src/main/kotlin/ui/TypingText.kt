@@ -613,7 +613,7 @@ fun TypingText(
             MacOSTitle(
                 title = title,
                 window = window,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 10.dp)
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 5.dp)
             )
         }
         Settings(
