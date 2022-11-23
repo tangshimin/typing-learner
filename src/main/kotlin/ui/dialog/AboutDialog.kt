@@ -193,6 +193,7 @@ fun AboutDialog(
                             .verticalScroll(stateVertical)){
 
 
+                            val LGPL = Pair( "LGPL","https://www.gnu.org/licenses/lgpl-3.0.html")
                             val GPL2 = Pair( "GPL 2","https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html")
                             val GPL3 = Pair( "GPL 3","https://www.gnu.org/licenses/gpl-3.0.en.html")
                             val Apache2 = Pair( "Apache-2.0","https://www.apache.org/licenses/LICENSE-2.0")
@@ -371,8 +372,14 @@ fun AboutDialog(
                             Dependency(
                                 name = "LyricConverter",
                                 url = "https://github.com/IntelleBitnify/LyricConverter",
-                                version = "1.0.",
+                                version = "1.0",
                                 license = MIT,
+                            )
+                            Dependency(
+                                name = "Jacob ",
+                                url = "https://github.com/freemansoft/jacob-project",
+                                version = "1.2.0",
+                                license = LGPL,
                             )
                             Row(horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)){
