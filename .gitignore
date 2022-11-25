@@ -1,5 +1,5 @@
 /.gradle
-/.idea
+#/.idea
 /audio
 /build
 /resources/common/settings.json
