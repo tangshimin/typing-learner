@@ -15,13 +15,14 @@ import java.time.format.DateTimeFormatter
 import javax.swing.JFrame
 
 /**
- * @param window 视频播放窗口
+ * @param window 视频播放窗口,  使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,
+ * 相关 Issue: https://github.com/JetBrains/compose-jb/issues/1800,
+ * 等Jetbrains 把 bug 修复了再重构。
  * @param setIsPlaying 设置是否正在播放视频
  * @param volume 音量
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
  * @param videoPlayerComponent 视频播放组件
  * @param bounds 视频播放窗口的位置和大小
- * 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
  */
 fun play(
     window: JFrame,
@@ -88,7 +89,9 @@ fun play(
 
 /**
  * 用于记忆单词界面，可以不加载外部字幕
- * @param window 视频播放窗口
+ * @param window 视频播放窗口,  使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,
+ * 相关 Issue: https://github.com/JetBrains/compose-jb/issues/1800,
+ * 等Jetbrains 把 bug 修复了再重构。
  * @param setIsPlaying 设置是否正在播放视频
  * @param volume 音量
  * @param playTriple 视频播放参数，Caption 表示要播放的字幕，String 表示视频的地址，Int 表示字幕的轨道 ID。
