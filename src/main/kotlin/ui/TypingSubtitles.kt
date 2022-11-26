@@ -269,40 +269,40 @@ fun TypingSubtitles(
             if (!isPlaying) {
                 scope.launch {
                     isPlaying = true
-                    val playTriple = Triple(caption, subtitlesState.mediaPath, subtitlesState.trackID)
-                    // 使用内部字幕轨道
-                    if(subtitlesState.trackID != -1){
+
+                    // 音频
+                    if(file.extension == "wav" || file.extension == "mp3"|| file.extension == "aac"){
                         play(
-                            window = playerWindow,
-                            setIsPlaying = { isPlaying = it },
+                            setIsPlaying = {isPlaying = it},
+                            audioPlayerComponent = audioPlayerComponent,
                             volume = videoVolume,
-                            playTriple = playTriple,
-                            videoPlayerComponent = mediaPlayerComponent,
-                            bounds = videoPlayerBounds
+                            caption = caption,
+                            videoPath = subtitlesState.mediaPath,
                         )
-                        // 使用外部字幕
-                    }else{
-                        // 音频
-                        if(file.extension == "wav" || file.extension == "mp3"|| file.extension == "aac"){
+                    // 视频
+                    } else {
+                        // 使用内部字幕轨道
+                        if (subtitlesState.trackID != -1) {
+                            val playTriple = Triple(caption, subtitlesState.mediaPath, subtitlesState.trackID)
                             play(
-                                setIsPlaying = {isPlaying = it},
-                                audioPlayerComponent = audioPlayerComponent,
-                                volume = videoVolume,
-                                caption = caption,
-                                videoPath = subtitlesState.mediaPath,
-                                subtitlePath = subtitlesState.subtitlesPath
-                            )
-                        }else{
-                            play(
-                                window= playerWindow,
+                                window = playerWindow,
                                 setIsPlaying = { isPlaying = it },
-                                videoPlayerComponent= mediaPlayerComponent,
-                                volume= videoVolume,
-                                caption=caption,
-                                videoPath=subtitlesState.mediaPath,
-                                subtitlePath=  subtitlesState.subtitlesPath,
-                                showSubtitles = subtitlesState.externalSubtitlesVisible,
-                                bounds= videoPlayerBounds
+                                volume = videoVolume,
+                                playTriple = playTriple,
+                                videoPlayerComponent = mediaPlayerComponent,
+                                bounds = videoPlayerBounds
+                            )
+                            // 使用外部字幕
+                        } else {
+                            val externalPlayTriple = Triple(caption, subtitlesState.mediaPath, -1)
+                            play(
+                                window = playerWindow,
+                                setIsPlaying = { isPlaying = it },
+                                volume = videoVolume,
+                                playTriple = externalPlayTriple,
+                                videoPlayerComponent = mediaPlayerComponent,
+                                bounds = videoPlayerBounds,
+                                externalSubtitlesVisible = subtitlesState.externalSubtitlesVisible
                             )
                         }
                     }

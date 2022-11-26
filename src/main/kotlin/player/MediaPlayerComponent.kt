@@ -72,7 +72,11 @@ fun createMediaPlayerComponent(): Component {
             "--quiet",
             "--intf=dummy")
         val mediaPlayerFactory = MediaPlayerFactory(null,args )
-        EmbeddedMediaPlayerComponent(mediaPlayerFactory, null, null, null, null)
+        val embeddedMediaPlayerComponent = EmbeddedMediaPlayerComponent(mediaPlayerFactory, null, null, null, null)
+        val embeddedMediaPlayer = embeddedMediaPlayerComponent.mediaPlayer()
+        embeddedMediaPlayer.input().enableKeyInputHandling(false)
+        embeddedMediaPlayer.input().enableMouseInputHandling(false)
+        embeddedMediaPlayerComponent
     }else{
         EmbeddedMediaPlayerComponent()
     }
