@@ -65,7 +65,8 @@
 ## 开发环境
 
 - 启动项目之前需要将 `typing-learner\resources\common\dictionary` 文件夹里的词典文件`ecdict.mv.db.7z` 解压缩。不然不能使用生成词库功能。打包之前要把`ecdict.mv.db.7z`删掉。
-- JDK 17.0.1
+- Windows : JDK 17.0.1(Windows 11 JDK 17.0.1 以后的版本，打开对话框后，标题栏会消失 Compose Desktop Issue 2488，所以就把 JDK 改成了 JDK 17.0.1) 
+- macOS : JDK 17.0.5(JDK 17 最新版)
 - gradle 7.3.3
 - VLC 视频播放器
 
