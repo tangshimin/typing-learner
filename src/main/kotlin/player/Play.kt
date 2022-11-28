@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter
 import javax.swing.JFrame
 import javax.swing.JPanel
 
-
 /**
  * @param window 视频播放窗口,  使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,
  * 相关 Issue: https://github.com/JetBrains/compose-jb/issues/1800,
@@ -95,7 +94,9 @@ fun play(
     }
     val mouseListener = object: MouseAdapter(){
         override fun mouseClicked(e: MouseEvent?) {
-            playAction()
+           if(e?.button == 1){
+               playAction()
+           }
         }
 
         override fun mouseEntered(e: MouseEvent?) {
