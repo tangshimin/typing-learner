@@ -581,7 +581,7 @@ fun MainContent(
                     }
                     true
                 }
-                (it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
+                (it.isShiftPressed && it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
                     scope.launch {
                         showDeleteDialog = true
                     }
@@ -2132,8 +2132,8 @@ fun DeleteButton(onClick:()->Unit){
                 Row(modifier = Modifier.padding(10.dp)){
                     Text(text = "删除单词" )
                     CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
-                        Text(text = " Delete ")
-
+                        val shift = if (isMacOS()) "⇧" else "Shift"
+                        Text(text = " $shift + Delete ")
                     }
                 }
             }
