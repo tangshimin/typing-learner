@@ -1255,7 +1255,6 @@ fun MainContent(
                 videoPlayerWindow = appState.videoPlayerWindow,
                 videoPlayerComponent = appState.videoPlayerComponent,
                 isPlaying = isPlaying,
-                isChangeVideoBounds = appState.isChangeVideoBounds,
                 plyingIndex = plyingIndex,
                 setPlayingIndex = {plyingIndex = it},
                 volume = appState.global.videoVolume,
@@ -1694,7 +1693,6 @@ fun Captions(
     videoPlayerComponent: Component,
     isPlaying: Boolean,
     setIsPlaying: (Boolean) -> Unit,
-    isChangeVideoBounds:Boolean = false,
     plyingIndex: Int,
     setPlayingIndex: (Int) -> Unit,
     volume: Float,
@@ -1716,7 +1714,7 @@ fun Captions(
     setIsChangeBounds:(Boolean) -> Unit = {}
 ) {
     if (captionsVisible) {
-        val horizontalArrangement = if (isPlaying && !isChangeVideoBounds) Arrangement.Center else Arrangement.Start
+        val horizontalArrangement = if (isPlaying && !isVideoBoundsChanged) Arrangement.Center else Arrangement.Start
         Row(
             horizontalArrangement = horizontalArrangement,
             modifier = modifier
@@ -1841,7 +1839,7 @@ fun Captions(
 
             }
         }
-        if (!isPlaying && (word.captions.isNotEmpty() || word.externalCaptions.isNotEmpty()))
+        if ((!isPlaying || isVideoBoundsChanged) && (word.captions.isNotEmpty() || word.externalCaptions.isNotEmpty()))
             Divider(Modifier.padding(start = 50.dp))
     }
 }
