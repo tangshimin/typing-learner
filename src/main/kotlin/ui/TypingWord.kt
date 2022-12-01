@@ -2129,8 +2129,11 @@ fun DeleteButton(onClick:()->Unit){
                 border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
                 shape = RectangleShape
             ) {
-                Row(modifier = Modifier.padding(10.dp)){
-                    Text(text = "删除单词" )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(text = "删除单词")
                     CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
                         val shift = if (isMacOS()) "⇧" else "Shift"
                         Text(text = " $shift + Delete ")
@@ -2204,11 +2207,14 @@ fun HardButton(
                 shape = RectangleShape
             ) {
                 val ctrl = LocalCtrl.current
-                Row(modifier = Modifier.padding(10.dp)){
-                    Text(text = "加入到困难词库" )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(text = "加入到困难词库")
                     CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
                         Text(text = " $ctrl + ")
-                        Text(text = "I",fontFamily =fontFamily)
+                        Text(text = "I", fontFamily = fontFamily)
                     }
                 }
             }
@@ -2246,8 +2252,11 @@ fun FamiliarButton(
                 shape = RectangleShape
             ) {
                 val ctrl = LocalCtrl.current
-                Row(modifier = Modifier.padding(10.dp)){
-                    Text(text = "加入到熟悉词库" )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(text = "加入到熟悉词库")
                     CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
                         Text(text = " $ctrl + Y")
                     }
