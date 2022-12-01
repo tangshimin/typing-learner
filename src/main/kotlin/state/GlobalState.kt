@@ -21,7 +21,7 @@ data class GlobalData(
     val audioVolume: Float = 0.8F,
     val videoVolume: Float = 0.8F,
     val keystrokeVolume: Float = 0.75F,
-    val isPlayKeystrokeSound: Boolean = true,
+    val isPlayKeystrokeSound: Boolean = false,
     val primaryColorValue: ULong = 18377412168996880384UL,
     val wordTextStyle: String = "H2",
     val detailTextStyle: String = "Body1",
