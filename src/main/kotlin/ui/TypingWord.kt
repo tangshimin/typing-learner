@@ -85,6 +85,7 @@ fun TypingWord(
     appState: AppState,
     typingWord: WordState,
     videoBounds: Rectangle,
+    resetVideoBounds :() -> Rectangle
 ) {
 
     //设置窗口的拖放处理函数
@@ -111,6 +112,7 @@ fun TypingWord(
                         typingWord = typingWord,
                         currentWord = currentWord,
                         videoBounds = videoBounds,
+                        resetVideoBounds = resetVideoBounds,
                         window = window,
                         modifier = Modifier.align(Alignment.Center)
                             .padding(end = 0.dp,bottom = 58.dp)
@@ -207,6 +209,7 @@ fun MainContent(
     typingWord: WordState,
     currentWord:Word,
     videoBounds: Rectangle,
+    resetVideoBounds :() -> Rectangle,
     window: ComposeWindow,
     modifier: Modifier
 ){
@@ -302,7 +305,10 @@ fun MainContent(
                             playTriple,
                             appState.videoPlayerComponent,
                             videoBounds,
-                            typingWord.externalSubtitlesVisible
+                            typingWord.externalSubtitlesVisible,
+                            resetVideoBounds = resetVideoBounds,
+                            isVideoBoundsChanged = appState.isChangeVideoBounds,
+                            setIsVideoBoundsChanged = {appState.isChangeVideoBounds = it}
                         )
                     }
                 }
@@ -1199,6 +1205,7 @@ fun MainContent(
             Morphology(
                 word = currentWord,
                 isPlaying = isPlaying,
+                isChangeVideoBounds = appState.isChangeVideoBounds,
                 searching = false,
                 morphologyVisible = typingWord.morphologyVisible,
                 fontSize = appState.global.detailFontSize
@@ -1207,17 +1214,19 @@ fun MainContent(
                 word = currentWord,
                 definitionVisible = typingWord.definitionVisible,
                 isPlaying = isPlaying,
+                isChangeVideoBounds = appState.isChangeVideoBounds,
                 fontSize = appState.global.detailFontSize
             )
             Translation(
                 word = currentWord,
                 translationVisible = typingWord.translationVisible,
                 isPlaying = isPlaying,
+                isChangeVideoBounds = appState.isChangeVideoBounds,
                 fontSize = appState.global.detailFontSize
             )
 
             val videoSize = videoBounds.size
-            val startPadding = if (isPlaying) 0.dp else 50.dp
+            val startPadding = if ( isPlaying && !appState.isChangeVideoBounds) 0.dp else 50.dp
             val captionsModifier = Modifier
                 .fillMaxWidth()
                 .height(intrinsicSize = IntrinsicSize.Max)
@@ -1246,6 +1255,7 @@ fun MainContent(
                 videoPlayerWindow = appState.videoPlayerWindow,
                 videoPlayerComponent = appState.videoPlayerComponent,
                 isPlaying = isPlaying,
+                isChangeVideoBounds = appState.isChangeVideoBounds,
                 plyingIndex = plyingIndex,
                 setPlayingIndex = {plyingIndex = it},
                 volume = appState.global.videoVolume,
@@ -1266,9 +1276,12 @@ fun MainContent(
                 jumpToWord = {jumpToWord()},
                 externalVisible = typingWord.externalSubtitlesVisible,
                 openSearch = {appState.openSearch()},
-                fontSize = appState.global.detailFontSize
+                fontSize = appState.global.detailFontSize,
+                resetVideoBounds = resetVideoBounds,
+                isVideoBoundsChanged = appState.isChangeVideoBounds,
+                setIsChangeBounds ={appState.isChangeVideoBounds = it}
             )
-            if (isPlaying) Spacer(
+            if (isPlaying && !appState.isChangeVideoBounds) Spacer(
                 Modifier.height((videoSize.height).dp).width(videoSize.width.dp)
             )
 
@@ -1378,11 +1391,12 @@ fun VocabularyEmpty() {
 fun Morphology(
     word: Word,
     isPlaying: Boolean,
+    isChangeVideoBounds:Boolean = false,
     searching: Boolean,
     morphologyVisible: Boolean,
     fontSize: TextUnit
 ) {
-    if (morphologyVisible && !isPlaying) {
+    if (morphologyVisible &&(isChangeVideoBounds || !isPlaying )) {
         val exchanges = word.exchange.split("/")
         var preterite = ""
         var pastParticiple = ""
@@ -1555,9 +1569,10 @@ fun Definition(
     word: Word,
     definitionVisible: Boolean,
     isPlaying: Boolean,
+    isChangeVideoBounds:Boolean = false,
     fontSize: TextUnit
 ) {
-    if (definitionVisible && !isPlaying) {
+    if (definitionVisible && (isChangeVideoBounds || !isPlaying )) {
         val rows = word.definition.length - word.definition.replace("\n", "").length
         val width = when (fontSize) {
             MaterialTheme.typography.h5.fontSize -> {
@@ -1613,10 +1628,11 @@ fun Definition(
 fun Translation(
     translationVisible: Boolean,
     isPlaying: Boolean,
+    isChangeVideoBounds:Boolean = false,
     word: Word,
     fontSize: TextUnit
 ) {
-    if (translationVisible && !isPlaying) {
+    if (translationVisible && (isChangeVideoBounds || !isPlaying )) {
         Column {
             val width = when (fontSize) {
                 MaterialTheme.typography.h5.fontSize -> {
@@ -1678,6 +1694,7 @@ fun Captions(
     videoPlayerComponent: Component,
     isPlaying: Boolean,
     setIsPlaying: (Boolean) -> Unit,
+    isChangeVideoBounds:Boolean = false,
     plyingIndex: Int,
     setPlayingIndex: (Int) -> Unit,
     volume: Float,
@@ -1693,10 +1710,13 @@ fun Captions(
     jumpToWord: () -> Unit,
     externalVisible:Boolean,
     openSearch: () -> Unit,
-    fontSize: TextUnit
+    fontSize: TextUnit,
+    resetVideoBounds :() ->  Rectangle,
+    isVideoBoundsChanged:Boolean,
+    setIsChangeBounds:(Boolean) -> Unit = {}
 ) {
     if (captionsVisible) {
-        val horizontalArrangement = if (isPlaying) Arrangement.Center else Arrangement.Start
+        val horizontalArrangement = if (isPlaying && !isChangeVideoBounds) Arrangement.Center else Arrangement.Start
         Row(
             horizontalArrangement = horizontalArrangement,
             modifier = modifier
@@ -1725,13 +1745,16 @@ fun Captions(
                                 scope.launch {
                                     setPlayingIndex(index)
                                     play(
-                                        videoPlayerWindow,
+                                        window = videoPlayerWindow,
                                         setIsPlaying = { setIsPlaying(it) },
-                                        volume,
-                                        playTriple,
-                                        videoPlayerComponent,
-                                        bounds,
-                                        externalVisible
+                                        volume = volume,
+                                        playTriple = playTriple,
+                                        videoPlayerComponent = videoPlayerComponent,
+                                        bounds = bounds,
+                                        externalSubtitlesVisible = externalVisible,
+                                        resetVideoBounds = resetVideoBounds,
+                                        isVideoBoundsChanged = isVideoBoundsChanged,
+                                        setIsVideoBoundsChanged = setIsChangeBounds
                                     )
                                 }
 

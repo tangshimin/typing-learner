@@ -37,6 +37,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import player.isWindows
 import state.AppState
 import state.getResourcesFile
+import java.awt.Point
 import java.awt.Rectangle
 import java.io.File
 import java.util.*
@@ -540,6 +541,12 @@ fun LinkVocabularyDialog(
                                                                 )
                                                             )
                                                         }
+                                                        val mousePoint by remember{ mutableStateOf(Point(0,0)) }
+                                                        var isVideoBoundsChanged by remember{mutableStateOf(false)}
+                                                        val resetVideoBounds:() -> Rectangle = {
+                                                            isVideoBoundsChanged = false
+                                                            Rectangle(mousePoint.x, mousePoint.y, 540, 303)
+                                                        }
                                                         var isPlaying by remember { mutableStateOf(false) }
                                                         IconButton(
                                                             onClick = {},
@@ -547,25 +554,34 @@ fun LinkVocabularyDialog(
                                                                 .onPointerEvent(PointerEventType.Press) { pointerEvent ->
                                                                     val location =
                                                                         pointerEvent.awtEventOrNull?.locationOnScreen
-                                                                    if (location != null) {
-                                                                        if (!isPlaying) {
-                                                                            isPlaying = true
+                                                                    if (location != null && !isPlaying) {
+                                                                        if (isVideoBoundsChanged) {
+                                                                            mousePoint.x = location.x - 270 + 24
+                                                                            mousePoint.y = location.y - 320
+                                                                        } else {
                                                                             playerBounds.x = location.x - 270 + 24
                                                                             playerBounds.y = location.y - 320
-                                                                            val file = File( externalCaption.relateVideoPath)
-                                                                            if (file.exists()) {
-                                                                                scope.launch {
-                                                                                    play(
-                                                                                        window = state.videoPlayerWindow,
-                                                                                        setIsPlaying = {
-                                                                                            isPlaying = it
-                                                                                        },
-                                                                                        volume = state.global.videoVolume,
-                                                                                        playTriple = playTriple,
-                                                                                        videoPlayerComponent = state.videoPlayerComponent,
-                                                                                        bounds = playerBounds
-                                                                                    )
-                                                                                }
+                                                                        }
+
+                                                                        isPlaying = true
+                                                                        val file = File(externalCaption.relateVideoPath)
+                                                                        if (file.exists()) {
+                                                                            scope.launch {
+                                                                                play(
+                                                                                    window = state.videoPlayerWindow,
+                                                                                    setIsPlaying = {
+                                                                                        isPlaying = it
+                                                                                    },
+                                                                                    volume = state.global.videoVolume,
+                                                                                    playTriple = playTriple,
+                                                                                    videoPlayerComponent = state.videoPlayerComponent,
+                                                                                    bounds = playerBounds,
+                                                                                    resetVideoBounds = resetVideoBounds,
+                                                                                    isVideoBoundsChanged = isVideoBoundsChanged,
+                                                                                    setIsVideoBoundsChanged = {
+                                                                                        isVideoBoundsChanged = it
+                                                                                    }
+                                                                                )
                                                                             }
                                                                         }
                                                                     }

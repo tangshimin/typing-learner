@@ -40,6 +40,7 @@ import player.isWindows
 import state.AppState
 import state.WordState
 import java.awt.Component
+import java.awt.Point
 import java.awt.Rectangle
 import java.io.File
 import java.time.LocalTime
@@ -307,6 +308,12 @@ fun EditingCaptions(
                         )
                     )
                 }
+                val mousePoint by remember{ mutableStateOf(Point(0,0)) }
+                var isVideoBoundsChanged by remember{mutableStateOf(false)}
+                val resetVideoBounds:() -> Rectangle = {
+                    isVideoBoundsChanged = false
+                    Rectangle(mousePoint.x, mousePoint.y, 540, 303)
+                }
                 var isPlaying by remember { mutableStateOf(false) }
                 IconButton(onClick = {},
                     modifier = Modifier
@@ -314,10 +321,16 @@ fun EditingCaptions(
                             val location =
                                 pointerEvent.awtEventOrNull?.locationOnScreen
                             if (location != null) {
-                                if (!isPlaying) {
-                                    isPlaying = true
+                                if(isVideoBoundsChanged){
+                                    mousePoint.x = location.x - 270 + 24
+                                    mousePoint.y = location.y - 320
+                                }else{
                                     playerBounds.x = location.x - 270 + 24
                                     playerBounds.y = location.y - 320
+                                }
+
+                                if (!isPlaying) {
+                                    isPlaying = true
                                     val file = File(relativeVideoPath)
                                     if (file.exists()) {
                                         scope.launch {
@@ -327,7 +340,10 @@ fun EditingCaptions(
                                                 volume = state.global.videoVolume,
                                                 playTriple = playTriple,
                                                 videoPlayerComponent = state.videoPlayerComponent,
-                                                bounds = playerBounds
+                                                bounds = playerBounds,
+                                                resetVideoBounds = resetVideoBounds,
+                                                isVideoBoundsChanged = isVideoBoundsChanged,
+                                                setIsVideoBoundsChanged = { isVideoBoundsChanged = it }
                                             )
                                         }
                                     } else {
@@ -486,6 +502,12 @@ fun SettingTimeLine(
                 )
             )
         }
+        val mousePoint by remember{ mutableStateOf(Point(0,0)) }
+        var isVideoBoundsChanged by remember{mutableStateOf(false)}
+        val resetVideoBounds:() -> Rectangle = {
+            isVideoBoundsChanged = false
+            Rectangle(mousePoint.x, mousePoint.y, 540, 303)
+        }
         Surface(
             elevation = 5.dp,
             shape = RectangleShape,
@@ -540,8 +562,14 @@ fun SettingTimeLine(
                     Row(Modifier.width(540.dp).height(303.dp).padding(top = 40.dp)
                         .onGloballyPositioned { coordinates ->
                             val rect = coordinates.boundsInWindow()
-                            playerBounds.x = window.x + rect.left.toInt()
-                            playerBounds.y = window.y + rect.top.toInt()
+                            if(isVideoBoundsChanged){
+                                mousePoint.x = window.x + rect.left.toInt()
+                                mousePoint.y = window.y + rect.top.toInt()
+                            }else{
+                                playerBounds.x = window.x + rect.left.toInt()
+                                playerBounds.y = window.y + rect.top.toInt()
+                            }
+
                         }) { }
                     Row(
                         horizontalArrangement = Arrangement.Center,
@@ -665,29 +693,29 @@ fun SettingTimeLine(
                                 .onPointerEvent(PointerEventType.Press) { pointerEvent ->
                                     val location =
                                         pointerEvent.awtEventOrNull?.locationOnScreen
-                                    if (location != null) {
-                                        if (!isPlaying) {
-                                            isPlaying = true
-                                            val file = File(relativeVideoPath)
-                                            if (file.exists()) {
-                                                scope.launch {
-                                                    playTriple.first.start = secondsToString(start)
-                                                    playTriple.first.end = secondsToString(end)
-                                                    play(
-                                                        window = state.videoPlayerWindow,
-                                                        setIsPlaying = { isPlaying = it },
-                                                        volume = state.global.videoVolume,
-                                                        playTriple = playTriple,
-                                                        videoPlayerComponent = mediaPlayerComponent,
-                                                        bounds = playerBounds
-                                                    )
-                                                }
-
-                                            } else {
-                                                println("视频地址错误")
+                                    if (location != null && !isPlaying) {
+                                        isPlaying = true
+                                        val file = File(relativeVideoPath)
+                                        if (file.exists()) {
+                                            scope.launch {
+                                                playTriple.first.start = secondsToString(start)
+                                                playTriple.first.end = secondsToString(end)
+                                                play(
+                                                    window = state.videoPlayerWindow,
+                                                    setIsPlaying = { isPlaying = it },
+                                                    volume = state.global.videoVolume,
+                                                    playTriple = playTriple,
+                                                    videoPlayerComponent = mediaPlayerComponent,
+                                                    bounds = playerBounds,
+                                                    resetVideoBounds = resetVideoBounds,
+                                                    isVideoBoundsChanged = isVideoBoundsChanged,
+                                                    setIsVideoBoundsChanged = { isVideoBoundsChanged = it }
+                                                )
                                             }
-                                        }
 
+                                        } else {
+                                            println("视频地址错误")
+                                        }
                                     }
                                 }
                         ) {

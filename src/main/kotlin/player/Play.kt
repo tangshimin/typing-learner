@@ -8,14 +8,8 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
-import java.awt.Color
-import java.awt.Component
-import java.awt.EventQueue
-import java.awt.Rectangle
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.*
+import java.awt.event.*
 import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -42,16 +36,43 @@ fun play(
     videoPlayerComponent: Component,
     bounds: Rectangle,
     externalSubtitlesVisible:Boolean = false,
+    resetVideoBounds :() ->  Rectangle = {Rectangle(0,0,540,330)},
+    isVideoBoundsChanged:Boolean = false,
+    setIsVideoBoundsChanged:(Boolean) -> Unit = {}
 ) {
 
 
     val playIcon = FlatSVGIcon(File("src/main/resources/icon/play_arrow_white_24dp.svg"))
     val pauseIcon = FlatSVGIcon(File("src/main/resources/icon/pause_white_24dp.svg"))
     val stopIcon = FlatSVGIcon(File("src/main/resources/icon/stop_white_24dp.svg"))
+    val backIcon = FlatSVGIcon(File("src/main/resources/icon/flip_to_back_white_24dp.svg"))
     if(FlatLaf.isLafDark()){
         playIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
         pauseIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
         stopIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
+        backIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
+    }
+
+    val controlPanel = JPanel()
+    controlPanel.isOpaque = false
+    controlPanel.bounds = Rectangle(bounds.size.width/2 - 75,bounds.size.height - 50 ,150,50)
+    controlPanel.isVisible = false
+
+
+    val backButton = FlatButton()
+    backButton.isVisible = isVideoBoundsChanged
+    backButton.isContentAreaFilled = false
+    backButton.buttonType = FlatButton.ButtonType.roundRect
+    backButton.icon = backIcon
+    backButton.addActionListener {
+        val newRectangle =  resetVideoBounds()
+        bounds.location = newRectangle.location
+        bounds.size = newRectangle.size
+        window.size = newRectangle.size
+        window.location = newRectangle.location
+        videoPlayerComponent.size = newRectangle.size
+        controlPanel.bounds = Rectangle(newRectangle.size.width/2 - 75,newRectangle.size.height - 50 ,150,50)
+        backButton.isVisible
     }
 
     val playButton = FlatButton()
@@ -64,10 +85,8 @@ fun play(
     stopButton.buttonType = FlatButton.ButtonType.roundRect
     stopButton.icon = stopIcon
 
-    val controlPanel = JPanel()
-    controlPanel.isOpaque = false
-    controlPanel.bounds = Rectangle(0,bounds.size.height - 50 ,bounds.size.width,50)
-    controlPanel.isVisible = false
+
+    controlPanel.add(backButton)
     controlPanel.add(playButton)
     controlPanel.add(stopButton)
 
@@ -92,16 +111,208 @@ fun play(
             }
         }
     }
+    fun getScreenLocation(e: MouseEvent, frame: JFrame): Point {
+        val cursor = e.point
+        val viewLocation = frame.locationOnScreen
+        return Point((viewLocation.getX() + cursor.getX()).toInt(), (viewLocation.getY() + cursor.getY()).toInt())
+    }
+
+
+    // 鼠标相对于 window 坐标的坐标
+    var xx = 0
+    var yy = 0
+
+    var startDrag = Point(0,0)
     val mouseListener = object: MouseAdapter(){
+        override fun mousePressed(e: MouseEvent?) {
+            if(e != null){
+                xx = e.x
+                yy = e.y
+                startDrag = e.locationOnScreen
+            }
+        }
+
         override fun mouseClicked(e: MouseEvent?) {
            if(e?.button == 1){
                playAction()
            }
         }
 
+        override fun mouseExited(e: MouseEvent?) {
+            if(e != null ){
+                val point = e.point
+                if(point.x !in controlPanel.bounds.x..(controlPanel.bounds.x + controlPanel.bounds.width) ||
+                    point.y !in controlPanel.bounds.y .. (controlPanel.bounds.y + controlPanel.bounds.height)
+                ){
+                    controlPanel.isVisible = false
+                }
+
+            }
+        }
+
         override fun mouseEntered(e: MouseEvent?) {
             if(!controlPanel.isVisible){
                 controlPanel.isVisible = true
+            }
+        }
+
+    }
+    val controlPanelMouseListener = object : MouseAdapter() {
+        override fun mouseExited(e: MouseEvent?) {
+            if(e != null){
+                val point = e.point
+                if(
+                    point.y !in controlPanel.bounds.y .. (controlPanel.bounds.y + controlPanel.bounds.height)
+                ){
+                    controlPanel.isVisible = false
+                }
+            }
+        }
+
+
+    }
+    controlPanel.addMouseListener(controlPanelMouseListener)
+    val mouseMotionListener = object : MouseMotionAdapter() {
+        override fun mouseMoved(e: MouseEvent?) {
+            if (e != null) {
+                val cursorLocation = e.point
+                val xPos = cursorLocation.x
+                val yPos = cursorLocation.y
+                val cursorArea =10
+                when {
+                    xPos >= cursorArea && xPos <= window.width - cursorArea && yPos >= window.height-cursorArea -> {
+                        // 光标在窗口的底部边界
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR)
+                    }
+                    xPos >= window.width-cursorArea && yPos >= cursorArea && yPos <= window.height - cursorArea -> {
+                        // 光标在窗口的右边界
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)
+                    }
+                    xPos >= window.width - cursorArea && yPos < cursorArea -> {
+                        // 光标在窗口的右上角
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)
+                    }
+                    xPos <= cursorArea && yPos>=cursorArea && yPos <= window.height - cursorArea -> {
+                        // 光标在窗口的左边界
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR)
+                    }
+                    xPos >= cursorArea && xPos <= window.width - cursorArea && yPos <= cursorArea -> {
+                        // 光标在窗口的顶部边界
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR)
+                    }
+                    xPos <= cursorArea && yPos <= cursorArea -> {
+                        // 光标在窗口的左上角
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR)
+                    }
+                    xPos > window.width - cursorArea && yPos >window.height - cursorArea -> {
+                        // 光标在窗口的右下角
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR)
+                    }
+                    xPos <= cursorArea && yPos >= window.height- cursorArea -> {
+                        // 光标在窗口的左下角
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR)
+                    }
+
+                    else -> {
+                        // 在窗口内
+                        window.cursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+                    }
+                }
+            }
+        }
+        val toolkit = Toolkit.getDefaultToolkit()
+        override fun mouseDragged(e: MouseEvent?) {
+
+            // 移动窗口
+            if (e != null && window.cursor.equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))) {
+                val x = e.xOnScreen
+                val y = e.yOnScreen
+                window.location = Point(x-xx,y-yy)
+                bounds.location = window.location
+                backButton.isVisible = true
+                setIsVideoBoundsChanged(true)
+            // 调整窗口大小
+            }else if(e != null && !window.cursor.equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))){
+
+                val current = getScreenLocation(e, window)
+                val offset = Point(current.x - startDrag.x,current.y - startDrag.y)
+                val oldLocationX = window.location.x
+                val oldLocationY = window.location.y
+
+                var newLocationX = startDrag.x + offset.x
+                var newLocationY = startDrag.y + offset.y
+                var setLocation = false
+                var newWidth = e.x
+                var newHeight = e.y
+                val minWidth = 300
+                val minHeight = 300
+
+                val cursor = window.cursor
+                when(cursor){
+
+                    Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR) ->{
+                        newLocationX = window.location.x
+                        newWidth = window.width
+                        newHeight = window.height - (newLocationY - oldLocationY)
+                        setLocation = true
+                    }
+                    Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR) ->{
+                        newHeight = window.height
+                    }
+                    Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR) ->{
+                        newWidth = window.width
+                    }
+                    Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR) ->{
+                        newWidth = window.width - (newLocationX - oldLocationX)
+                        newHeight = window.height
+                        newLocationY = window.location.y
+                        setLocation = true
+                    }
+                    Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR) ->{
+                        newHeight = window.height - (newLocationY - oldLocationY)
+                        newLocationX = window.location.x
+                        setLocation = true
+                    }
+                    Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR) ->{
+                        newWidth = window.width - (newLocationX - oldLocationX)
+                        newLocationY = window.location.y
+                        setLocation = true
+                    }
+                    Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR) ->{
+                        newWidth = window.width - (newLocationX - oldLocationX)
+                        newHeight = window.height - (newLocationY - oldLocationY)
+                        setLocation = true
+                    }
+
+                }
+
+                // 处理宽度边界
+                if(newWidth >= toolkit.screenSize.width || newWidth <= minWidth){
+                    newLocationX = oldLocationX
+                    newWidth = window.width
+                }
+                // 处理长度边界
+                if(newHeight >= toolkit.screenSize.height - 30 || newHeight <= minHeight){
+                    newLocationY = oldLocationY
+                    newHeight = window.height
+                }
+
+                // Cursor.SE_RESIZE_CURSOR
+                if (newWidth != window.width || newHeight != window.height) {
+
+                    window.size = Dimension(newWidth,newHeight)
+                    embeddedMediaPlayerComponent.size = Dimension(newWidth,newHeight)
+
+                    bounds.size =  embeddedMediaPlayerComponent.size
+                    controlPanel.location = Point(bounds.size.width/2 - 75,bounds.size.height - 50 )
+                    if(setLocation){
+                        window.location = Point(newLocationX,newLocationY)
+                        bounds.location = window.location
+                        backButton.isVisible = true
+                        setIsVideoBoundsChanged(true)
+                    }
+                }
+
             }
         }
 
@@ -113,14 +324,17 @@ fun play(
         videoPlayerComponent.mediaPlayer().controls().pause()
         }
         setIsPlaying(false)
-        window.isVisible = false
+
+        videoPlayerComponent.removeKeyListener(keyListener)
+        embeddedMediaPlayerComponent.videoSurfaceComponent().removeMouseListener(mouseListener)
+        embeddedMediaPlayerComponent.videoSurfaceComponent().removeMouseMotionListener(mouseMotionListener)
         EventQueue.invokeLater {
             window.remove(videoPlayerComponent)
             window.remove(controlPanel)
         }
 
-        videoPlayerComponent.removeKeyListener(keyListener)
-        embeddedMediaPlayerComponent.removeMouseListener(mouseListener)
+        window.isVisible = false
+
     }
 
     val mediaPlayerEventListener = object:MediaPlayerEventAdapter(){
@@ -139,7 +353,7 @@ fun play(
         videoPlayerComponent.mediaPlayer().events().removeMediaPlayerEventListener(mediaPlayerEventListener)
     }
     stopButton.addActionListener { closeAction() }
-
+    embeddedMediaPlayerComponent.videoSurfaceComponent().addMouseMotionListener(mouseMotionListener)
     embeddedMediaPlayerComponent.videoSurfaceComponent().addMouseListener(mouseListener)
     videoPlayerComponent.addKeyListener(keyListener)
     videoPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(mediaPlayerEventListener)

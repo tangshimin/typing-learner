@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.platform.Font
 import kotlinx.serialization.ExperimentalSerializationApi
 import state.WordState
+import java.awt.Point
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalSerializationApi::class)
 @Composable
@@ -201,6 +202,12 @@ fun Search(
                                             )
                                         )
                                     }
+                                    val mousePoint by remember{ mutableStateOf(Point(0,0)) }
+                                    var isVideoBoundsChanged by remember{mutableStateOf(false)}
+                                    val resetVideoBounds:() -> Rectangle = {
+                                        isVideoBoundsChanged = false
+                                        Rectangle(mousePoint.x, mousePoint.y, 540, 303)
+                                    }
                                     var isPlaying by remember { mutableStateOf(false) }
                                     IconButton(
                                         onClick = {},
@@ -209,9 +216,15 @@ fun Search(
                                                 val location =
                                                     pointerEvent.awtEventOrNull?.locationOnScreen
                                                 if (location != null && !isPlaying) {
+                                                    if(isVideoBoundsChanged){
+                                                        mousePoint.x = location.x - 270 + 24
+                                                        mousePoint.y = location.y - 320
+                                                    }else{
+                                                        playerBounds.x = location.x - 270 + 24
+                                                        playerBounds.y = location.y - 320
+                                                    }
+
                                                     isPlaying = true
-                                                    playerBounds.x = location.x - 270 + 24
-                                                    playerBounds.y = location.y - 320
                                                     val file = File(vocabulary.relateVideoPath)
                                                     if (file.exists()) {
                                                         scope.launch {
@@ -223,7 +236,10 @@ fun Search(
                                                                 volume = appState.global.videoVolume,
                                                                 playTriple = playTriple,
                                                                 videoPlayerComponent = appState.videoPlayerComponent,
-                                                                bounds = playerBounds
+                                                                bounds = playerBounds,
+                                                                resetVideoBounds = resetVideoBounds,
+                                                                isVideoBoundsChanged = isVideoBoundsChanged,
+                                                                setIsVideoBoundsChanged = {isVideoBoundsChanged = it}
                                                             )
                                                         }
                                                     }
@@ -269,6 +285,12 @@ fun Search(
                                             )
                                         )
                                     }
+                                    val mousePoint by remember{ mutableStateOf(Point(0,0)) }
+                                    var isVideoBoundsChanged by remember{mutableStateOf(false)}
+                                    val resetVideoBounds:() -> Rectangle = {
+                                        isVideoBoundsChanged = false
+                                        Rectangle(mousePoint.x, mousePoint.y, 540, 303)
+                                    }
                                     var isPlaying by remember { mutableStateOf(false) }
                                     IconButton(
                                         onClick = {},
@@ -277,9 +299,14 @@ fun Search(
                                                 val location =
                                                     pointerEvent.awtEventOrNull?.locationOnScreen
                                                 if (location != null && !isPlaying) {
+                                                    if(isVideoBoundsChanged){
+                                                        mousePoint.x = location.x - 270 + 24
+                                                        mousePoint.y = location.y - 320
+                                                    }else{
+                                                        playerBounds.x = location.x - 270 + 24
+                                                        playerBounds.y = location.y - 320
+                                                    }
                                                     isPlaying = true
-                                                    playerBounds.x = location.x - 270 + 24
-                                                    playerBounds.y = location.y - 320
                                                     val file = File(externalCaption.relateVideoPath)
                                                     if (file.exists()) {
                                                         scope.launch {
@@ -291,7 +318,10 @@ fun Search(
                                                                 volume = appState.global.videoVolume,
                                                                 playTriple = playTriple,
                                                                 videoPlayerComponent = appState.videoPlayerComponent,
-                                                                bounds = playerBounds
+                                                                bounds = playerBounds,
+                                                                resetVideoBounds = resetVideoBounds,
+                                                                isVideoBoundsChanged = isVideoBoundsChanged,
+                                                                setIsVideoBoundsChanged = {isVideoBoundsChanged = it}
                                                             )
                                                         }
                                                     }

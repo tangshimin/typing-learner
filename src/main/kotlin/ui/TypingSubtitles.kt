@@ -49,6 +49,7 @@ import state.GlobalState
 import state.SubtitlesState
 import java.awt.Component
 import java.awt.GraphicsEnvironment
+import java.awt.Point
 import java.awt.Rectangle
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.UnsupportedFlavorException
@@ -100,7 +101,9 @@ fun TypingSubtitles(
     var mediaType by remember { mutableStateOf(computeMediaType(subtitlesState.mediaPath)) }
     var pgUp by remember { mutableStateOf(false) }
     val audioPlayerComponent = LocalAudioPlayerComponent.current
-
+    var isVideoBoundsChanged by remember{ mutableStateOf(false) }
+    /** 如果移动了播放器的位置，用这个变量保存计算的位置，点击恢复按钮的时候用这个临时的变量恢复 */
+    var tempPoint by remember{mutableStateOf(Point(0,0))}
     var charWidth by remember{ mutableStateOf(computeCharWidth(subtitlesState.trackDescription)) }
 
     /** 读取字幕文件*/
@@ -261,6 +264,10 @@ fun TypingSubtitles(
         }).start()
 
     }
+    val resetVideoBounds:() -> Rectangle = {
+        isVideoBoundsChanged = false
+        Rectangle(tempPoint.x, tempPoint.y, 540, 303)
+    }
 
     /**  使用按钮播放视频时调用的回调函数   */
     val playCurrentCaption: (Caption) -> Unit = { caption ->
@@ -290,7 +297,10 @@ fun TypingSubtitles(
                                 volume = videoVolume,
                                 playTriple = playTriple,
                                 videoPlayerComponent = mediaPlayerComponent,
-                                bounds = videoPlayerBounds
+                                bounds = videoPlayerBounds,
+                                resetVideoBounds = resetVideoBounds,
+                                isVideoBoundsChanged = isVideoBoundsChanged,
+                                setIsVideoBoundsChanged = {isVideoBoundsChanged = it}
                             )
                             // 使用外部字幕
                         } else {
@@ -302,7 +312,10 @@ fun TypingSubtitles(
                                 playTriple = externalPlayTriple,
                                 videoPlayerComponent = mediaPlayerComponent,
                                 bounds = videoPlayerBounds,
-                                externalSubtitlesVisible = subtitlesState.externalSubtitlesVisible
+                                externalSubtitlesVisible = subtitlesState.externalSubtitlesVisible,
+                                resetVideoBounds = resetVideoBounds,
+                                isVideoBoundsChanged = isVideoBoundsChanged,
+                                setIsVideoBoundsChanged = {isVideoBoundsChanged = it}
                             )
                         }
                     }
@@ -716,7 +729,7 @@ fun TypingSubtitles(
                                     modifier = Modifier.width(indexWidth)
                                 ){
                                     Row(Modifier.width(96.dp)){
-                                        if(multipleLines.enabled && playIconIndex == index){
+                                        if (multipleLines.enabled && playIconIndex == index) {
                                             IconButton(onClick = {
                                                 multipleLines.enabled = false
                                                 playIconIndex = 0
@@ -731,27 +744,44 @@ fun TypingSubtitles(
 
                                             IconButton(onClick = {},
                                                 modifier = Modifier
-                                                    .onPointerEvent(PointerEventType.Press){ pointerEvent ->
-                                                        val location = pointerEvent.awtEventOrNull?.locationOnScreen
+                                                    .onPointerEvent(PointerEventType.Press) { pointerEvent ->
+                                                        val location =
+                                                            pointerEvent.awtEventOrNull?.locationOnScreen
                                                         if (location != null) {
-                                                            if (multipleLines.isUp) {
-                                                                videoPlayerBounds.y = ((location.y - (303 + 24)) * density).toInt()
-                                                            }else{
-                                                                videoPlayerBounds.y =  ((location.y +24) * density).toInt()
+                                                            if (isVideoBoundsChanged) {
+                                                                if (multipleLines.isUp) {
+                                                                    tempPoint.y =
+                                                                        ((location.y - (303 + 24)) * density).toInt()
+                                                                } else {
+                                                                    tempPoint.y =
+                                                                        ((location.y + 24) * density).toInt()
+                                                                }
+                                                                tempPoint.x =
+                                                                    ((location.x - 270) * density).toInt()
+                                                            } else {
+                                                                if (multipleLines.isUp) {
+                                                                    videoPlayerBounds.y =
+                                                                        ((location.y - (303 + 24)) * density).toInt()
+                                                                } else {
+                                                                    videoPlayerBounds.y =
+                                                                        ((location.y + 24) * density).toInt()
+                                                                }
+                                                                videoPlayerBounds.x =
+                                                                    ((location.x - 270) * density).toInt()
+                                                                // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
+                                                                adjustPosition(density, videoPlayerBounds)
                                                             }
-                                                            videoPlayerBounds.x = ((location.x - 270) * density).toInt()
-                                                            // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
-                                                            adjustPosition(density, videoPlayerBounds)
-                                                            val playItem = Caption(multipleLines.startTime ,multipleLines.endTime ,"")
-                                                            playCurrentCaption(playItem)
                                                         }
+
+                                                        val playItem = Caption(multipleLines.startTime ,multipleLines.endTime ,"")
+                                                        playCurrentCaption(playItem)
                                                     }
-                                                ) {
-                                                val icon = if(mediaType=="audio" && !isPlaying) {
+                                            ) {
+                                                val icon = if (mediaType == "audio" && !isPlaying) {
                                                     Icons.Filled.VolumeDown
-                                                } else if(mediaType=="audio" && isPlaying){
+                                                } else if (mediaType == "audio" && isPlaying) {
                                                     Icons.Filled.VolumeUp
-                                                }else Icons.Filled.PlayArrow
+                                                } else Icons.Filled.PlayArrow
 
                                                 Icon(
                                                     icon,
@@ -960,7 +990,7 @@ fun TypingSubtitles(
                                 }
 
                                 Row(Modifier.width(48.dp).height(IntrinsicSize.Max)) {
-                                    if (subtitlesState.currentIndex == index) {
+                                    if (subtitlesState.currentIndex == index && !multipleLines.enabled) {
                                         TooltipArea(
                                             tooltip = {
                                                 Surface(
@@ -995,17 +1025,30 @@ fun TypingSubtitles(
                                                 modifier = Modifier
                                                     .onGloballyPositioned { coordinates ->
                                                         val rect = coordinates.boundsInWindow()
-                                                        if(!rect.isEmpty){
-                                                            // 视频播放按钮没有被遮挡
-                                                            videoPlayerBounds.x = window.x + rect.left.toInt() + (48 * density).toInt()
-                                                            videoPlayerBounds.y = window.y + rect.top.toInt() - (100 * density).toInt()
+                                                        if(!isVideoBoundsChanged){
+                                                            if(!rect.isEmpty){
+                                                                // 视频播放按钮没有被遮挡
+                                                                videoPlayerBounds.x = window.x + rect.left.toInt() + (48 * density).toInt()
+                                                                videoPlayerBounds.y = window.y + rect.top.toInt() - (100 * density).toInt()
+                                                            }else{
+                                                                // 视频播放按钮被遮挡
+                                                                videoPlayerBounds.x = window.x + textRect.right.toInt()
+                                                                videoPlayerBounds.y = window.y + textRect.top.toInt() - (100 * density).toInt()
+                                                            }
+                                                            // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
+                                                            adjustPosition(density, videoPlayerBounds)
                                                         }else{
-                                                            // 视频播放按钮被遮挡
-                                                            videoPlayerBounds.x = window.x + textRect.right.toInt()
-                                                            videoPlayerBounds.y = window.y + textRect.top.toInt() - (100 * density).toInt()
+                                                            if(!rect.isEmpty){
+                                                                // 视频播放按钮没有被遮挡
+                                                                tempPoint.x = window.x + rect.left.toInt() + (48 * density).toInt()
+                                                                tempPoint.y = window.y + rect.top.toInt() - (100 * density).toInt()
+                                                            }else{
+                                                                // 视频播放按钮被遮挡
+                                                                tempPoint.x = window.x + textRect.right.toInt()
+                                                                tempPoint.y = window.y + textRect.top.toInt() - (100 * density).toInt()
+                                                            }
                                                         }
-                                                        // 根据一些特殊情况调整播放器的位置， 比如显示器缩放，播放器的位置超出屏幕边界。
-                                                        adjustPosition(density, videoPlayerBounds)
+
                                                     }
                                             ) {
                                                 val icon = if(mediaType=="audio" && !isPlaying) {

@@ -33,6 +33,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import player.*
 import state.*
 import ui.dialog.*
+import java.awt.Rectangle
 import java.io.File
 import java.util.*
 import javax.swing.JFileChooser
@@ -108,10 +109,16 @@ fun App() {
                     when (appState.global.type) {
                         TypingType.WORD -> {
                             title = computeTitle(wordState)
+
                             // 显示器缩放
                             val density = LocalDensity.current.density
                             // 视频播放器的位置，大小
                             val videoBounds = computeVideoBounds(windowState, appState.openSettings,density)
+
+                            val resetVideoBounds :() -> Rectangle ={
+                                appState.isChangeVideoBounds = false
+                                computeVideoBounds(windowState, appState.openSettings,density)
+                            }
 
                             TypingWord(
                                 window = window,
@@ -119,6 +126,7 @@ fun App() {
                                 appState = appState,
                                 typingWord = wordState,
                                 videoBounds = videoBounds,
+                                resetVideoBounds =resetVideoBounds
                             )
                         }
                         TypingType.SUBTITLES -> {
