@@ -4,13 +4,13 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.components.FlatButton
 import data.Caption
+import state.getResourcesFile
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
 import java.awt.*
 import java.awt.event.*
-import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.swing.JFrame
@@ -42,10 +42,10 @@ fun play(
 ) {
 
 
-    val playIcon = FlatSVGIcon(File("src/main/resources/icon/play_arrow_white_24dp.svg"))
-    val pauseIcon = FlatSVGIcon(File("src/main/resources/icon/pause_white_24dp.svg"))
-    val stopIcon = FlatSVGIcon(File("src/main/resources/icon/stop_white_24dp.svg"))
-    val backIcon = FlatSVGIcon(File("src/main/resources/icon/flip_to_back_white_24dp.svg"))
+    val playIcon = FlatSVGIcon(getResourcesFile("icon/play_arrow_white_24dp.svg"))
+    val pauseIcon = FlatSVGIcon(getResourcesFile("icon/pause_white_24dp.svg"))
+    val stopIcon = FlatSVGIcon(getResourcesFile("icon/stop_white_24dp.svg"))
+    val backIcon = FlatSVGIcon(getResourcesFile("icon/flip_to_back_white_24dp.svg"))
     if(FlatLaf.isLafDark()){
         playIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
         pauseIcon.colorFilter = FlatSVGIcon.ColorFilter { Color.LIGHT_GRAY }
