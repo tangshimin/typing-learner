@@ -271,6 +271,7 @@ fun MainContent(
 
         val audioPlayerComponent = LocalAudioPlayerComponent.current
 
+        val clipboardManager = LocalClipboardManager.current
         /** 单词发音的本地路径，这个路径是根据单词进行计算的，
          * 如果单词改变了，单词发音就跟着改变。*/
         val audioPath by remember(currentWord){
@@ -584,6 +585,12 @@ fun MainContent(
                 (it.isShiftPressed && it.key == Key.Delete && it.type == KeyEventType.KeyUp) -> {
                     scope.launch {
                         showDeleteDialog = true
+                    }
+                    true
+                }
+                (it.isCtrlPressed && it.key == Key.N && it.type == KeyEventType.KeyUp) -> {
+                    scope.launch {
+                       clipboardManager.setText(AnnotatedString(currentWord.value))
                     }
                     true
                 }
@@ -2314,7 +2321,17 @@ fun CopyButton(wordValue:String){
                 border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
                 shape = RectangleShape
             ) {
-                Text(text = "复制", modifier = Modifier.padding(10.dp))
+                val ctrl = LocalCtrl.current
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(text = "复制")
+                    CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                        Text(text = " $ctrl + N")
+                    }
+                }
+
             }
         },
         delayMillis = 300,
