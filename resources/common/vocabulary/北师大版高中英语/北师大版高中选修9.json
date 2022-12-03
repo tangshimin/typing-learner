@@ -2367,7 +2367,7 @@
         {
             "value": "belongings",
             "usphone": "bə'lɔŋɪŋz",
-            "ukphone": "",
+            "ukphone": "bɪ'lɔːŋɪŋz",
             "definition": "n something owned; any tangible or intangible possession that is owned by someone; \nn happiness felt in a secure relationship\nv be owned by; be in the possession of\nv be suitable or acceptable\nv be in the right place or situation\nv be rightly classified in a class or category\nv be a member, adherent, inhabitant, etc. (of a group, organization, or place)\nv be a part or adjunct",
             "translation": "n. 财产, 所有物, 相关事物\n[经] 财产, 所有物, 附属物",
             "pos": "",
@@ -4274,8 +4274,8 @@
         },
         {
             "value": "cliche",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'kli:ʃei",
+            "ukphone": "kliː'ʃeɪ",
             "definition": "n a trite or obvious remark",
             "translation": "n. 陈腔滥调, 凸印版\na. 陈腐的",
             "pos": "",
@@ -5193,7 +5193,7 @@
         {
             "value": "pamphlet",
             "usphone": "ˈpæmflɪt",
-            "ukphone": "",
+            "ukphone": "'pæmflit",
             "definition": "n a small book usually having a paper cover\nn a brief treatise on a subject of interest; published in the form of a booklet",
             "translation": "n. 小册子, 活页文选",
             "pos": "",

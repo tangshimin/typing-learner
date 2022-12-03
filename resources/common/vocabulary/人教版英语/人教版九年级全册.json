@@ -3914,8 +3914,8 @@
         },
         {
             "value": "earthquake",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'ɝθ'kwek",
+            "ukphone": "'ɜːθkweɪk",
             "definition": "n. shaking and vibration at the surface of the earth resulting from underground movement along a fault plane of from volcanic activity\nn. a disturbance that is extremely disruptive",
             "translation": "n. 地震",
             "pos": "",
@@ -8433,7 +8433,7 @@
         {
             "value": "embarrassing",
             "usphone": "ɪm'bærəsɪŋ",
-            "ukphone": "",
+            "ukphone": "im'bærəsiŋ",
             "definition": "s. causing to feel shame or chagrin or vexation",
             "translation": "a. 令人为难的, 麻烦的",
             "pos": "",

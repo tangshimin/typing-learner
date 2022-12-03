@@ -297,7 +297,7 @@
         {
             "value": "Catholic",
             "usphone": "kæθəlɪk",
-            "ukphone": "",
+            "ukphone": "'kæθlɪk",
             "definition": "n. a member of a Catholic church\na. of or relating to or supporting Catholicism\ns. free from provincial prejudices or attachments",
             "translation": "n. 天主教徒\na. 天主教的, 普遍的, 广泛的, 宽宏大量的",
             "pos": "",
@@ -4976,8 +4976,8 @@
         },
         {
             "value": "outcome",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'aʊt'kʌm",
+            "ukphone": "'autkʌm",
             "definition": "n something that results\nn a phenomenon that follows and is caused by some previous phenomenon",
             "translation": "n. 结果, 出口",
             "pos": "",

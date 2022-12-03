@@ -1718,8 +1718,8 @@
         },
         {
             "value": "lemon",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'lɛmən",
+            "ukphone": "'lemən",
             "definition": "n. yellow oval fruit with juicy acidic flesh\nn. a small evergreen tree that originated in Asia but is widely cultivated for its fruit\nn. a distinctive tart flavor characteristic of lemons\nn. an artifact (especially an automobile) that is defective or unsatisfactory",
             "translation": "n. 柠檬, 柠檬树, 柠檬色\n[医] 柠檬",
             "pos": "",
@@ -5714,8 +5714,8 @@
         },
         {
             "value": "aboard",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "ə'bɔrd",
+            "ukphone": "ə'bɔːd",
             "definition": "r. on a ship, train, plane or other vehicle\nr. on first or second or third base\nr. side by side\nr. part of a group",
             "translation": "adv. 在船上, 在火车上, 在飞机上\nprep. 在...之上",
             "pos": "",

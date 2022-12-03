@@ -2888,8 +2888,8 @@
         },
         {
             "value": "channel",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'tʃænl",
+            "ukphone": "'tʃæn(ə)l",
             "definition": "n. a path over which electrical signals can pass\nn. a passage for water (or other fluids) to flow through\nn. a deep and relatively narrow body of water (as in a river or a harbor or a strait linking two larger bodies) that allows the best passage for vessels\nn. (often plural) a means of communication or access",
             "translation": "n. 海峡, 航道, 频道\nvt. 引导, 在...上挖沟, 形成河道\n[计] 信道, 通道",
             "pos": "",

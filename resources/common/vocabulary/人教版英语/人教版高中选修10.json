@@ -1304,8 +1304,8 @@
         },
         {
             "value": "commitment",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "kə'mɪtmənt",
+            "ukphone": "kə'mitmənt",
             "definition": "n. the act of binding yourself (intellectually or emotionally) to a course of action\nn. an engagement by contract involving financial obligation\nn. a message that makes a pledge\nn. the official act of consigning a person to confinement (as in a prison or mental hospital)",
             "translation": "n. 委托, 交押, 承担义务, 赞助\n[医] 院禁",
             "pos": "",
@@ -2780,8 +2780,8 @@
         },
         {
             "value": "prop",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "prɑp",
+            "ukphone": "prɑːp",
             "definition": "n. a support placed beneath or against something to keep it from shaking or falling",
             "translation": "n. 支柱, 支持者, 倚靠人, 道具, 螺旋桨\nvt. 支撑, 维持",
             "pos": "",
@@ -3482,8 +3482,8 @@
         },
         {
             "value": "fundamental",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": ",fʌndə'mɛntl",
+            "ukphone": "ˌfʌndə'mentəl",
             "definition": "n. any factor that could be considered important to the understanding of a particular business\nn. the lowest tone of a harmonic series\ns. being or involving basic facts or principles\ns. far-reaching and thoroughgoing in effect especially on the nature of something",
             "translation": "n. 基本原理, 原则, 基波\na. 基本的, 重要的, 原音的",
             "pos": "",
@@ -3951,7 +3951,7 @@
         {
             "value": "Catholic",
             "usphone": "kæθəlɪk",
-            "ukphone": "",
+            "ukphone": "'kæθlɪk",
             "definition": "n. a member of a Catholic church\na. of or relating to or supporting Catholicism\ns. free from provincial prejudices or attachments",
             "translation": "n. 天主教徒\na. 天主教的, 普遍的, 广泛的, 宽宏大量的",
             "pos": "",
@@ -4652,8 +4652,8 @@
         },
         {
             "value": "educator",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'ɛdʒə'ketɚ",
+            "ukphone": "'edʒʊkeɪtə",
             "definition": "n. someone who educates young people",
             "translation": "n. 教育家",
             "pos": "",
@@ -5336,8 +5336,8 @@
         },
         {
             "value": "heroine",
-            "usphone": "",
-            "ukphone": "",
+            "usphone": "'hɛroɪn",
+            "ukphone": "'herəʊɪn",
             "definition": "n. the main good female character in a work of fiction\nn. a woman possessing heroic qualities or a woman who has performed heroic deeds",
             "translation": "n. 巾帼英雄, 烈妇, 女主角\n[化] 海洛因; 二醋吗啡; 二乙酰吗啡",
             "pos": "",
