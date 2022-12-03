@@ -1078,7 +1078,6 @@ fun MainContent(
                 showChapterFinishedDialog = false
                 isVocabularyFinished = false
             }
-
             val wordKeyEvent: (KeyEvent) -> Boolean = { it: KeyEvent ->
                 when {
                     ((it.key == Key.Enter || it.key == Key.NumPadEnter || it.key == Key.PageDown)
@@ -1091,6 +1090,10 @@ fun MainContent(
                     }
                     (it.key == Key.PageUp && it.type == KeyEventType.KeyUp) -> {
                         previous()
+                        true
+                    }
+                    (it.isCtrlPressed && it.key == Key.C && it.type == KeyEventType.KeyUp) -> {
+                        clipboardManager.setText(AnnotatedString(currentWord.value))
                         true
                     }
                     (it.isCtrlPressed && it.isShiftPressed && it.key == Key.I && it.type == KeyEventType.KeyUp) -> {
@@ -2315,11 +2318,15 @@ fun CopyButton(wordValue:String){
                 border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
                 shape = RectangleShape
             ) {
+                val ctrl = LocalCtrl.current
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    Text(text = "复制", modifier = Modifier.padding(10.dp))
+                    Text(text = "复制")
+                    CompositionLocalProvider(LocalContentAlpha provides 0.5f) {
+                        Text(text = " $ctrl + C")
+                    }
                 }
 
             }
