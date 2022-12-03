@@ -49,6 +49,23 @@ const val CREATE_ECDICT = "CREATE TABLE IF NOT EXISTS ecdict" +
         " PRIMARY KEY ( word ))" +
         " AS SELECT * FROM CSVREAD('file:C:/Users/tangs/OneDrive/文档/ECDICT/ecdict.csv')"
 
+const val ECDICT = "CREATE TABLE IF NOT EXISTS ecdict" +
+        "(word VARCHAR(64) NOT NULL UNIQUE , " +
+        " british_phonetic VARCHAR(64), " +
+        " american_phonetic VARCHAR(64), " +
+        " definition TEXT, " +
+        " translation TEXT, " +
+        " pos VARCHAR(16), " +
+        " collins INTEGER DEFAULT (0), " +
+        " oxford BOOLEAN DEFAULT (0), " +
+        " tag VARCHAR(64), " +
+        " bnc INTEGER DEFAULT (0), " +
+        " frq INTEGER DEFAULT (0), " +
+        " exchange VARCHAR(256), " +
+        " detail VARCHAR(64), " +
+        " audio VARCHAR(64), " +
+        " PRIMARY KEY ( word ))"
+
 /**
  * 创建索引
  */
@@ -224,11 +241,13 @@ object Dictionary {
             val url = getURL()
             DriverManager.getConnection(url, USER, PASS).use { conn ->
                 val sql = "SELECT MAX(bnc) as max_bnc from ecdict"
-                val statement = conn.createStatement()
-                val result = statement.executeQuery(sql)
-                if(result.next()){
-                    return result.getInt(1)
-                }else return 0
+                conn.createStatement().use {statement->
+                    val result = statement.executeQuery(sql)
+                    if(result.next()){
+                        return result.getInt(1)
+                    }else return 0
+                }
+
             }
 
         } catch (e: Exception) {
@@ -245,11 +264,13 @@ object Dictionary {
             val url = getURL()
             DriverManager.getConnection(url, USER, PASS).use { conn ->
                 val sql = "SELECT MAX(frq) as max_frq from ecdict"
-                val statement = conn.createStatement()
-                val result = statement.executeQuery(sql)
-                if(result.next()){
-                    return result.getInt(1)
-                }else return 0
+              conn.createStatement().use {statement ->
+                  val result = statement.executeQuery(sql)
+                  if(result.next()){
+                      return result.getInt(1)
+                  }else return 0
+                }
+
             }
 
         } catch (e: Exception) {
@@ -266,11 +287,13 @@ object Dictionary {
             val url = getURL()
             DriverManager.getConnection(url, USER, PASS).use { conn ->
                 val sql = "SELECT COUNT(*) as count from ecdict"
-                val statement = conn.createStatement()
-                val result = statement.executeQuery(sql)
-                if(result.next()){
-                    return result.getInt(1)
-                }else return 0
+               conn.createStatement().use{ statement ->
+                    val result = statement.executeQuery(sql)
+                    if(result.next()){
+                        return result.getInt(1)
+                    }else return 0
+                }
+
             }
 
         } catch (e: Exception) {
@@ -280,6 +303,34 @@ object Dictionary {
         }
     }
 
+    /** 查询所有单词 */
+    fun queryAllWords():List<Word>{
+        val words = mutableListOf<Word>()
+        try {
+            Class.forName(JDBC_DRIVER)
+            val url = getURL()
+            DriverManager.getConnection(url, USER, PASS).use { conn ->
+                val sql = "SELECT * from ecdict"
+             conn.createStatement().use{ statement ->
+                 val result = statement.executeQuery(sql)
+                 while(result.next()){
+                     val word = mapToWord(result)
+                     words.add(word)
+                 }
+                 statement.close()
+             }
+            }
+
+        } catch (e: Exception) {
+            //Handle errors for Class.forName
+            e.printStackTrace()
+            return words
+        }
+        return words
+    }
+
+
+
 }
 
 /**
@@ -287,7 +338,8 @@ object Dictionary {
  */
 fun mapToWord(result: ResultSet): Word {
     var value = result.getString("word")
-    var phonetic = result.getString("phonetic")
+    var uKphone = result.getString("british_phonetic")
+    var usphone = result.getString("american_phonetic")
     var definition = result.getString("definition")
     var translation = result.getString("translation")
     var pos = result.getString("pos")
@@ -299,7 +351,8 @@ fun mapToWord(result: ResultSet): Word {
     var exchange = result.getString("exchange")
 
     if (value == null) value = ""
-    if (phonetic == null) phonetic = ""
+    if (uKphone == null) uKphone = ""
+    if (usphone == null) usphone = ""
     if (definition == null) definition = ""
     if (translation == null) translation = ""
     if (pos == null) pos = ""
@@ -310,8 +363,8 @@ fun mapToWord(result: ResultSet): Word {
     translation = translation.replace("\\n", "\n")
     return Word(
         value,
-        "",
-        phonetic,
+        usphone,
+        uKphone,
         definition,
         translation,
         pos,
