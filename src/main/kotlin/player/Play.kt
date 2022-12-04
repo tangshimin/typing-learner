@@ -59,12 +59,13 @@ fun play(
     controlPanel.isVisible = false
 
 
-    val backButton = FlatButton()
-    backButton.isVisible = isVideoBoundsChanged
-    backButton.isContentAreaFilled = false
-    backButton.buttonType = FlatButton.ButtonType.roundRect
-    backButton.icon = backIcon
-    backButton.addActionListener {
+    val restoreButton = FlatButton()
+    restoreButton.isVisible = isVideoBoundsChanged
+    restoreButton.toolTipText = "还原"
+    restoreButton.isContentAreaFilled = false
+    restoreButton.buttonType = FlatButton.ButtonType.roundRect
+    restoreButton.icon = backIcon
+    restoreButton.addActionListener {
         val newRectangle =  resetVideoBounds()
         bounds.location = newRectangle.location
         bounds.size = newRectangle.size
@@ -72,7 +73,7 @@ fun play(
         window.location = newRectangle.location
         videoPlayerComponent.size = newRectangle.size
         controlPanel.bounds = Rectangle(newRectangle.size.width/2 - 75,newRectangle.size.height - 50 ,150,50)
-        backButton.isVisible
+        restoreButton.isVisible
     }
 
     val playButton = FlatButton()
@@ -86,7 +87,7 @@ fun play(
     stopButton.icon = stopIcon
 
 
-    controlPanel.add(backButton)
+    controlPanel.add(restoreButton)
     controlPanel.add(playButton)
     controlPanel.add(stopButton)
 
@@ -229,7 +230,7 @@ fun play(
                 val y = e.yOnScreen
                 window.location = Point(x-xx,y-yy)
                 bounds.location = window.location
-                backButton.isVisible = true
+                restoreButton.isVisible = true
                 setIsVideoBoundsChanged(true)
             // 调整窗口大小
             }else if(e != null && !window.cursor.equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))){
@@ -308,7 +309,7 @@ fun play(
                     if(setLocation){
                         window.location = Point(newLocationX,newLocationY)
                         bounds.location = window.location
-                        backButton.isVisible = true
+                        restoreButton.isVisible = true
                         setIsVideoBoundsChanged(true)
                     }
                 }
