@@ -68,15 +68,9 @@ tasks.withType<KotlinCompile>().configureEach {
 compose.desktop {
     application {
         mainClass = "MainKt"
-//        jvmArgs += listOf("-verbose:gc")
-//        jvmArgs += listOf("-client")
-        jvmArgs += listOf("-Xmx1G")
+        jvmArgs += listOf("-client")
         jvmArgs += listOf("-Dfile.encoding=UTF-8")
         jvmArgs += listOf("-Dapple.awt.application.appearance=system")
-//        jvmArgs += listOf("-XX:+PrintGCDetails")
-//        jvmArgs += listOf("-XX:NativeMemoryTracking=summary")
-//        jvmArgs += listOf("-XX:+UnlockDiagnosticVMOptions")
-//        jvmArgs += listOf("-XX:+PrintNMTStatistics")
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Typing Learner"
