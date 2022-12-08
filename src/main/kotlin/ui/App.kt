@@ -44,7 +44,7 @@ import kotlin.concurrent.schedule
 
 
 // build.gradle.kts 的版本也需要更改
-const val version = "v1.4.3"
+const val version = "v1.5.0"
 
 
 @ExperimentalFoundationApi
