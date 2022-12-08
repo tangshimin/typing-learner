@@ -296,6 +296,7 @@ fun playSound(path: String, volume: Float) {
             val value = (range * volume) + gainControl.minimum
             gainControl.value = value
             clip.start()
+            clip.drain()
         }
     } catch (e: Exception) {
         e.printStackTrace()
