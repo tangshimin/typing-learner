@@ -8,6 +8,7 @@ import state.getResourcesFile
 import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.AudioPlayerComponent
+import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent
 import java.awt.*
 import java.awt.event.*
@@ -91,7 +92,11 @@ fun play(
     controlPanel.add(stopButton)
 
 
-    val embeddedMediaPlayerComponent = videoPlayerComponent as EmbeddedMediaPlayerComponent
+    val embeddedMediaPlayerComponent:Component = if(isMacOS()){
+        videoPlayerComponent as CallbackMediaPlayerComponent
+    }else{
+        videoPlayerComponent as EmbeddedMediaPlayerComponent
+    }
     val playAction :() -> Unit = {
         if(videoPlayerComponent.mediaPlayer().status().isPlaying){
             videoPlayerComponent.mediaPlayer().controls().pause()
@@ -420,4 +425,13 @@ fun parseTime(time:String):Double{
     var duration = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm:ss.SSS")).toNanoOfDay().toDouble()
     duration = duration.div(1000_000_000)
     return duration
+}
+
+
+fun Component.videoSurfaceComponent(): Component {
+    return when (this) {
+        is CallbackMediaPlayerComponent -> videoSurfaceComponent()
+        is EmbeddedMediaPlayerComponent -> videoSurfaceComponent()
+        else -> throw IllegalArgumentException("You can only call videoSurfaceComponent() on vlcj player component")
+    }
 }
