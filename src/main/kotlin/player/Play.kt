@@ -26,7 +26,6 @@ import javax.swing.JPanel
  * @param videoPlayerComponent 视频播放组件
  * @param bounds 视频播放窗口的位置和大小
  * @param externalSubtitlesVisible 是否加载外部字幕
- * 使用 JFrame 的一个原因是 swingPanel 重组的时候会产生闪光,等Jetbrains 把 bug 修复了再重构
  */
 fun play(
     window: JFrame,
