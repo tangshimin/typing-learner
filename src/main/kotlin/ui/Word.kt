@@ -289,7 +289,7 @@ fun playSound(path: String, volume: Float) {
             val clip: Clip = AudioSystem.getLine(info) as Clip
             clip.addLineListener{event ->
                 if (event.type == LineEvent.Type.STOP) {
-                    Timer("clip close", false).schedule(300) {
+                    Timer("clip close", false).schedule(500) {
                         clip.close()
                     }
                 }
