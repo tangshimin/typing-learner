@@ -32,7 +32,9 @@ import kotlinx.coroutines.launch
 import player.AudioButton
 import state.GlobalState
 import state.getResourcesFile
+import java.util.*
 import javax.sound.sampled.*
+import kotlin.concurrent.schedule
 
 /** 单词组件
  * @param word 单词
@@ -287,7 +289,9 @@ fun playSound(path: String, volume: Float) {
             val clip: Clip = AudioSystem.getLine(info) as Clip
             clip.addLineListener{event ->
                 if (event.type == LineEvent.Type.STOP) {
-                    clip.close()
+                    Timer("clip close", false).schedule(300) {
+                        clip.close()
+                    }
                 }
             }
             clip.open(audioStream)
