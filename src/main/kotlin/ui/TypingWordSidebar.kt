@@ -467,8 +467,8 @@ fun TypingWordSidebar(
                     Spacer(Modifier.width(5.dp))
                     var expand by remember { mutableStateOf(false) }
                     val selectedText = when (typingWordState.pronunciation) {
-                        "us" -> "真人美音"
-                        "uk" -> "真人英音"
+                        "us" -> "美式发音"
+                        "uk" -> "英式发音"
                         "jp" -> "日语"
                         "local TTS" -> "语音合成"
                         else -> "关闭"
@@ -501,7 +501,7 @@ fun TypingWordSidebar(
                                     },
                                     modifier = Modifier.width(120.dp).height(40.dp)
                                 ) {
-                                    Text("真人英音")
+                                    Text("英式发音")
                                 }
                                 DropdownMenuItem(
                                     onClick = {
@@ -513,7 +513,7 @@ fun TypingWordSidebar(
                                     },
                                     modifier = Modifier.width(120.dp).height(40.dp)
                                 ) {
-                                    Text("真人美音")
+                                    Text("美式发音")
                                 }
                             }
 
