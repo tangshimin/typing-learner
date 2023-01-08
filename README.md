@@ -3,36 +3,37 @@
 
 ## 主要功能：
 
-1. [可以用MKV 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。
+1. [用 MKV 的电影、电视剧生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E-MKV-%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)，让每个单词都有具体的语境。
 
     ![Demo-Generate-Vocabulary-Light](https://user-images.githubusercontent.com/16540656/184311741-15fab9c3-83ba-4080-bac7-ca3a163c67d0.png)
+
+2. [不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
+
     
-2. 记忆单词，记忆单词的时候，会自动播放单词的读音，然后用键盘打字练习拼写，每个单词都可以输入多次，直到记住为止。从 MKV 生成的词库(单词本)，可以抄写单词对应的字幕，播放单词对应的视频片段。每个单元有 20 个单词，记完一个单元还有听写测试，检查记忆效果。默认使用 Enter 键切换下一个单词。
+3. 记忆单词，记忆单词的时候，会自动播放单词的读音，然后用键盘打字练习拼写，每个单词都可以输入多次，直到记住为止。从 MKV 生成的词库(单词本)，可以抄写单词对应的字幕，播放单词对应的视频片段。每个单元有 20 个单词，记完一个单元还有听写测试，检查记忆效果。默认使用 Enter 键切换下一个单词。
     
 
     https://user-images.githubusercontent.com/16540656/163662386-e82dc534-7a5a-4566-8449-fc71db51f960.mp4
     
     demo 中的电影片段来源于 [Sintel](https://www.youtube.com/watch?v=eRsGyueVLvQ)。
     
-3. 听写复习，可以选择多个章节的单词一起复习，先听写测试，然后再复习错误的单词。
+4. 听写复习，可以选择多个章节的单词一起复习，先听写测试，然后再复习错误的单词。
 
     ![DictionReview](https://user-images.githubusercontent.com/16540656/184179317-f8c0ac99-9048-48da-b59b-5badbaae7c62.png)
 
-4. 抄写字幕，可以抄写你感兴趣的电影、电视剧、纪录片、TED演讲、歌词。可以抄写多种语言的字幕。
-5. 抄写字幕界面也可用来练习听力，可用重复的播放一句字幕，直到听懂为止。<br>
+5. 抄写字幕，可以抄写你感兴趣的电影、电视剧、纪录片、TED演讲、歌词。可以抄写多种语言的字幕。
+6. 抄写字幕界面也可用来练习听力，可用重复的播放一句字幕，直到听懂为止。<br>
    也可以用来练习口语，可以重复的跟读一条字幕，直到流畅为止。 <br>
    切换到下一条字幕用 `Enter` 或 `↓`键。
 
     https://user-images.githubusercontent.com/16540656/174944474-e5947df9-c8ed-4546-9c67-057fe52c2d51.mp4
     
-6. 抄写文本，可以抄写 [古腾堡计划](https://www.gutenberg.org/) 所有 txt 格式的电子书，非[古腾堡计划](https://www.gutenberg.org/) 的电子书，抄写前可能需要先格式化，把每行的字母数量限制在 75 个以内。
+7. 抄写文本，可以抄写 [古腾堡计划](https://www.gutenberg.org/) 所有 txt 格式的电子书，非[古腾堡计划](https://www.gutenberg.org/) 的电子书，抄写前可能需要先格式化，把每行的字母数量限制在 75 个以内。
 
    ![Demo-Text](https://user-images.githubusercontent.com/16540656/175084580-6b26abc3-671f-455e-ac5f-aa583297a0e0.png)
-   
 
-7. [不是 MKV 格式的视频可以使用字幕 + 视频生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)
 
-8. [可以用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)要读一篇陌生单词比较多的英文文档，又不想一边查词典一边看文档，可以先用文档生成词库，把陌生单词先记一遍，然后看文档的时候会更加流畅。
+8. [用英文文档生成词库(单词本)](https://github.com/tangshimin/typing-learner/wiki/%E4%BB%8E%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E8%AF%8D%E5%BA%93)要读一篇陌生单词比较多的英文文档，又不想一边查词典一边看文档，可以先用文档生成词库，把陌生单词先记一遍，然后看文档的时候会更加流畅。
 
 9. [用 MKV 视频或字幕生成的词库，可以链接到用文档生成的词库或内置的词库](https://github.com/tangshimin/typing-learner/wiki/链接字幕词库)。下面着张图片表示，电影 Sintel 的所有字幕中，有 9 条字幕，匹配了四级词库中的 6 个单词。
    
