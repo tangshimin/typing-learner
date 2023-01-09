@@ -98,7 +98,7 @@ fun AboutDialog(
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
                             ) {
                                 SelectionContainer {
-                                    Text("Typing Leaner $version 64-bit")
+                                    Text("Typing Leaner $version")
                                 }
                             }
 
@@ -151,16 +151,17 @@ fun AboutDialog(
                     }
                     2 -> {
 
-                        Column (Modifier.padding(start = 38.dp,top = 20.dp,end = 38.dp,bottom = 20.dp)){
+                        Column (Modifier.padding(start = 18.dp,top = 20.dp,end = 18.dp,bottom = 20.dp)){
                             Row{
-                                Text("本项目的记忆单词功能来源于  ")
+                                Text("感谢 ")
                                 LinkText(
                                     text = "qwerty-learner",
                                     url = "https://github.com/Kaiyiwing/qwerty-learner"
                                 )
+                                Text("的所有贡献者，让我有机会把我曾经放弃的一个 app，")
                             }
                             Row{
-                                Text("感谢 qwerty-learner 的所有贡献者，让我有机会把我曾经放弃的一个 app，又找到新的方式实现。")
+                                Text("又找到新的方式实现。")
                             }
                             Row{
                                 Text("感谢 ")
@@ -175,11 +176,12 @@ fun AboutDialog(
                                 )
                             }
                             Row{
+                                Text("感谢 ")
                                 LinkText(
                                     text = "libregd",
                                     url = "https://github.com/libregd"
                                 )
-                                Text(" 为本项目设计 Logo。")
+                                Text(" 为本项目设计 Logo,和一些交互设计，以及非常好的功能建议。")
                             }
                         }
 
