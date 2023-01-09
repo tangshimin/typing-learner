@@ -276,7 +276,7 @@ fun AboutDialog(
                             Dependency(
                                 name = "Compose Desktop",
                                 url = "https://github.com/JetBrains/compose-jb",
-                                version = "1.2.0-alpha01-dev745",
+                                version = "1.3.0-beta04-dev885",
                                 license = Apache2,
                             )
 
@@ -297,7 +297,7 @@ fun AboutDialog(
                             Dependency(
                                 name = "kotlin",
                                 url = "https://github.com/JetBrains/kotlin",
-                                version = "1.6.10",
+                                version = "1.7.20",
                                 license = Apache2,
                             )
 
