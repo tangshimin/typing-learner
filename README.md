@@ -1,5 +1,4 @@
-## Typing Learner
-  使用电影、美剧、字幕或文档生成词库（单词本），让每个单词都有具体的语境。然后通过语境记忆单词。
+## Typing Learner 2.0 已经更名为幕境并迁移到了新的仓库。请前往[幕境仓库](https://github.com/tangshimin/MuJing)以获取最新版本和更新
 
 ## 主要功能：
 
